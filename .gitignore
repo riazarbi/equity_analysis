@@ -1,8 +1,8 @@
 # DATA FILES
-!datalog/
-!dimensions/
-datalog/.gitkeep
-dimensions/.gitkeep
+datalog/*
+dimensions/*
+!datalog/.gitkeep
+!dimensions/.gitkeep
 
 
 # R TEMPLATE
