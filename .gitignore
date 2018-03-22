@@ -1,7 +1,7 @@
 # DATA FILES
 datalog/*
 dimensions/*
-!datalog/00000000000000__source__data_type__data_identifier.csv
+!datalog/000000000000000__source__data_type__data_identifier.csv
 !dimensions/sample.csv
 
 
