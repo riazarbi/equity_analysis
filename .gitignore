@@ -1,6 +1,8 @@
 # DATA FILES
-/datalog/*
-/dimensions/*
+!datalog/
+!dimensions/
+datalog/*
+dimensions/*
 
 
 # R TEMPLATE
