@@ -1,8 +1,8 @@
 # DATA FILES
 datalog/*
 dimensions/*
-!datalog/.gitkeep
-!dimensions/.gitkeep
+!datalog/00000000000000__source__data_type__data_identifier.csv
+!dimensions/sample.csv
 
 
 # R TEMPLATE
