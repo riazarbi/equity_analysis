@@ -1,5 +1,10 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
 # INTRODUCTORY NOTE
-This prject aims to build out a complete analysis pipeline for equity analysis. It encompasses the full chain from acquisition all the way to visualization.
+This project aims to build out a complete analysis pipeline for equity analysis. It encompasses the full chain from acquisition all the way to visualization.
 
 # To Do
 Move the entire workflow from a files-and-folders data structure to a log-centric structure. 
