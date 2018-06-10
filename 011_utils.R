@@ -8,10 +8,13 @@ working_directory <- getwd()
 # Define directory paths
 dimensions_directory <- file.path(working_directory, "dimensions")
 data_directory <- file.path(working_directory, "datalog")
+dataset_folder_root <- file.path(working_directory, "datasets")
+dir.create(dataset_folder_root, showWarnings = FALSE)
+
 
 ##################################################################
-# Define functions
-# convert datalog to datra frame
+# FUNCTIONS
+# Convert datalog file to data frame
 convert_datalog_to_dataframe <- function() {
   file_list <- list.files(data_directory)
   data_log <- as.data.frame(str_split_fixed(file_list, "__", 4), stringsAsFactors=FALSE)
