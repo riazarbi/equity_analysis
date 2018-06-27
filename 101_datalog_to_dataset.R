@@ -9,7 +9,6 @@ View(data_log)
 # WHOSE TEXT STRINGS ARE NOT WELL FORMED.
 
 unique(data_log$source)
-unique(data_log$data_type)
 unique(data_log$data_label)
 
 ###########################################################################################################################################
@@ -23,7 +22,9 @@ dataset_folder <- file.path(dataset_folder_root, dataset)
 dir.create(dataset_folder, showWarnings = FALSE)
 
 # Read in new log data
+# Filter the log to show just market data files
 market_data_log <- dplyr::filter(data_log, grepl(dataset, data_type))
+View(market_data_log)
 market_data_log$ticker <- str_split_fixed(market_data_log$data_label, "__", 4)[,2]
 market_data_log$ticker <- tools::file_path_sans_ext(market_data_log$ticker)
 market_data_log$ticker <- paste(str_split_fixed(market_data_log$ticker, " ", 3)[,1], str_split_fixed(market_data_log$ticker, " ", 3)[,2])

@@ -1,8 +1,3 @@
-# LETS BENCHMARK HOW LONG SOMETHING BIG TAKES
-# ALL JSE CONSTITUENTS BACK TO 2000
-# 100 FIELDS
-# DAILY
-
 # Log the time taken for the script
 begin <- Sys.time()
 
@@ -28,16 +23,12 @@ get_file_list <- function(
                           source_substring, 
                           data_type_substring, 
                           data_label_substring) 
-{  
+
+  {  
   file_list <- list.files(data_directory)
   data_log <- as.data.frame(str_split_fixed(file_list, "__", 4), stringsAsFactors=FALSE)
   colnames(data_log) <- c("timestamp", "source", "data_type", "data_label")
   data_log$filename <- file_list
-  
-  #timestamp_days_age_limit <- timestamp_days_age_limit * 8640000000
-  #timestamp_days_age_limit <- as.numeric(as.POSIXct(Sys.time()))*10^5 - timestamp_days_age_limit
-
-  #data_log <- dplyr::filter(data_log, timestamp >= timestamp_days_age_limit)
   data_log <- dplyr::filter(data_log, grepl(source_substring,source))
   data_log <- dplyr::filter(data_log, grepl(data_type_substring, data_type))
   data_log <- dplyr::filter(data_log, grepl(data_label_substring, data_label))
@@ -59,10 +50,9 @@ data_directory <- file.path(working_directory, "datalog")
 dir.create(data_directory, showWarnings = FALSE)
 
 # Define dates and create a date dimension
-# Periodicity is monthly
+# Periodicity is monthly but you can chosse any periodicity you like
 today <- Sys.Date()
 start_date <- as.Date("1960-01-31")
-
 # Create a date dimension, save to file
 dates <- seq.Date(start_date, today, by = "month")
 dates_file <- file.path(dimensions_directory, "dates.csv")
@@ -106,6 +96,13 @@ print(end - smallbegin)
 print("")
 
 #######################################################################################
+# THE ORIGIN DATASET FOR THIS PLATFORM IS THE TICKER INDEX. 
+# WE QUERY INDEX MEMBERSHIP FOR A RANGE OF DATES WE WANT TO BACKTEST.
+# THEN WE RUN OTHER CODE TO PULL ATTRIBUTES OF THOSE INDEX MEMBERS THAT WE CAN USE IN 
+# PREDICTING PERFORMANCE OF THOSE MEMBERS OVER TIME
+# FUNDAMENTALLY WE ARE INTERESTED IN ASSESSING WHETHER A PARTICULAR SORTING RULE, 
+# BASED ON THOSE ATTRIBUTES, HAS EXPLANATORY VALUE IN PREDICTING PRICE PERFORMANCE
+
 print("################################")
 print("Querying constituents for 20 years since present")
 smallbegin <- Sys.time()
@@ -121,7 +118,7 @@ while (index_iter <= length(indexes)) {
   index_iter <- index_iter + 1
   print(the_index_ticker)
   # Date loop starts here
-  date_iter <- length(dates) - 60
+  date_iter <- length(dates) - 240
   while(date_iter <= length(dates)) {
     the_date <- (gsub("-", "", dates[date_iter]))  
     date_iter <- date_iter + 1
@@ -205,7 +202,7 @@ smallbegin <- Sys.time()
 
 # the actual query
 metadata <- bdp(tickers, metadata_fields)
-View(metadata)
+#View(metadata)
 # Defining the filename parameters for logging
 data_source <- "bloomberg"
 query <- metadata
@@ -259,7 +256,8 @@ while (ticker_iter <= length(tickers)) {
     query <- marketdata[[marketdata_iter]]
     name <- names(marketdata[marketdata_iter])
     data_type <- "ticker_market_data" 
-    data_identifier <- paste(the_date, name, sep = "__")
+    #data_identifier <- paste(the_date, name, sep = "__")
+    data_identifier <- name
     file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
     file_string <- paste(file_string, ".csv", sep = "")
     save_file <- file.path(data_directory, file_string)
@@ -334,7 +332,8 @@ while (ISIN_iter <= length(ISINs)) {
     fundamental_fields_iter <- endfield + 1
   
     # Now run the query on chunked fields
-    opt <- c("periodicitySelection"="MONTHLY", "currency"="ZAR")
+    opt <- c(#"periodicitySelection"="MONTHLY", # removed periodicity because we now have compaction so might as well get the exact date something changes 
+             "currency"="ZAR")
     fundamentaldata <- bdh(securities = ISINs[startISIN:endISIN],
                        fields = fundamental_fields[startfield:endfield],
                        start.date = start_date,
@@ -352,7 +351,8 @@ while (ISIN_iter <= length(ISINs)) {
       query <- fundamentaldata[[fundamentaldata_iter]]
       name <- names(fundamentaldata[fundamentaldata_iter])
       data_type <- "ticker_fundamental_data" 
-      data_identifier <- paste(the_date, name, sep = "__")
+      #data_identifier <- paste(the_date, name, sep = "__")
+      data_identifier <- name
       file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
       file_string <- paste(file_string, ".csv", sep = "")
       save_file <- file.path(data_directory, file_string)
