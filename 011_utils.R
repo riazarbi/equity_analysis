@@ -19,8 +19,10 @@ convert_datalog_to_dataframe <- function() {
   file_list <- list.files(data_directory)
   data_log <- as.data.frame(str_split_fixed(file_list, "__", 4), stringsAsFactors=FALSE)
   colnames(data_log) <- c("timestamp", "source", "data_type", "data_label")
+  data_log$data_label <- tools::file_path_sans_ext(data_log$data_label)
   data_log$filename <- file_list
   return(data_log)
+  
 }
 
 # filter datalog
