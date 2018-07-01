@@ -48,22 +48,26 @@ for (i in 1:length(tickers)) {
   if (nrow(data_files) >=2) {
     for (j in 2:nrow(data_files)-1) {
       table_data <- read_csv(paste("datalog", data_files$filename[j], sep = "/"), col_types = cols(.default = "d", date = "c"))
-      table_data$timestamp <- data_files$timestamp[j]
-      table_data$source <- data_files$source[j]
-      table_data <- table_data %>% gather(metric, value, -timestamp, -source, -date)
+      if (nrow(table_data >= 1)) {
+        table_data$timestamp <- data_files$timestamp[j]
+        table_data$source <- data_files$source[j]
+        table_data <- table_data %>% gather(metric, value, -timestamp, -source, -date)
+      }
       all_data <- bind_rows(all_data, table_data)
       all_data <- all_data %>% drop_na()
       
     }
     
   }
+
   #all_data <- compact_log(all_data)
   persistent_storage <- file.path(dataset_folder, paste(table_name, "csv", sep = "."))
   
   if (file.exists(persistent_storage)) {
     persistent_data  <- read_csv(persistent_storage, col_types = cols(.default = "c", value = "d"))
     all_data <- bind_rows(all_data, persistent_data)
-    all_data <- compact_log(all_data)
+    #all_data <- compact_log(all_data)
+    
   }
   write_csv(all_data, persistent_storage, append = FALSE)
   print(paste("Wrote table", table_name, "to disk.", 
