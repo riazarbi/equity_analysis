@@ -1,3 +1,4 @@
+
 # LOG COMPACTION 
 
 # for two dates, if the value, source, ticker and metric are the same, drop the later date.
