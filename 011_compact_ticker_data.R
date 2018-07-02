@@ -1,5 +1,7 @@
-
 # LOG COMPACTION 
+
+# This function expects to be fed a dataframe with the following columns:
+# timestamp, date, source, metric, value
 
 # for two dates, if the value, source, ticker and metric are the same, drop the later date.
 # what about timestamps? there will be duplicates every time we pull. 
