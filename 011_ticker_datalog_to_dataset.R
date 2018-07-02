@@ -49,7 +49,7 @@ ticker_datalog_to_dataset <- function(dataset) {
           # Compact the dataframe by excluding repetitive data
           message <- paste(i, "/", number_of_tickers, table_name, "Compacting data               ", sep=" ")
           cat("\r", message)
-          all_data <- compact_log(all_data)
+          all_data <- compact_dataset(all_data)
         }
       }
     }
@@ -66,7 +66,7 @@ ticker_datalog_to_dataset <- function(dataset) {
       # Compact the merged dataframe to exlude repetitive data
       # Note: this for any data that has not changed, this has the effect of
       # Updating the timestamp to reflect when last updated
-      all_data <- compact_log(all_data)
+      all_data <- compact_dataset(all_data)
     }
     
     # Finally, write dataframe to disk

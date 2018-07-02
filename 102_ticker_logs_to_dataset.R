@@ -2,7 +2,6 @@
 begin <- Sys.time()
 
 source('011_utils.R')
-source('011_compact_ticker_data.R')
 source("011_ticker_datalog_to_dataset.R")
 
 # Create a dataframe of data log files
