@@ -1,8 +1,7 @@
-
-begin <- Sys.time()
-
 source('011_utils.R')
 source("011_ticker_datalog_to_dataset.R")
+
+begin <- Sys.time()
 
 # Create a dataframe of data log files
 data_log <- convert_datalog_to_dataframe()

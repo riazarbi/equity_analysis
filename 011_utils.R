@@ -1,3 +1,5 @@
+# Clear environment
+rm(list=ls())
 
 # Libraries
 library(tidyverse)
@@ -85,14 +87,14 @@ compact_dataset <- function(dataframe) {
   
   # Drop old timestamps of duplicate data
   timestamp_filtered <- dataframe %>% 
-    mutate(key=paste(date, value, source, sep = "|")) %>%
+    mutate(key=paste(date, metric, value, source, sep = "|")) %>%
     arrange(desc(key)) %>%
     filter(key != lag(key, default="0")) %>% 
     select(-key)
   
   # Drop row where the data doesn't change from day to day
   compact_data <- timestamp_filtered %>% 
-    mutate(key=paste(value, source, sep = "|")) %>%
+    mutate(key=paste(value, metric, source, sep = "|")) %>%
     arrange(date) %>%
     filter(key != lag(key, default="0")) %>% 
     select(-key)
