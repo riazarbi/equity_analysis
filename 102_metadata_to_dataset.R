@@ -7,7 +7,7 @@ begin <- Sys.time()
 data_log <- convert_datalog_to_dataframe()
 
 # Prefilter the datalog and delete logfiles
-#data_log <- clean_data_log(data_log)
+data_log <- clean_data_log(data_log)
 # TO DO: NEED TO DEVELOP AUTOMATIC FILTERING, WHERE YOU OMIT LOGFILES 
 # WHOSE TEXT STRINGS ARE NOT WELL FORMED
 
@@ -58,15 +58,10 @@ if(nrow(filtered_data_log > 1)) {
 persistent_storage <- file.path(dataset_folder, paste(dataset, "csv", sep = "."))
   # If ticker does exist, merge new data with esixting dataset
 if (file.exists(persistent_storage)) {
-  #message <- paste(i, "/", number_of_tickers, table_name, "Merging data               ", sep=" ")
-  #cat("\r", message)
   # Read in existing dataset
   persistent_data  <- read_csv(persistent_storage, col_types = cols(.default = "c"))
   # Bind the two datasets
   all_data <- bind_rows(all_data, persistent_data)
-  # Compact the merged dataframe to exlude repetitive data
-  # Note: this for any data that has not changed, this has the effect of
-  # Updating the timestamp to reflect when last updated
   }
     
 # Keep only the most recent timestamp
