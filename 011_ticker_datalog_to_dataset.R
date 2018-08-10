@@ -19,7 +19,8 @@ ticker_datalog_to_dataset <- function(dataset) {
     data_files <- dplyr::filter(filtered_data_log, grepl(tickers[i],data_label))
     # build a master dataframe
     # read in the first data file
-    all_data <- read_csv(paste("datalog", data_files$filename[1], sep = "/"), col_types = cols(.default = "d", date = "c"))
+    all_data <- read_csv(paste("datalog", data_files$filename[1], sep = "/"), 
+                         col_types = cols(.default = "d", date = "c"))
     # Check if the data has any rows
     if (nrow(all_data) >= 1) {
       # add timestamp ID and source
