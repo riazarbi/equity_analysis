@@ -134,9 +134,7 @@ for (i in 1:length(metadata$ticker)){
   ticker_data <- dplyr::filter(ticker_data, metric %in% metrics)
   # Dropping dates that are after the max_date
   ticker_data <- dplyr::filter(ticker_data, date <= end_backtest)
-  # Cast metadata into flatfile form
-  ticker_data <- reshape2::dcast(ticker_data, date + timestamp + source ~ metric)
-  # append ticker flatfile to list
+  # append ticker datasets to list
   test_data[[ticker]] <- ticker_data
   }
 }
@@ -194,18 +192,13 @@ execution_date <- train[24]
 # dataframe. In plain language, it gets the most recent 
 # ticker list for a given backtest date.
 index_members <- (constituent_list %>%
-                  filter( date <=backtest_date) %>%
+                  filter( date <= execution_date) %>%
                   filter( date == max(date)))
 
-# Now we create an execution dataset
-# CLEANING
-# 1. LOOKAHEAD BIAS: Drop any row entries after execution date 
-algo_data <- lapply(test_data, 
-                             function(x) 
-                               filter(x, date <= execution_date))
-# 2. SURVIVORSHIP BIAS: Subset tickers to last published
+
+# 1. SURVIVORSHIP BIAS: Subset tickers to last published
 # constituent list
-algo_data <- algo_data[names(algo_data) %in% index_members$ticker]
+algo_data <- test_data[names(test_data) %in% index_members$ticker]
 # Check that constituent memebers and algo members are itentical
 setdiff((index_members$ticker), names(algo_data))
 setdiff(names(algo_data), (index_members$ticker))
@@ -213,15 +206,53 @@ setdiff(names(algo_data), (index_members$ticker))
 # To eliminate survivorship bias
 setdiff(names(test_data), names(algo_data))
 # How many constituents are we looking at now?
+length(test_data)
 length(algo_data)
-# 2. Drop empty dataframes
-algo_data <- algo_data[sapply(algo_data, function(x) (dim(x)[1]) > 0)]
+
+# 2. ISSUE: DROP TIMESTAMP DUPLICATION
+# NB NOT DOUBLE CHECKED YET - MAKE SURE THIS WORKS
+
+algo_data <- lapply(algo_data, 
+                   function(x) 
+                     mutate(x, key=paste(date, metric, source, sep = "|")) %>%
+                     arrange(desc(key)) %>%
+                     filter(key != lag(key, default="0")) %>% 
+                     select(-key))
+# Get some object sizes
+print(paste("Backtest dataset object size after dropping duplicates ", 
+            format(object.size(algo_data), units="auto", standard = "IEC")))
+# NOTE: Not sure why this is such a big difference. There shouldn't be many different 
+# values. Compacting isn't working I think.
+
+# 3. Cast ticker data into FLATFILE form
+algo_data <- sapply(algo_data, 
+                              function(x)
+                     x %>% reshape2::dcast(date + timestamp + source ~ metric))
+# 3. LOOKAHEAD BIAS: Drop any row entries after execution date 
+algo_data <- lapply(algo_data, 
+                             function(x) 
+                               (filter(x, date <= execution_date)))
+# 4. Drop empty dataframes
+algo_data <- algo_data[sapply(algo_data, 
+                              function(x) (dim(x)[1]) > 0)]
 setdiff(names(test_data), names(algo_data))
-# 3. Verify no look-ahead data
+# 5. Verify no look-ahead data
 execution_date
-max(unlist(lapply(algo_data, function(x) max(x$date))))
-# 4. Drop tickers with completely missing columns
-# 5. Fill values up using https://tidyr.tidyverse.org/reference/fill.html
+max(unlist(lapply(algo_data, 
+                  function(x) max(x$date))))
+# 6. Drop any missing columns
+not_all_na <- function(x) {!all(is.na(x))}
+algo_data <- sapply(algo_data, 
+                         function(x) x %>% select_if(not_all_na))
+############# HERE I AM #################
+# 7. Fill values up using https://tidyr.tidyverse.org/reference/fill.html
+# fill function
+# sorting constituents descending
+ascending <- algo_data %>% arrange(date)
+filled <- fill(ascending, names(ascending))
+filled <- filled %>% arrange(desc(date))
+View(filtered)
+View(filled)
 
 # When computing excess return, we should use
 # a JALSH
