@@ -119,7 +119,7 @@ while (index_iter <= length(indexes)) {
   index_iter <- index_iter + 1
   print(the_index_ticker)
   # Date loop starts here
-  date_iter <- length(dates) - 240
+  date_iter <- length(dates) - 120
   while(date_iter <= length(dates)) {
     the_date <- (gsub("-", "", dates[date_iter]))  
     date_iter <- date_iter + 1
@@ -161,8 +161,6 @@ smallbegin <- Sys.time()
 
 # Filter the data log to just look at bloomberg constituent lists
 file_list <- get_file_list("bloomberg", "constituent_list", "*")
-View(file_list)
-file <- file.path(data_directory, file_list[1])
 
 # Open each file and concatenate
 for (file in file_list) {
@@ -230,6 +228,18 @@ print("Time Elapsed for this section:")
 print(end - smallbegin)
 print("")
 
+#####################################################################################
+
+# NEED TO BUILD IN MULTI-CURRENCY SUPPORT
+# BUILD UNIQUE TICKER LIST; WITH A CURRENCY COLUMN
+# THEN SPLIT DATAFRAMES INTO CURRENCY GROUPS
+# AND RUN BELOW ON EACH CURRECNY IN TURN
+# WHICH PROBABLY MEANS WRAP THE BELOW INTO FUNCTIONS
+
+# AT THE MOMENT I'M JUST RUNNING THE SCRIPT TWICE, ONCE FOR US STOCKS AND ONCE FOR ZA 
+# STOCKS, BUT THIS IS REALLY BIRTTLE BECAUSE I HAVE TO CHANGE THE CURRENCY MANUALLY AND
+# CLEAN OUT THE DATALOG BEFORE RUNNING.
+
 #######################################################################################
 print("################################")
 print("Querying market data for unique tickers")
@@ -248,7 +258,7 @@ while (ticker_iter <= length(tickers)) {
   ticker_iter <- endticker + 1
 
   # the actual query
-  opt <- c("currency"="ZAR")
+  opt <- c("currency"="USD")
   marketdata <- bdh(securities = tickers[startticker:endticker],
            fields = market_fields,
            start.date = start_date,
@@ -341,7 +351,7 @@ while (ISIN_iter <= length(ISINs)) {
   
     # Now run the query on chunked fields
     opt <- c(#"periodicitySelection"="MONTHLY", # removed periodicity because we now have compaction so might as well get the exact date something changes 
-             "currency"="ZAR")
+             "currency"="USD")
     fundamentaldata <- bdh(securities = ISINs[startISIN:endISIN],
                        fields = fundamental_fields[startfield:endfield],
                        start.date = start_date,
