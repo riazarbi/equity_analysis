@@ -1,13 +1,12 @@
-
-# Log the time taken for the script
-begin <- Sys.time()
-
 #######################################################################################
 print("################################")
 print("Loading libraries")
 
 # Clear environment
 rm(list=ls())
+
+# Log the time taken for the script
+begin <- Sys.time()
 
 # Load libraries
 library(tidyverse)
