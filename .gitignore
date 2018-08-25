@@ -3,8 +3,6 @@ datalog/*
 datasets/*
 #dimensions/*
 !datalog/000000000000000__source__data_type__data_identifier.csv
-!dimensions/sample.csv
-
 
 # R TEMPLATE
 # History files
@@ -25,7 +23,8 @@ datasets/*
 
 # RStudio files
 .Rproj.user/
-*.Rproj
+#keep the Rproj file. Look innocuous
+#*.Rproj
 
 # produced vignettes
 vignettes/*.html

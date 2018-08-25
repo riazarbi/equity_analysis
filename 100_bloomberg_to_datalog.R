@@ -85,10 +85,11 @@ metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "
 metadata_fields <- metadata_fields[,1]
 rm(metadata_fields_file)
 
+### DON'T THINK YOU ACTUALLY NEED THIS
 # Read in the tickers field dimension
-tickers_file <- file.path(dimensions_directory, "tickers.csv")
-tickers <- read.csv(tickers_file, header = FALSE, colClasses = "character")
-tickers
+#tickers_file <- file.path(dimensions_directory, "tickers.csv")
+#tickers <- read.csv(tickers_file, header = FALSE, colClasses = "character")
+#tickers
 
 # Print time elapsed
 end <- Sys.time()
@@ -346,8 +347,7 @@ while (ISIN_iter <= length(ISINs)) {
     fundamentaldata_iter <- 1
     while (fundamentaldata_iter <= length(fundamentaldata)) {
       # Defining the filename parameters for logging
-      timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^
-        5
+      timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
       data_source <- "bloomberg"
       query <- fundamentaldata[[fundamentaldata_iter]]
       name <- names(fundamentaldata[fundamentaldata_iter])
@@ -379,8 +379,3 @@ print("Total Script Run Time")
 print(end - begin)
 print("############################")
 print("Script completed")
-
-# Time to pull all data for 1 month
-# Time difference of 1.72415 mins
-# Time to pull 15 years
-# Time difference of 12.86575 mins
