@@ -157,17 +157,24 @@ smallbegin <- Sys.time()
 # the data log and compiles a unique ticker list from
 # their contents
 
+# BUG: If a constituents file is empty, then the whole thing breaks
+
 # Filter the data log to just look at bloomberg constituent lists
 file_list <- get_file_list("bloomberg", "constituent_list", "*")
 View(file_list)
+file <- file.path(data_directory, file_list[1])
+
 # Open each file and concatenate
 for (file in file_list) {
   file <- file.path(data_directory, file)
-  if(!exists("constituents_merge")) {
+  if (nrow(read_csv(file)) <= 1) {
+    print("Empty file. Deleting")
+    file.remove(file)
+  }
+  else if (!exists("constituents_merge")) {
     constituents_merge <- suppressMessages(read_csv(file))
   }
-  
-  if(exists("constituents_merge")) {
+  else if (exists("constituents_merge")) {
     temp_constituents_merge <- suppressMessages(read_csv(file))
     constituents_merge <- suppressMessages(bind_rows(constituents_merge, temp_constituents_merge))
     rm(temp_constituents_merge)
