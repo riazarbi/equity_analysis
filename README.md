@@ -2,6 +2,8 @@ TODO:
 
 1. Bloomberg scraper script to become currency-aware  
 2. Migrate dimensions into a parameters file; build in functionality for  other sources. Note - each source will have unique index codes, metadtaa, fundamental and market data fields, but not unique date fields. Do we need date, ISIN dimensions? ISINs is computed at runtime and date is defined by start and end.
+3. Document the features of the datalog for point-in-time datasets, total eraseablity and portability
+
 
 # Technical Document: A fully replicable Equity backtesting workflow
 
