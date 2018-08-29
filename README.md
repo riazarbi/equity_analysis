@@ -1,8 +1,8 @@
-# INTRODUCTORY NOTE
-This project aims to build out a complete analysis pipeline for equity analysis. It encompasses the full chain from acquisition all the way to visualization.
+# Introduction
+This paper provides a working example of an equity backtest that has been conducted in R according to the principoles of transparency amd reproducibility. It provides working code to collect, store, clean, filter, analyse and present fundamental and market data in a way that is totally automated and modifiable. The companion git repository to this paper can be cloned and, with minimal modifications, new backtests can be created that avoid the pitfalls of common statistical biases. It is hoped that this work will make quality research into the corss section of equity returns more accessible to practitioners.
 
-# To Do
-Move the entire workflow from a files-and-folders data structure to a log-centric structure. 
+# Code Flow
+The scripts in this repostory are written in a procedural manner. That is, it is intended that scripts are executed noninteractively and that the code logic flows down the file in a linear manner wherever possible. This sometimes 
 
 All raw data will be saved to a log directory called 'data'. The actual files in the log directory will be flat data tables; the identifying attributes of the data will be saved to the filename. The filename separator will be two underscores (ie \__)
 
@@ -14,6 +14,8 @@ All raw data will be saved to a log directory called 'data'. The actual files in
 A sample filename is `1029384859940__BLOOMBERG__constituent_list_data__20121001_TOP40`
 
 The log will be searchable by filtering the filename.
+
+Include a Dockerfile or Docker pull command
 
 __A CONCERN__
 File path length limitations. If I hit this problem, I'll build a key-value store that relates the timestamp (unique) to the filename and rename all files with just their timestamps and throw the filename in the key-value store. Adds another layer but inevitable. Another option is to move the whole framework (including data) to JSON.
@@ -58,7 +60,7 @@ __To preserve the principle of reproducibility, any customizations in your fork 
 ## Principles
 This project favours transparency and customizability over ease of use. For a sophisticated, easy to use backtesting environment see [Zipline](https://github.com/quantopian/zipline) or [QSTrader](https://github.com/mhallsmoore/qstrader). 
 
-This project aims to be - 
+This project aims to be -
 - Totally transparent in the flow and transformation of data.
 - Low-level in terms of dependencies.
 - Highly customizable.

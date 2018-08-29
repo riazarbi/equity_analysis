@@ -65,7 +65,7 @@ rm(dates_file)
 #indexes <- read.csv(indexes_file, header = FALSE, colClasses = "character")
 #indexes <- indexes[,1]
 #rm(indexes_file)
-indexes <- c("SPX", "RTY")
+indexes <- c("JALSH", "TOP40")
 
 # Read in the fundamental data fields dimension
 fundamental_fields_file <- file.path(dimensions_directory, "fundamental_fields.csv")
@@ -120,7 +120,7 @@ while (index_iter <= length(indexes)) {
   index_iter <- index_iter + 1
   print(the_index_ticker)
   # Date loop starts here
-  date_iter <- length(dates) - 2
+  date_iter <- length(dates) - 6
   while(date_iter <= length(dates)) {
     the_date <- (gsub("-", "", dates[date_iter]))  
     date_iter <- date_iter + 1
@@ -208,10 +208,8 @@ smallbegin <- Sys.time()
 # It returns a flat data frame which is saved to file
 
 # the actual query
-#metadata <- bdp("AAPL US Equity", metadata_fields)
-metadata <- bdp("AAPL US Equity", "PX_LAST")
-
-View(metadata)
+metadata <- bdp(tickers, metadata_fields)
+#View(metadata)
 # Defining the filename parameters for logging
 data_source <- "bloomberg"
 query <- metadata
@@ -261,7 +259,7 @@ while (ticker_iter <= length(tickers)) {
   ticker_iter <- endticker + 1
 
   # the actual query
-  opt <- c("currency"="USD")
+  opt <- c("currency"="ZAR")
   marketdata <- bdh(securities = tickers[startticker:endticker],
            fields = market_fields,
            start.date = start_date,
@@ -354,7 +352,7 @@ while (ISIN_iter <= length(ISINs)) {
   
     # Now run the query on chunked fields
     opt <- c(#"periodicitySelection"="MONTHLY", # removed periodicity because we now have compaction so might as well get the exact date something changes 
-             "currency"="USD")
+             "currency"="ZAR")
     fundamentaldata <- bdh(securities = ISINs[startISIN:endISIN],
                        fields = fundamental_fields[startfield:endfield],
                        start.date = start_date,
