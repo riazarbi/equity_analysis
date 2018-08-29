@@ -1,70 +1,25 @@
-# Introduction
-This paper provides a working example of an equity backtest that has been conducted in R according to the principoles of transparency amd reproducibility. It provides working code to collect, store, clean, filter, analyse and present fundamental and market data in a way that is totally automated and modifiable. The companion git repository to this paper can be cloned and, with minimal modifications, new backtests can be created that avoid the pitfalls of common statistical biases. It is hoped that this work will make quality research into the corss section of equity returns more accessible to practitioners.
+TODO:
 
-# Code Flow
-The scripts in this repostory are written in a procedural manner. That is, it is intended that scripts are executed noninteractively and that the code logic flows down the file in a linear manner wherever possible. This sometimes 
+1. Bloomberg scraper script to become currency-aware  
+2. Migrate dimensions into a parameters file; build in functionality for  other sources. Note - each source will have unique index codes, metadtaa, fundamental and market data fields, but not unique date fields. Do we need date, ISIN dimensions? ISINs is computed at runtime and date is defined by start and end.
 
-All raw data will be saved to a log directory called 'data'. The actual files in the log directory will be flat data tables; the identifying attributes of the data will be saved to the filename. The filename separator will be two underscores (ie \__)
-
-* timestamp (integer-represented UNIX epoch time)
-* source (BLOOMBERG, REUTERS)
-* data type (constituent list data, ticker market data, ticker fundamental data, metadata array)
-* data label (20120101_TOP40; 20120101_ANG SJ) 
-
-A sample filename is `1029384859940__BLOOMBERG__constituent_list_data__20121001_TOP40`
-
-The log will be searchable by filtering the filename.
-
-Include a Dockerfile or Docker pull command
-
-__A CONCERN__
-File path length limitations. If I hit this problem, I'll build a key-value store that relates the timestamp (unique) to the filename and rename all files with just their timestamps and throw the filename in the key-value store. Adds another layer but inevitable. Another option is to move the whole framework (including data) to JSON.
-
-__MILESTONES__
-The first iteration will just log actual data.
-Second iteration will log dimensions as well and let us version our dimension queries. This may require addition of another parameter in the filename schema, or it may be rolled into source.
-Third iteration will log data transformations and aggregation as well.
-The fundamental principle is that you should be able to replay everything from the log directory.
-
-__OTHER ISSUES__
-Checksumming, bit rot, indexing, all the database problems. Maybe move to Apache Kafka at some point. But this adds yet more overhead!
-s
-
-#####################################################################
-# WHAT FOLLOWS BELOW IS MY OLD TECHNICAL DOCUMENT FOR THE FIRST ITERATION OF THIS PROJECT. 
-IT IS ALL INCORRECT NOW, BUT SHOULD GIVE YOU AN IDEA OF THE OBJECTIVES OF THE PROJECT
-######################################################################
 # Technical Document: A fully replicable Equity backtesting workflow
 
 _Created by Riaz Arbi in fulfilment of the dissertation requirements for an MSc in Data Science at the University of Cape Town_
 
-## Project Purpose
+__This codebase is being heavily modified weekly. You should assume that the structure and functionality will vary significantly in the immediate future.__  
 
-The purpose of this project is to build out a fully reproducible, semi-automated workflow for the backtesting and exploratory data analysis of equity investment strategies. When complete, it should be possible for a researcher to clone this repository and, with minimal effort, conduct statistically robust investment strategy backtests on any subset of global traded common stock instruments.
-
-At present, it is not common practice to provide code when publishing academic research on the cross section of common stock returns. This leads to considerable confusion when fellow researchers attempt replication of results - which is a key requirement for the advancement of scientific knowledge. This problem is further compounded when replication attempts fail to provide their backtesting codebases - in this 'double failure' it is not clear whether the orginal paper or the replicated paper (or both) have made errors in their analysis!
-
-This problem is merely technical; there exist mature, freely available software that facilitates transparency in data manipulation and statistical analysis. This codebase provides a template for glueing together these tools into an end-to-end workflow.
-
-# Description
-This is __not__ a software package. It is a collection of scripts that collectively comprise a template workflow to conduct statistically rigorous backtesting of equity investment strategies. As such, it does not present itself to a user as a `command -option [argument]` command-line program or GUI. 
-
-Rather, a user manually invokes scripts in sequence as and when appropriate. In its unmodified form, this codebase should provide all that is necessary to perform a simple 'batteries included' backtest of an equity investment strategy.
-
-It is anticipated that the user's operating system will conduct the automated aspects of the workflow using `cron` and run custom interactive scripts in `RStudio Server` or `Jupyter` browser-based environments.
-
-To ensure stability in end-user use, it is recommended that a user forks this codebase at the start of their research project. This will ensure that future changes to this repo do not break functionality that exists at a particular point in time.
-
-__To preserve the principle of reproducibility, any customizations in your fork should be documented as a complete `bash`, `python` or `R` script so that a replicator can easily transform a base repo into your customized, working environment.__
+# Project Purpose
+This paper provides a working example of an equity backtest that has been conducted in R according to the principles of transparency and reproducability in research. It provides working code to conduct the full analysis chain of equity backtesting in a way that is totally automated and modifiable. The companion git repository to this paper can be cloned and, with minimal modifications, new backtests can be created that avoid the pitfalls of common statistical biases. It is hoped that this work will make quality research into the cross section of equity returns more accessible to practitioners.
 
 ## Principles
 This project favours transparency and customizability over ease of use. For a sophisticated, easy to use backtesting environment see [Zipline](https://github.com/quantopian/zipline) or [QSTrader](https://github.com/mhallsmoore/qstrader). 
 
-This project aims to be -
-- Totally transparent in the flow and transformation of data.
-- Low-level in terms of dependencies.
-- Highly customizable.
-- Easy to set up in any environment.
+This project aims to be -  
+- Totally transparent in the flow and transformation of data  
+- Low-level in terms of dependencies  
+- Highly customizable  
+- Easy to set up in any environment  
 
 ## Intended Audience
 
@@ -76,73 +31,71 @@ This project should be useful to:
 -  Equity researchers looking for a bridge between Excel-based research and `R` or `python`.
 
 ## Included Data
-This repository __does not include any equity data__, but it does include template Excel workbooks that contain the necessary VBA code to automatically extract data from data vendors. It is assumed that the user will acquire data using the Excel-VBA based tools which have been included in this repository. This will only be possible if a user has access to the relevant data services - namely Bloomberg, DataStream or iNet.
+This repository __does not include any equity data__, but it does include working scripts to automatically extract data from data vendors, and to save that data on a well-formed way. It is assumed that the user will acquire data using the scripts which have been included in this repository. This will only be possible if a user has access to the relevant data services - namely Bloomberg, DataStream or iNet.
 
-# Documentation
-This `README.md` file contains a broad overview of the philosophy, principles and functionality of this project. The codebase is a sequential series of scripts; all code is clearly commented for transparency.
+### The dimensions directory
 
-## Setup
-__This codebase is being heavily modified weekly. You should assume that the structure and functionality will vary significantly in the immediate future.__  
+The dimensions directory contains dimensions relevant to the backtest. These dimensions are organized on a per-file basis. For instance, the `fundamental_fields.csv` file contains a list of fundamental Bloomberg fields salient to the backtest.
 
-1. Fork this repo to your own profile. This is so that you can commit to your own repo as you customize your environment down the line.  
-2. Assuming you have a fully configured environment, create a new user to house all your backtesting research. If you do not have a fully configured environment yet, use my [serversetup](https://github.com/riazarbi/serversetup) scripts to automatically set up a correctly configured server.  
-3. Clone your newly forked repo into the empty /home/<user> directory.  
-4. Navigate to the directory `~/backtest_workflow/data_preparation` and execute `python -m folder_structure_builder.py`. This will build out the `~/data_drop` and `~/backtest_data` directories with the appropriate directory structure.
+# Replication and Extension to other use cases
 
-The directory structure below is a representation of the `/home/<user>` directory once `python -m folder_structure_builder.py` has been run.
+To replicate the results of this paper, simply clone this git repository to your computer, and run each script in sequence. 
 
-```bash
-├── backtest_workflow
-│  ├── data_preparation
-│  ├── backtests
-│  ├── visualizations
-│  └── README.md
-├── data
-│  ├── raw_archives
-│  ├── raw
-|  ├── merged
-|  ├── clean
-|  └── db.sqlite
-└── data_drop
-```
+To replicate the results of this paper on another equity index, change the 'indexes.csv' dimension in the `dimensions` directory to another Bloomberg index code.
 
-## Data Flow
-This section assumes that you have set up your server using [serversetup](https://github.com/riazarbi/serversetup), cloned the repo and run the `folder_structure_builder.py` script.
+To alter the algorithm..... TBC.
 
-### Pre-Backtest Data Flow
-All data pre-preparation scripts are housed in the `data_preparation` directory. These scripts manipulate data in the `workflow_data` directory, and it is expected that the `workflow_data` files are used as a 'cardinal data source' by downstream backtesting and visualization projects.
+# Code flow
+The scripts in this repository are written in a procedural manner. That is, it is intended that parameters are set prior to execution and that the scripts are executed noninteractively. The code logic flows down each script in a linear manner wherever possible. This style facilitates the auditing of how data is manipulated as it flows through the code logic.
 
-The pre-backtest data flow follows a clearly defined, sequential series of steps. In accordance with the [Unix preference for modularity](http://homepage.cs.uri.edu/~thenry/resources/unix_art/ch01s06.html), these steps are each contained in a separate script. The scripts are written in the most appropriate language for the task at hand; languages contained in this codebase include `python`, `R` and `bash`.
+It should be possible to modify these scripts to run in a scheduled, automated fashion with the assistance of a scheduling daemon such as `cron` or `anacron`.
 
-The `data_preparation` directory comes with a set of scripts to automatically pull, merge, clean and commit data from a vendor. Users are encouraged to modify or augment these scripts as they see fit. Users will benefit from adhering to the script file naming convention adopted by this project.
+## Limiting the number of code files
+Wherever possible, the code is kept in a single file. Code is split between several files when the contents of the files do not naturally run as the same execution batch. For instance, in an academic setting, data is often collected from vendors through the use of shared terminals, often situated in a library or laboratory. It does not make sense to include the data collection code with downstream processing code because downstream processing can be done on a another machine at a different time, freeing up the terminal for another user. 
 
-### Script Naming Conventions
-One can identify the sequential position of a script in the `data_prepararation` directory by the three-digit prefix code of the filename. The first digit refers to a basic step in a data preparation workflow. Basic steps are `0xx: system setup`, `1xx: data collection`, `2xx: data cleaning`, `3xx: data warehousing`.
+## Chunking
+Researchers are often limited by their computing reosurces. Most of the time, research is conducted on consumer hardware with limited amounts of RAM. To accommodate this, workloads are chunked or run sequentially to limit RAM consumption. The tradeoff is that the code is quite slow, because there are more disk reads and writes, and parallelization is not utilized fully.
 
-Substeps are context-specific and allow us to break us a monolithic workflow step into subcomponents. In general they are meant to be run one after another. That is, `20x_example.py` is a workflow step prior to `21x_example.py`.
+## Sequential list of procedures
 
-The final digit exists to indicate an logical workflow step that has been broken up for transparency. For example, `210_Bloomberg_merge.py` is logically part of the same workflow step as `211_Reuters_merge.py` - that is, it is part of the __merge__ substep in the monolithic __data cleaning__ step. However, for transparency reasons we break each source up into a separate script. This helps avoid excessively complex scripts and aids in debugging.
+1. Index, ticker market, fundamental and meta data is collected from Bloomberg via the R Rblpapi package and saved to a log directory.
+2. The logfiles are transformed into three datasets -  
+  a. Ticker market and fundamental data  
+  b. Ticker metadata  
+  c. Monthly index constituent lists  
+3. Backtest parameters are defined  
+  a. Target index  
+  b. Date range  
+  c. Salient ticker metrics  
+  d. Rebalancing periodicity  
+4. A portfolio constituent weighting criterion is defined  
+  a. For instance, "this portfolio will weight the constituents of the index according to their Price to Book ratio."  
+  b. This weighting can be any mathematical function, and can contain binary statements such as "weight the constituents equally of their price to book raito is greate than 2, otherwise weight them as zero."  
+4. A master dataset is loaded into memory containing the data relevant only to the backtest parameters  
+5. The code steps through the backtest date range in increments related to the rebalancing periodicity, computing the portfolio weights for each period and appending these weights to a two dimensional `holdings matrix` with the dimensions `ticker(i -> n)` , `date(j -> m)`, where `entry(i,j)` corresponds to the weight of `ticker(i)` in the portfolio on `date(j)`.  
+6. A `return matrix` is computed with the same dimensions as the `holdings matrix`, but with `entry(i,j)` corresponding to the total return of ticker(i) at time (j+1) / total return index of ticker(i) at time (j). That is, each `entry(i,j)` tells us the total return that ticker(i) would have in the next period.  
+7. The `holdings matrix` and `return matrix` are multipied together to compute the `periodic portfolio return` (summed column-wise), the `lifetime ticker contribution to portfolio return` (multiplied row-wise) and the `lifetime portfolio return` (sumproduct).  
+8. These returns are used to compute various risk measures, Sharpe Ratio chief among them.  
+9. The risk and return results and various matrices and backtest parameters are bundled into an .RData object that can be passed to a report generator for automated reporting.
 
-```bash
-┌───── basic workflow step
-│┌──── substep
-││┌─── substep segment number
-│││ ┌─ intuitive description
-000_description.sh
-```
+# Data flow
+The data query script saves four kinds of dataset to the `datalog` folder. These are -  
 
-### Warehousing
-This project stores all equity data in a single `SQLite` file, stored at `backtest_data/db.sqlite`. `SQLite` is [well suited](https://sqlite.org/whentouse.html) to the use case of a central data store for single-user SQL access to a structured dataset. 
+1. Index constituents for a certain date  
+2. Ticker metadata for an arbitrary list of tickers  
+3. Fundamental data for a ticker for an arbitrary date range  
+4. Market data for a ticker for an arbitrary date range  
 
-Individual backtests pull subsets of the central database and analyse the subsets. 
+The files in the `datalog` directory can be identified for their filename. The `filename` contains the following substrings, where each substring is separated by two underscores (ie `__`)  
 
-### Scheduling
-It is anticipated that, once the above workflow has been refined and tweaked, the scripts are run periodically via `cron` to ensure that new data that enters the system is automatically merged, cleaned and committed. `cron` jobs should be set using the standard `crontab -e` command. A sample `crontab` file is available at `backtest_workflow/data_preparation/010_crontab.backup`. The `crontab' file should be clearly commentated and serves as a snapshot of the scheduling of your workflow. 
+* substring1: timestamp (integer-represented UNIX epoch time)  
+* substring2:  source (eg. BLOOMBERG, REUTERS)  
+* substring3: data type (eg. constituent list data, ticker market data, ticker fundamental data, metadata array)  
+* substring4: data label (eg. 20120101_TOP40; ANG SJ) 
 
-### Backtesting
-The backtesting system runs on top of the data warehouse outlined above. Workflow-wise, all processes downstream from the `db.sqlite` creation step are housed in their own project subdirectory, with backtests going to the `~/backtest_workflow/backtests/<project_name>` subdirectory and exploratory data analysis and visualizations going to the `~/backtest_workflow/visualizations/<project_name>`. It is expected that each backtest is unique, so there are no prescriptions on the structure of these directories. Users should include a README.md file in each backtest folder to orient an auditor.
+A sample filename is `1029384859940__BLOOMBERG__constituent_list_data__20121001_TOP40.csv`
 
-In many cases, an entire backtest could be housed in a `Jupyter` notebook or `Rmd` file. This would enable the backtest construction, analysis and report generation to be housed in a single document. We include a sample Rmd backtest at `backtest_workflow/backtests/example`.
+This file naming convention allows the datalog to be searchable by a conbination of substrings. This is leveraged by the dataset builder to transform the datalog into well-formed datasets.
 
 # Development Status
 
@@ -193,4 +146,5 @@ The end goal of this project is to have a complete equity backtesting workflow b
 
 4. Maintenance
   - The user will have to periodically upload new data if this environment is to be converted into a production trading system. The Excel scrapers can easily be modified to perform incremental additons to `raw` directories but a produciton system should probably talk directly to an API using a native data vendor API.
+
 
