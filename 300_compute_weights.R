@@ -1,5 +1,5 @@
 ##################################
-#CONTEXT
+# CONTEXT
 # By the time this script runs you have scraped Bloomberg
 # and saved the data in the correct format in the datalog folder. 
 # The datalog data has been used to update the per-ticker datasets
@@ -19,13 +19,9 @@
 #Clear environment and load common functions
 rm(list=ls())
 source("011_utils.R")
+source("algorithm.R")
 
-## SET PARAMETERS
-# This section is where we set parameters for the backtest
-constituent_index <- "JALSH"
-data_source <- "bloomberg"
-market_metrics <- c()
-fundamental_metrics <- c() 
+# PROCESS THE PARAMETERS
 # Combine market and fundamental metrics
 metrics <- c(market_metrics, fundamental_metrics)
 # But if no metrics are selected, just take all possible fields
@@ -33,12 +29,6 @@ if (length(metrics)==0){
   metrics <- c(fundamental_fields, market_fields)
 }
 
-# This section sets the backtest dates
-start_backtest <- "2010-01-01"
-end_backtest <- "2016-12-31"
-periodicity <- "month"
-# And the splits
-train_test_split <- 0.8
 # Create training and testing date ranges
 dates <- seq(as.Date(start_backtest), as.Date(end_backtest), by=periodicity)
 date_split <- dates[as.integer(length(dates)*train_test_split)]
@@ -67,14 +57,20 @@ constituent_list <- dplyr::filter(constituent_list, grepl(constituent_index, ind
 max(constituent_list$date)
 min(constituent_list$date)
 # Perform the date selection
-constituent_list <- dplyr::filter(constituent_list, date >= start_backtest)
+# Make sure to include the last constituent list before the backtest date
+# otherwise the backtester won't know what the weights should be for the beginning
+# of the backtest
+first_constituent_date <- max((constituent_list %>%
+                    filter( date <= start_backtest))$date)
+constituent_list <- dplyr::filter(constituent_list, date >= first_constituent_date)
 constituent_list <- dplyr::filter(constituent_list, date <= end_backtest)
+rm(first_constituent_date)
 # Verify that the list now only contains dates in the parameter range
 max(constituent_list$date)
 end_backtest
 min(constituent_list$date)
 start_backtest
-# Issue with naming: we want to use the ticke rnames as dataframe names. 
+# Issue with naming: we want to use the ticker names as dataframe names. 
 # But the tickers all have whitespace.
 # So wereplace ticker whitepace with _  
 # so they can be legal variable names
@@ -159,6 +155,13 @@ for (i in 1:length(metadata$ticker)){
   ticker_data <- dplyr::filter(ticker_data, metric %in% metrics)
   # drop dates that are outside of the range
   ticker_data <- dplyr::filter(ticker_data, date <= end_backtest)
+  # use only the most recent timestamped value for each
+  # metric for each date
+  ticker_data <- ticker_data %>%
+                        mutate(key=paste(date, metric, source, sep = "|")) %>%
+                        arrange(desc(key)) %>%
+                        filter(key != lag(key, default="0")) %>% 
+                        select(-key, -timestamp)
   # append ticker datasets to list
   test_data[[ticker]] <- ticker_data
   rm(fundamental_filename)
@@ -169,6 +172,9 @@ for (i in 1:length(metadata$ticker)){
   rm(ticker)
 }
 rm(i)
+# CLEANUP: Drop empty dataframes
+test_data <- test_data[sapply(test_data, 
+                              function(x) (dim(x)[1]) > 0)]
 # Verify there are no dates after the backtest in
 # the test_data list
 max(unlist(lapply(test_data, function(x) max(x$date))))
@@ -179,81 +185,126 @@ setdiff(metadata$ticker, names(test_data))
 print(paste("Backtest dataset object size", 
             format(object.size(test_data), units="auto", standard = "IEC")))
 
-# Step through the backtest dates
-##############################################
-# this is wherew a for loop should start, scoring each date.
-# for (execution date in train){
-execution_date <- train[24]
 
-# Get most recent constituent members for the execution date
-index_members <- (constituent_list %>%
+# Define a function to filter the test_data into a dataset to pass to 
+# the backtester for a particular date
+get_algo_dataset <- function(execution_date) {
+    # Get most recent constituent members for the execution date
+    index_members <- (constituent_list %>%
                     filter( date <= execution_date) %>%
                     filter( date == max(date)))
-# Filter dataset to only include time-appropriate members
-algo_data <- test_data[names(test_data) %in% index_members$ticker]
-# Check that constituent members and algo members are identical
-setdiff((index_members$ticker), names(algo_data))
-setdiff(names(algo_data), (index_members$ticker))
-# Check what has been dropped from master dataset
-# to eliminate survivorship bias
-setdiff(names(test_data), names(algo_data))
-# How many constituents are we looking at now?
-length(test_data)
-length(algo_data)
-# For each ticker, drop timestamp duplication
-algo_data <- lapply(algo_data, 
-                   function(x) 
-                     mutate(x, key=paste(date, metric, source, sep = "|")) %>%
-                     arrange(desc(key)) %>%
-                     filter(key != lag(key, default="0")) %>% 
-                     select(-key))
-# Get algo_data object size
-print(paste("Backtest dataset object size after dropping duplicates ", 
-            format(object.size(algo_data), units="auto", standard = "IEC")))
-# NOTE: Not sure why this is such a big difference. There shouldn't be many different 
-# values. Compacting isn't working I think.
+    # SURVIVORSHIP BIAS: 
+    # FILTER: to only include time-appropriate index members
+    algo_data <- test_data[names(test_data) %in% index_members$ticker]
+    # CHECK: that constituent members and algo members are identical
+    setdiff((index_members$ticker), names(algo_data))
+    setdiff(names(algo_data), (index_members$ticker))
+    # CHECK: what has been dropped from master dataset?
+    setdiff(names(test_data), names(algo_data))
+    # CHECK: How many constituents are we looking at now?
+    length(test_data)
+    length(algo_data)
 
-# 3. Cast ticker data into FLATFILE form
-algo_data <- sapply(algo_data, 
+    # TRANSFORM: into FLATFILE form
+    # Why not earlier?
+    algo_data <- sapply(algo_data, 
                               function(x)
-                     x %>% reshape2::dcast(date + timestamp + source ~ metric))
-# 3. LOOKAHEAD BIAS: Drop any row entries after execution date 
-algo_data <- lapply(algo_data, 
+                         x %>% reshape2::dcast(date + source ~ metric))
+    # LOOKAHEAD BIAS: 
+    # FILTER: any row entries after execution date 
+    algo_data <- lapply(algo_data, 
                              function(x) 
                                (filter(x, date <= execution_date)))
-# 4. Drop empty dataframes
-algo_data <- algo_data[sapply(algo_data, 
+    # CLEANUP: Drop empty dataframes
+    algo_data <- algo_data[sapply(algo_data, 
                               function(x) (dim(x)[1]) > 0)]
-setdiff(names(test_data), names(algo_data))
-# 5. Verify no look-ahead data
-execution_date
-max(unlist(lapply(algo_data, 
+    setdiff(names(test_data), names(algo_data))
+
+    # CHECK: verify no look-ahead data
+    execution_date
+    max(unlist(lapply(algo_data, 
                   function(x) max(x$date))))
-# 6. Drop any missing columns
-not_all_na <- function(x) {!all(is.na(x))}
-algo_data <- sapply(algo_data, 
+    # CLEANUP: drop any missing columns
+    not_all_na <- function(x) {!all(is.na(x))}
+    algo_data <- sapply(algo_data, 
                          function(x) x %>% select_if(not_all_na))
-############# HERE I AM #################
-# 7. Fill values up using https://tidyr.tidyverse.org/reference/fill.html
-# fill function
-# sorting constituents descending
-ascending <- algo_data %>% arrange(date)
-filled <- fill(ascending, names(ascending))
-filled <- filled %>% arrange(desc(date))
-View(filtered)
-View(filled)
-
-# When computing excess return, we should use
-# a JALSH
-# b Tickers including those without data
-# c Tickers only inclusing those with complete data
-# WHICH OF ABOVE?
+    # FILL: fill NA values with last known value
+    algo_data <- lapply(algo_data, 
+                    function(x) x %>% arrange(date)
+                                  %>% fill(names(x))
+                                  %>% arrange(desc(date)))
+    # CHECK: Count number of NA values
+    # there will be some because early values don't have any data to backfill from
+    sapply(algo_data, function(x) sum(is.na(x)))
+    return(algo_data)
+}
 
 
 
-# IDEA: SET PARAMETERS AND FUNCTION, AND THEN RUN BACKTEST AND GET A BACKTEST OBJECT BACK. 
-# BACKTEST OBJECT SHOULD HAVE A WHOLE LOT OF STUFF, NOT JUST THE 
-# RETURN. 
-# WHAT?
-# RISK STUFF
-# RETURN STUFF
+# Here's how you test the backtest algorithm
+# First, re-source so any changes can be incorporated
+source("algorithm.R")
+test_target_weight <- compute_weights(get_algo_dataset(sample(train,1)))
+# Verify weights sum to 1
+sum(test_target_weight$weights)
+# Check how many consitutents there are
+nrow(test_target_weight)
+# Verify they are all unique (ie same numer as nrow)
+length(unique(test_target_weight$portfolio_members))
+
+# RUN THE ALGO ACROSS ALL THE DATA
+# remove target_weights object is it exists
+# to ensure we aren't appending to an old weight
+if (exists("target_weights")) {
+  rm(target_weights)
+}
+# Walk along the backtest dates creating ideal portfolio weights
+for (i in seq_along(train)) {  
+  # time each loop
+  begin <- Sys.time()
+  now <- train[i]
+  # Get the dataset for the particular date 
+  algo_data <- get_algo_dataset(now)
+  if (!exists("target_weights")) {
+  target_weights <- compute_weights(algo_data)
+  target_weights$date <- now
+  } else 
+  {
+    next_target_weights <- compute_weights(algo_data)
+    next_target_weights$date <- now
+    target_weights <- bind_rows(target_weights, next_target_weights)
+    rm(next_target_weights)
+  }
+  end <- Sys.time()
+  #print("Time Elapsed for this section:")
+  #print(end - begin)
+  message <- paste("Last date done: ", now, 
+                   ". Speed approximately ", as.integer(end - begin), 
+                   " seconds per iteration.                 ", sep="")
+  cat("\r", message)
+  sum(target_weights$weights)
+  
+ 
+}
+
+# Save weights and companio algorithm to datalog
+# Shared filename attributes
+timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
+data_source <- "self"
+data_type <- "backtest" 
+algorithm_name <- "cap_weighted"
+# Weights-specific filename attributes
+weights_data_identifier <- paste(algorithm_name, "_weights", sep="") 
+weights_file_string <- paste(timestamp, data_source, data_type, weights_data_identifier, sep = "__")
+weights_file_string <- paste(weights_file_string, ".csv", sep = "")
+weights_file_string <- file.path(datalog_directory, weights_file_string)
+# Algorithm-specific filename attributes
+algorithm_data_identifier <- paste(algorithm_name, "_algorithm", sep="")
+algorithm_file_string <- paste(timestamp, data_source, data_type, algorithm_data_identifier, sep = "__")
+algorithm_file_string <- paste(algorithm_file_string, ".R", sep = "")
+algorithm_file_string <- file.path(datalog_directory, algorithm_file_string)
+
+# Save the files
+write.table(target_weights, weights_file_string, row.names = FALSE, sep = ",")
+file.copy(from = "algorithm.R", to = datalog_directory, overwrite = TRUE)
+file.rename(from = file.path(datalog_directory, "algorithm.R"), to=algorithm_file_string)
