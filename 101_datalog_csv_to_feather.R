@@ -1,3 +1,6 @@
+# Clear environment
+rm(list=ls())
+
 # Read in shared functions
 source('shared_functions.R')
 

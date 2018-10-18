@@ -1,3 +1,6 @@
+# Clear environment
+rm(list=ls())
+
 source('shared_functions.R')
 #source("011_ticker_datalog_to_dataset.R")
 
@@ -5,6 +8,10 @@ begin <- Sys.time()
 
 # Start function here
 ticker_datalog_to_dataset <- function(data_log, dataset) {
+  # load libraries
+  library(foreach)
+  library(doParallel)
+  
   # Create dataset save location if it does not exist
   dataset_folder <- file.path(dataset_directory, dataset)
   dir.create(dataset_folder, showWarnings = FALSE)
@@ -20,16 +27,21 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   
   tickers <- sort(unique(filtered_data_log$data_label))
   
+  # Register a parallel processing cluster
+  n_cores <- detectCores() - 1
+  cl <- makeCluster(n_cores)
+  registerDoParallel(cl)
   
-  for (i in 1:length(tickers)) {
+  foreach(i = 1:length(tickers)) %dopar% {
+    source('shared_functions.R')
     # Define table name for the ticker
-    table_name <- str_replace_all(tickers[i],"[[:punct:]\\s]+","_")
+    table_name <- stringr::str_replace_all(tickers[i],"[[:punct:]\\s]+","_")
     # Get list of files relating to the ticker
     data_files <- dplyr::filter(filtered_data_log, grepl(tickers[i],data_label))
     
     # build a master dataframe
     # read in the first data file
-    all_data <- read_feather(paste("datalog", data_files$filename[1], sep = "/")) 
+    all_data <- feather::read_feather(paste("datalog", data_files$filename[1], sep = "/")) 
     # Check if the data has any rows
     if (nrow(all_data) >= 1) {
       # add timestamp ID and source
@@ -37,12 +49,12 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
       all_data$source <- data_files$source[1]
       # Melt the data into the correct format
       all_data <- all_data %>% 
-        gather(metric, value, -timestamp, -source, -date)
+        tidyr::gather(metric, value, -timestamp, -source, -date)
     }
     else {
       print("ACTUALLY THIS IS USED!")
       table_data <- table_data %>% 
-        gather(metric, value, -date) 
+        tidyr::gather(metric, value, -date) 
       }
     
     # Append other files data if they exist
@@ -51,14 +63,14 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
       # For each additional file
       for (j in 2:nrow(data_files)) {
         # Read the file data
-        table_data <- read_feather(paste("datalog", data_files$filename[j], sep = "/")) 
+        table_data <- feather::read_feather(paste("datalog", data_files$filename[j], sep = "/")) 
         # if the file has data
         if (nrow(table_data) >= 1) {
           # Melt the data into the correct format
           table_data$timestamp <- data_files$timestamp[j]
           table_data$source <- data_files$source[j]
           table_data <- table_data %>% 
-            gather(metric, value, -timestamp, -source, -date) 
+            tidyr::gather(metric, value, -timestamp, -source, -date) 
           # Bind the data
           all_data <- bind_rows(all_data, table_data)
           # Drop NA values and format date as date
@@ -71,7 +83,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
     all_data <- all_data  %<>%
       mutate(value = as.numeric(value)) %>%
       mutate(date = lubridate::ymd(date)) %>% 
-      drop_na()
+      tidyr::drop_na()
     
     # Check if ticker has an existing dataset
     persistent_storage <- file.path(dataset_folder, paste(table_name, "feather", sep = "."))
@@ -80,7 +92,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
       message <- paste(i, "/", number_of_tickers, table_name, "Merging data               ", sep=" ")
       cat("\r", message)
       # Read in existing dataset
-      persistent_data  <- read_feather(persistent_storage)
+      persistent_data  <- feather::read_feather(persistent_storage)
       # Bind the two datasets
       all_data <- bind_rows(all_data, persistent_data)
       # Compact the merged dataframe to exlude repetitive data
@@ -98,6 +110,9 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
     message <- paste(i, "/", number_of_tickers, table_name, "Wrote data to disk        ", sep=" ")  
     cat("\r", message)
   }
+  
+  # Stop the cluster
+  stopCluster(cl)
 }
 # End function here
 

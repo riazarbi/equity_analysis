@@ -1,5 +1,5 @@
 # Clear environment
-rm(list=ls())
+#rm(list=ls())
 
 # Libraries
 library(tidyverse)
@@ -7,6 +7,7 @@ library(feather)
 library(data.table)
 library(lubridate)
 library(magrittr)
+library(dplyr)
 
 ###################################################################
 # SET DIRECTORIES

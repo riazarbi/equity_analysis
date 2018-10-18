@@ -1,3 +1,6 @@
+# Clear environment
+rm(list=ls())
+
 source('shared_functions.R')
 
 begin <- Sys.time()
