@@ -1,34 +1,29 @@
 source('shared_functions.R')
-#source("011_ticker_datalog_to_dataset.R")
 
 begin <- Sys.time()
 
 # Create a dataframe of data log files
 data_log <- convert_datalog_to_dataframe()
 
-# Prefilter the datalog and delete logfiles
-data_log <- clean_data_log(data_log)
-# TO DO: NEED TO DEVELOP AUTOMATIC FILTERING, WHERE YOU OMIT LOGFILES 
-# WHOSE TEXT STRINGS ARE NOT WELL FORMED
-
 # Show avaialable datasets
 unique(data_log$data_type)
 
 dataset <- "metadata_array"
 
-# Start function here
-# Create dataset save location if it does not exist
+# create a folder for the dataset
 dataset_folder <- file.path(dataset_directory, dataset)
 dir.create(dataset_folder, showWarnings = FALSE)
-  
+
 # Read in new log data
 # Filter the log to show just filtered data files
-filtered_data_log <- dplyr::filter(data_log, grepl(dataset, data_type))
+filtered_data_log <- data_log %>% 
+  dplyr::filter(ext == "feather") %>% 
+  dplyr::filter(grepl(dataset, data_type))
 nrow(filtered_data_log)
+
 # Process the first metadata file
 if(nrow(filtered_data_log >= 1)) {
-  metadata <- read_csv(paste("datalog", filtered_data_log[1,]$filename, sep = "/"), 
-                       col_types = cols(.default = "c"))
+  metadata <- read_feather(paste("datalog", filtered_data_log[1,]$filename, sep = "/"))
   if (nrow(metadata) >= 1) {
     # add timestamp ID and source
     metadata$timestamp <- filtered_data_log$timestamp[1]
@@ -39,8 +34,7 @@ if(nrow(filtered_data_log >= 1)) {
 
 if(nrow(filtered_data_log > 1)) {
   for (i in 1:nrow(filtered_data_log)) {
-    metadata <- read_csv(paste("datalog", filtered_data_log[i,]$filename, sep = "/"), 
-                         col_types = cols(.default = "c"))
+    metadata <- read_feather(paste("datalog", filtered_data_log[i,]$filename, sep = "/"))
     if (nrow(metadata) >= 1) {
       # add timestamp ID and source
       metadata$timestamp <- filtered_data_log$timestamp[i]
@@ -55,11 +49,11 @@ if(nrow(filtered_data_log > 1)) {
   }}
 
 # Check if ticker has an existing dataset
-persistent_storage <- file.path(dataset_folder, paste(dataset, "csv", sep = "."))
+persistent_storage <- file.path(dataset_folder, paste(dataset, "feather", sep = "."))
   # If ticker does exist, merge new data with esixting dataset
 if (file.exists(persistent_storage)) {
   # Read in existing dataset
-  persistent_data  <- read_csv(persistent_storage, col_types = cols(.default = "c"))
+  persistent_data  <- read_feather(persistent_storage)
   # Bind the two datasets
   all_data <- bind_rows(all_data, persistent_data)
   }
@@ -71,10 +65,13 @@ filtered <- all_data %>%
   arrange(desc(key)) %>%
   filter(key != lag(key, default="0")) %>% 
   select(-key)
-str(filtered)
+
+glimpse(metadata)
+
+glimpse(filtered)
 
 # Finally, write dataframe to disk
-write_csv(filtered, persistent_storage, append = FALSE)
+write_feather(filtered, persistent_storage)
 
 end <- Sys.time()
 print(end - begin)

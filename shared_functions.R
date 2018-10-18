@@ -3,6 +3,10 @@ rm(list=ls())
 
 # Libraries
 library(tidyverse)
+library(feather)
+library(data.table)
+library(lubridate)
+library(magrittr)
 
 ###################################################################
 # SET DIRECTORIES
@@ -18,15 +22,16 @@ dir.create(dataset_directory, showWarnings = FALSE)
 
 
 ##################################################################
-# FUNCTIONS
+# DATALOG FUNCTIONS
 ##################################################################
-# CONVERT DATALOG FILE IST INTO DATAFRAME
+# CONVERT DATALOG FILES INTO DATAFRAME
 convert_datalog_to_dataframe <- function() {
   file_list <- list.files(datalog_directory)
   data_log <- as.data.frame(str_split_fixed(file_list, "__", 4), stringsAsFactors=FALSE)
   colnames(data_log) <- c("timestamp", "source", "data_type", "data_label")
   data_log$data_label <- tools::file_path_sans_ext(data_log$data_label)
   data_log$filename <- file_list
+  data_log$ext <- tools::file_ext(data_log$filename)
   return(data_log)
   
 }
@@ -37,19 +42,22 @@ convert_datalog_to_dataframe <- function() {
 # 1. takes a dataframe which has a list of filenames in the datalog directory
 # 2. removes all log files with no data
 # 3. replaces the dataframe with an updated one
-clean_data_log <- function(data_log) {
-  for (datalog in data_log$filename) {
-    filepath <- file.path("datalog",datalog)
-    loglength <- length(readLines(filepath))
-    message <- paste(filepath, "                 ")
-    cat("\r",message)
-    if (loglength == 1) {
-      message = paste("Empty csv. Removing", datalog)
-      cat("\n",message)
-      file.remove(filepath)
+remove_empty_csvs <- function(data_log) {
+  for (datalog in data_log$filename) { 
+    if(tools::file_ext(datalog) == "csv") {
+      filepath <- file.path("datalog",datalog)
+      loglength <- length(readLines(filepath))
+      message <- paste(filepath, "                 ")
+      cat("\r",message)
+      if (loglength == 1) {
+        message = paste("Empty file. Removing", datalog)
+        cat("\n",message)
+        file.remove(filepath)
+      }
     }
   }
   data_log <- convert_datalog_to_dataframe()
+  return(data_log)
 }
 
 # FILTER DATALOG
@@ -105,6 +113,7 @@ compact_dataset <- function(dataframe) {
 
 ################################################################
 # LOAD DIMENSIONS
+################################################################
 # Read in the indexes dimension
 # These are stock indexs (eg. SPX Index)
 indexes_file <- file.path(dimensions_directory, "indexes.csv")
@@ -129,4 +138,3 @@ metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
 metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
 metadata_fields <- metadata_fields[,1]
 rm(metadata_fields_file)
-

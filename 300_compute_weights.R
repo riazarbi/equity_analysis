@@ -21,19 +21,16 @@ rm(list=ls())
 source('shared_functions.R')
 source("algorithm.R")
 
+allstart <- Sys.time()
+
 ## BUILD DATASETS
 # Load constituent list
-constituent_list <- read_csv(
-  file.path(dataset_directory, "constituent_list", "constituent_list.csv"), 
-  col_types = cols(
-    .default = "c",
-    date = col_date(format = "%Y%m%d")
-  )
-)
+constituent_list <- read_feather(file.path(dataset_directory, "constituent_list", "constituent_list.feather"))
 # Filter constituent_list source to only include the parameter specified source
-constituent_list <- dplyr::filter(constituent_list, grepl(data_source, source))
 # Filter constituent_list index to only include the parameter specified index
-constituent_list <- dplyr::filter(constituent_list, grepl(constituent_index, index))
+constituent_list <- constituent_list %>% dplyr::filter(grepl(data_source, source)) %>%
+  dplyr::filter(grepl(constituent_index, index))
+
 # Filter constituent_list dates
 # Check initial date range
 max(constituent_list$date)
@@ -42,10 +39,10 @@ min(constituent_list$date)
 # Make sure to include the last constituent list before the backtest date
 # otherwise the backtester won't know what the weights should be for the beginning
 # of the backtest
-first_constituent_date <- max((constituent_list %>%
-                    filter( date <= start_backtest))$date)
-constituent_list <- dplyr::filter(constituent_list, date >= first_constituent_date)
-constituent_list <- dplyr::filter(constituent_list, date <= end_backtest)
+first_constituent_date <- max((constituent_list %>% filter( date <= start_backtest))$date)
+constituent_list <- constituent_list %>% 
+                    dplyr::filter(date >= first_constituent_date) %>% 
+                    dplyr::filter(date <= end_backtest)
 rm(first_constituent_date)
 # Verify that the list now only contains dates in the parameter range
 max(constituent_list$date)
@@ -63,9 +60,8 @@ tickers <- constituent_list$ticker
 tickers <- unique(tickers)
 
 # Load metadata array
-metadata <- read_csv(file.path(dataset_directory, "metadata_array", "metadata_array.csv"), 
-                     col_types = cols(.default = "c"))
-# Rename mtadata TICKER_AND_EXCH_CODE column to ticker
+metadata <- read_feather(file.path(dataset_directory, "metadata_array", "metadata_array.feather"))
+# Rename metadata TICKER_AND_EXCH_CODE column to ticker
 metadata <- rename(metadata, ticker = TICKER_AND_EXCH_CODE)
 # Replace ticker whitepace with _
 # so they can be legal variable names (as above)
@@ -94,10 +90,10 @@ rm(tickers)
 # Build list of ticker dataframes
 # Create a filename column in the metadata array for marketdata lookups.
 metadata$marketdata_filename <- str_replace_all(metadata$ticker," ","_") %>% 
-                                   paste("_Equity.csv", sep="")
+                                   paste("_Equity.feather", sep="")
 # Infer fundamental filename for each ticker
 metadata$fundamental_filename <- str_replace_all(metadata$ID_ISIN," ","_") %>%
-                                   paste("_Equity.csv", sep="")
+                                   paste("_Equity.feather", sep="")
 
 #########################
 # NBNBNBNB: Metadata dataset will need to be timestamp filtered
@@ -119,19 +115,15 @@ for (i in 1:length(metadata$ticker)){
   # Load ticker data
   if (file.exists(market_data_filepath) & 
       file.exists(fundamental_filepath)) {
-  market_data <- read_csv(market_data_filepath, 
-                          col_types = cols(.default = "c", value = "d"))
-  fundamental_data <- read_csv(fundamental_filepath, 
-                               col_types = cols(.default = "c", value = "d"))
+  market_data <- read_feather(market_data_filepath)
+  fundamental_data <- read_feather(fundamental_filepath)
   ticker_data <- bind_rows(market_data, fundamental_data)
   rm(market_data)
   rm(fundamental_data)
   } else if (file.exists(market_data_filepath)) {
-    ticker_data <- read_csv(market_data_filepath, 
-                            col_types = cols(.default = "c", value = "d"))
+    ticker_data <- read_feather(market_data_filepath)
   } else if (file.exists(fundamental_filepath)) {
-    ticker_data <- read_csv(fundamental_filepath, 
-                            col_types = cols(.default = "c", value = "d"))
+    ticker_data <- read_feather(fundamental_filepath)
   } else {print(paste("No data for", ticker))}
   # drop metrics that are not required for the backtest
   ticker_data <- dplyr::filter(ticker_data, metric %in% metrics)
@@ -278,7 +270,7 @@ algorithm_name <- "cap_weighted"
 # Weights-specific filename attributes
 weights_data_identifier <- paste(algorithm_name, "_weights", sep="") 
 weights_file_string <- paste(timestamp, data_source, data_type, weights_data_identifier, sep = "__")
-weights_file_string <- paste(weights_file_string, ".csv", sep = "")
+weights_file_string <- paste(weights_file_string, ".feather", sep = "")
 weights_file_string <- file.path(datalog_directory, weights_file_string)
 # Algorithm-specific filename attributes
 algorithm_data_identifier <- paste(algorithm_name, "_algorithm", sep="")
@@ -287,6 +279,9 @@ algorithm_file_string <- paste(algorithm_file_string, ".R", sep = "")
 algorithm_file_string <- file.path(datalog_directory, algorithm_file_string)
 
 # Save the files
-write.table(target_weights, weights_file_string, row.names = FALSE, sep = ",")
+write_feather(target_weights, weights_file_string)
 file.copy(from = "algorithm.R", to = datalog_directory, overwrite = TRUE)
 file.rename(from = file.path(datalog_directory, "algorithm.R"), to=algorithm_file_string)
+
+allend <- Sys.time()
+allend - allstart

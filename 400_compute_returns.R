@@ -23,7 +23,7 @@ source(file.path(datalog_directory, algo_file))
 
 # Load the weights
 weights_file <- dplyr::filter(data_log, grepl("weights", data_label))$filename
-weights <- read_csv(file.path(datalog_directory, weights_file))
+weights <- read_feather(file.path(datalog_directory, weights_file))
 
 # Not quite sure if I should score train or backtest, but will stick with
 # train because that's what I've computed weights for.
