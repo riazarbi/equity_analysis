@@ -1,29 +1,31 @@
+print("")
+print("NEXT: Creating index constituents dataset...")
 # Clear environment
 rm(list=ls())
-
+# Read in shared functions
 source('shared_functions.R')
-
+# Time the script
 begin <- Sys.time()
-
-# Create a dataframe of data log files
-data_log <- convert_datalog_to_dataframe()
-
-# Show avaialable datasets
-unique(data_log$data_type)
 
 dataset <- "constituent_list"
 
+# Create a dataframe of data log files
+print("Scanning datalog...")
+data_log <- convert_datalog_to_dataframe()
+
+print("Reading datalog files...")
 # create a folder for the dataset
 dataset_folder <- file.path(dataset_directory, dataset)
 dir.create(dataset_folder, showWarnings = FALSE)
-
 # Read in new log data
 # Filter the log to show just filtered data files
 filtered_data_log <- data_log %>% 
   dplyr::filter(ext == "feather") %>% 
   dplyr::filter(grepl(dataset, data_type))
 nrow(filtered_data_log)
-# Process the first metadata file
+
+print("Processing constituent list files...")
+# Process the first constituent list file
 if(nrow(filtered_data_log >= 1)) {
   index <- str_split_fixed(filtered_data_log[1,]$data_label, "_", 2)[2]
   date_of_fact <- str_split_fixed(filtered_data_log[1,]$data_label, "_", 2)[1]
@@ -42,7 +44,6 @@ if(nrow(filtered_data_log >= 1)) {
 }
 }
 
-#View(constituents)
 
 if(nrow(filtered_data_log > 1)) {
   for (i in 1:nrow(filtered_data_log)) {
@@ -72,15 +73,10 @@ constituents$date <- ymd(constituents$date)
 persistent_storage <- file.path(dataset_folder, paste(dataset, "feather", sep = "."))
 # If ticker does exist, merge new data with esixting dataset
 if (file.exists(persistent_storage)) {
-  #message <- paste(i, "/", number_of_tickers, table_name, "Merging data               ", sep=" ")
-  #cat("\r", message)
   # Read in existing dataset
   persistent_data  <- read_feather(persistent_storage)
   # Bind the two datasets
   constituents <- bind_rows(constituents, persistent_data)
-  # Compact the merged dataframe to exlude repetitive data
-  # Note: this for any data that has not changed, this has the effect of
-  # Updating the timestamp to reflect when last updated
 }
 
 # Keep only the most recent timestamp
@@ -90,15 +86,6 @@ filtered <- constituents %>%
   arrange(desc(key)) %>%
   filter(key != lag(key, default="0")) %>% 
   select(-key)
-
-
-glimpse(constituents)
-max(constituents$date)
-min(constituents$date)
-
-glimpse(filtered)
-max(filtered$date)
-min(filtered$date)
 
 # Finally, write dataframe to disk
 write_feather(filtered, persistent_storage)

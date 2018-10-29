@@ -1,22 +1,22 @@
+print("")
+print("NEXT: Creating metadata dataset...")
 # Clear environment
 rm(list=ls())
-
+# Read in shared functions
 source('shared_functions.R')
-
+# Time the script
 begin <- Sys.time()
-
-# Create a dataframe of data log files
-data_log <- convert_datalog_to_dataframe()
-
-# Show avaialable datasets
-unique(data_log$data_type)
 
 dataset <- "metadata_array"
 
+# Create a dataframe of data log files
+print("Scanning datalog...")
+data_log <- convert_datalog_to_dataframe()
+
+print("Reading datalog files...")
 # create a folder for the dataset
 dataset_folder <- file.path(dataset_directory, dataset)
 dir.create(dataset_folder, showWarnings = FALSE)
-
 # Read in new log data
 # Filter the log to show just filtered data files
 filtered_data_log <- data_log %>% 
@@ -24,6 +24,7 @@ filtered_data_log <- data_log %>%
   dplyr::filter(grepl(dataset, data_type))
 nrow(filtered_data_log)
 
+print("Processing ticker metadata files...")
 # Process the first metadata file
 if(nrow(filtered_data_log >= 1)) {
   metadata <- read_feather(paste("datalog", filtered_data_log[1,]$filename, sep = "/"))
@@ -68,10 +69,6 @@ filtered <- all_data %>%
   arrange(desc(key)) %>%
   filter(key != lag(key, default="0")) %>% 
   select(-key)
-
-glimpse(metadata)
-
-glimpse(filtered)
 
 # Finally, write dataframe to disk
 write_feather(filtered, persistent_storage)

@@ -1,19 +1,22 @@
 #######################################################################################
-print("################################")
-print("Loading libraries")
-
+print("")
+print("NEXT: Scraping USD data from Bloomberg...")
 # Clear environment
 rm(list=ls())
-
 # Log the time taken for the script
 begin <- Sys.time()
 
 # Load libraries
 library(tidyverse)
 library(Rblpapi)
-# connect to Bloomberg API
-con <- blpConnect()
 
+# connect to Bloomberg API
+conn <- tryCatch(blpConnect(), error = function(e) print("Bloomberg Connection Failed."))
+
+if(conn == "Bloomberg Connection Failed.") {
+  print("Skipping datalog queries.")
+} else {
+  
 #######################################################################################
 print("################################")
 print("Defining functions")
@@ -59,12 +62,8 @@ dates_file <- file.path(dimensions_directory, "dates.csv")
 write.table(dates, dates_file, col.names = FALSE, row.names = FALSE)
 rm(dates_file)
 
-# Read in the indexes dimension
+# Define indexes
 # These are stock indexs (eg. SPX Index)
-#indexes_file <- file.path(dimensions_directory, "indexes.csv")
-#indexes <- read.csv(indexes_file, header = FALSE, colClasses = "character")
-#indexes <- indexes[,1]
-#rm(indexes_file)
 indexes <- c("SPX", "RTY")
 
 # Read in the fundamental data fields dimension
@@ -84,12 +83,6 @@ metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
 metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
 metadata_fields <- metadata_fields[,1]
 rm(metadata_fields_file)
-
-### DON'T THINK YOU ACTUALLY NEED THIS
-# Read in the tickers field dimension
-#tickers_file <- file.path(dimensions_directory, "tickers.csv")
-#tickers <- read.csv(tickers_file, header = FALSE, colClasses = "character")
-#tickers
 
 # Print time elapsed
 end <- Sys.time()
@@ -398,3 +391,4 @@ print("Total Script Run Time")
 print(end - begin)
 print("############################")
 print("Script completed")
+}

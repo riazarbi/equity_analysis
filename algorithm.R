@@ -18,33 +18,3 @@ compute_weights <- function(algo_data) {
   sum(target_weights$weights)
   return(target_weights)
 }
-
-## SET PARAMETERS
-# This section is where we set parameters for the backtest
-constituent_index <- "JALSH"
-data_source <- "bloomberg"
-market_metrics <- c("CUR_MKT_CAP", "PX_LAST")
-fundamental_metrics <- c() 
-# This section sets the backtest dates
-start_backtest <- "2010-01-01"
-end_backtest <- "2016-12-31"
-periodicity <- "month"
-# And the splits
-train_test_split <- 0.8
-
-# PROCESS THE PARAMETERS
-# Combine market and fundamental metrics
-metrics <- c(market_metrics, fundamental_metrics)
-# But if no metrics are selected, just take all possible fields
-if (length(metrics)==0){
-  metrics <- c(fundamental_fields, market_fields)
-}
-# Create training and testing date ranges
-dates <- seq(as.Date(start_backtest), as.Date(end_backtest), by=periodicity)
-date_split <- dates[as.integer(length(dates)*train_test_split)]
-train <- dates[dates < date_split]
-test <- dates[dates >= date_split]
-rm(dates)
-# Check that test and train don't overlap
-# We expect this to be 0
-intersect(test, train)

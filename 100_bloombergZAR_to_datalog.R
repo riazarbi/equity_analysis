@@ -1,6 +1,6 @@
 #######################################################################################
-print("################################")
-print("Loading libraries")
+print("")
+print("NEXT: Scraping ZAR data from Bloomberg...")
 
 # Clear environment
 rm(list=ls())
@@ -11,8 +11,14 @@ begin <- Sys.time()
 # Load libraries
 library(tidyverse)
 library(Rblpapi)
+
 # connect to Bloomberg API
-con <- blpConnect()
+conn <- tryCatch(blpConnect(), error = function(e) print("Bloomberg Connection Failed."))
+
+if(conn == "Bloomberg Connection Failed.") {
+  print("Skipping datalog queries.")
+} else {
+  
 
 #######################################################################################
 print("################################")
@@ -395,4 +401,5 @@ print("############################")
 print("Total Script Run Time")
 print(end - begin)
 print("############################")
-print("Script completed")
+print("Script completed") 
+}

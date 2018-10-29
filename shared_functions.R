@@ -115,27 +115,20 @@ compact_dataset <- function(dataframe) {
 ################################################################
 # LOAD DIMENSIONS
 ################################################################
-# Read in the indexes dimension
-# These are stock indexs (eg. SPX Index)
-indexes_file <- file.path(dimensions_directory, "indexes.csv")
-indexes <- read.csv(indexes_file, header = FALSE, colClasses = "character")
-indexes <- indexes[,1]
-rm(indexes_file)
-
 # Read in the fundamental data fields dimension
-fundamental_fields_file <- file.path(dimensions_directory, "fundamental_fields.csv")
-fundamental_fields <- read.csv(fundamental_fields_file, header = FALSE, colClasses = "character")
-fundamental_fields <- fundamental_fields[,1]
-rm(fundamental_fields_file)
+#fundamental_fields_file <- file.path(dimensions_directory, "fundamental_fields.csv")
+#fundamental_fields <- read.csv(fundamental_fields_file, header = FALSE, colClasses = "character")
+#fundamental_fields <- fundamental_fields[,1]
+#rm(fundamental_fields_file)
 
 # Read in the marketdata dimension
-market_fields_file <- file.path(dimensions_directory, "market_fields.csv")
-market_fields <- read.csv(market_fields_file, header = FALSE, colClasses = "character")
-market_fields <- market_fields[,1]
-rm(market_fields_file)
+#market_fields_file <- file.path(dimensions_directory, "market_fields.csv")
+#market_fields <- read.csv(market_fields_file, header = FALSE, colClasses = "character")
+#market_fields <- market_fields[,1]
+#rm(market_fields_file)
 
 # Read in the metadata dimension
-metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
-metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
-metadata_fields <- metadata_fields[,1]
-rm(metadata_fields_file)
+#metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
+#metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
+#metadata_fields <- metadata_fields[,1]
+#rm(metadata_fields_file)

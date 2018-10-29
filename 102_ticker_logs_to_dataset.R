@@ -1,12 +1,17 @@
+print("")
+print("NEXT: Creating individual ticker datasets...")
 # Clear environment
 rm(list=ls())
-
+# Read in shared functions
 source('shared_functions.R')
-#source("011_ticker_datalog_to_dataset.R")
-
+# Time the script
 begin <- Sys.time()
 
+#########################################################################################
 # Start function here
+# This function accepts a data_log and a dataset
+# data_log is a dataframe created by convert_datalog to dataframe() from shared_functions.R
+# dataset is either ticker_fundamental_data or ticke_market_data
 ticker_datalog_to_dataset <- function(data_log, dataset) {
   # load libraries
   library(foreach)
@@ -29,7 +34,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   
   # Register a parallel processing cluster
   n_cores <- detectCores() - 1
-  cl <- makeCluster(n_cores)
+  cl <- makeCluster(n_cores, outfile="")
   registerDoParallel(cl)
   
   foreach(i = 1:length(tickers)) %dopar% {
@@ -51,12 +56,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
       all_data <- all_data %>% 
         tidyr::gather(metric, value, -timestamp, -source, -date)
     }
-    else {
-      print("ACTUALLY THIS IS USED!")
-      table_data <- table_data %>% 
-        tidyr::gather(metric, value, -date) 
-      }
-    
+
     # Append other files data if they exist
     # Check if there more files for that ticker
     if (nrow(data_files) >=2) {
@@ -74,7 +74,6 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
           # Bind the data
           all_data <- bind_rows(all_data, table_data)
           # Drop NA values and format date as date
-          
         }
       }
     }
@@ -95,10 +94,6 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
       persistent_data  <- feather::read_feather(persistent_storage)
       # Bind the two datasets
       all_data <- bind_rows(all_data, persistent_data)
-      # Compact the merged dataframe to exlude repetitive data
-      # Note: this for any data that has not changed, this has the effect of
-      # Updating the timestamp to reflect when last updated
-      
     }
     
     # Compact the dataframe by excluding repetitive data
@@ -115,17 +110,17 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   stopCluster(cl)
 }
 # End function here
+############################################################################################
 
 # Create a dataframe of data log files
 data_log <- convert_datalog_to_dataframe()
 
-# Show avaialable datasets
-unique(data_log$data_type)
-
 # Extract data from fundamental data logs and save to ISIN-labeled datasets
+print("Converting fundamental datalogs to ticker datasets...")
 ticker_datalog_to_dataset(data_log, "ticker_fundamental_data")
 
 # Extract data from market data logs and save to ticker-labeled datasets
+print("Converting market datalogs to ticker datasets...")
 ticker_datalog_to_dataset(data_log, "ticker_market_data")
 
 end <- Sys.time()
