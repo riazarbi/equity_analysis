@@ -2,6 +2,8 @@ library(lubridate)
 ## SET PARAMETERS
 ## Mode - either LIVE or BACKTEST
 run_mode <- "BACKTEST"
+# Heartbeat duration: how long between heartbeats (seconds)
+heartbeat_duration <- 600
 
 # Set seed for reproducibility
 set.seed(42)

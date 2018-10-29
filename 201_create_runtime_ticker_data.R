@@ -8,8 +8,6 @@
 ## ENVIRONMENT SET UP
 print("")
 print(paste("Runtime date:", runtime_date))
-# Assuming the necessary files have been loaded into the environment already.
-print("NEXT: Preparing datasets for portfolio weight computation")
 # Time the script
 begin <- Sys.time()
 
@@ -87,8 +85,16 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
 if(!exists("runtime_ticker_data") || 
    !exists("last_runtime_date") ||
    date(runtime_date) != last_runtime_date) {
-  print("A new runtime_ticker_data dataframe needs to be generated.")
+         print("NEXT: A new runtime_ticker_data dataframe needs to be generated.")
+         # Compute new runtime ticker data
          runtime_ticker_data <- get_runtime_dataset(runtime_date, constituent_list, ticker_data)
+         # Compute new target weights
+         print("NEXT: Computing target weights from new runtime_ticker_data.")
+         target_weights <- compute_weights(runtime_ticker_data)
+         # Validate new target weights
+         weight_validation <- sum(target_weights$weights)
+         weight_validation
+         # Update the ladt runtime date
          last_runtime_date <- date(runtime_date)
          }
 
