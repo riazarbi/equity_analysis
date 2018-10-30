@@ -1,15 +1,15 @@
 # LOAD ENVIRONMENT ##################################
 all_begin <- Sys.time()
-# DATA PIPELINE SCRIPTS - ONCE DAILY
+# data_pipeline_scripts - ONCE DAILY
 # All these scripts can be run independently - they actually clear the
 # environment before running.
 # These scripts are not parametrized, and they don't need to be.
-source("data pipeline scripts/100_bloombergUSD_to_datalog.R")
-source("data pipeline scripts/100_bloombergZAR_to_datalog.R")
-source("data pipeline scripts/101_datalog_csv_to_feather.R")
-source("data pipeline scripts/102_constituents_to_dataset.R")
-source("data pipeline scripts/102_metadata_to_dataset.R")
-source("data pipeline scripts/102_ticker_logs_to_dataset.R")
+source("data_pipeline_scripts/100_bloombergUSD_to_datalog.R")
+source("data_pipeline_scripts/100_bloombergZAR_to_datalog.R")
+source("data_pipeline_scripts/101_datalog_csv_to_feather.R")
+source("data_pipeline_scripts/102_constituents_to_dataset.R")
+source("data_pipeline_scripts/102_metadata_to_dataset.R")
+source("data_pipeline_scripts/102_ticker_logs_to_dataset.R")
 # Clean out environment so we know this script works in a clean environment
 rm(list=ls())
 source("load_slow_moving_data.R")

@@ -33,8 +33,7 @@ portfolios_directory <- file.path(working_directory, "portfolios")
 dir.create(portfolios_directory, showWarnings = FALSE)
 
 timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
-data_source <- run_mode
-data_type <- "portfolio_data"
+data_type <- "backtest_data"
 #portfolio_data_identifier <- "data" 
 portfolio_directory <- paste(timestamp, data_source, data_type, sep = "__")
 portfolio_directory <- file.path(portfolios_directory, portfolio_directory)
