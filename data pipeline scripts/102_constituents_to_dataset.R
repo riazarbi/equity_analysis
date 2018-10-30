@@ -2,8 +2,8 @@ print("")
 print("NEXT: Creating index constituents dataset...")
 # Clear environment
 rm(list=ls())
-# Read in shared functions
-source('shared_functions.R')
+# Read in data_pipeline functions
+source('data_pipeline_functions.R')
 # Time the script
 begin <- Sys.time()
 

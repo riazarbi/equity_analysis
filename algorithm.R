@@ -14,8 +14,12 @@
 # This function computes the market cap of each ticker,
 # And weights the ticker according to its proportion of total index market cap
 
-compute_weights <- function(algo_data) {
+compute_weights <- function(algo_data, metrics) {
+  algo_start <- Sys.time()
   # 1. CUT THE DATASET DOWN TO SIZE
+  # Keep only the necessary fields
+  #algo_data <- algo_data %>% select(metrics)
+  #print(colnames(algo_data))
   # Drop all entries except the latest one
   algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
   # 2. COMPUTE AGGREGATE MEASURE
@@ -29,8 +33,8 @@ compute_weights <- function(algo_data) {
   # PAIR EACH TICKER TO ITS WEIGHT
   target_weights <- data.frame(portfolio_members, weights)
   target_weights$portfolio_members <- as.character(target_weights$portfolio_members)
-  # DOUBLE CHECK SUM TO 1
-  print(sum(target_weights$weights))
+  algo_end <- Sys.time()
+  print(paste("INFO: Algorithm runtime:", algo_end - algo_start, "seconds."))
   # RETURN TARGET WIEGHTS DATA FRAME
   return(target_weights)
 }

@@ -2,15 +2,15 @@ print("")
 print("NEXT: Creating individual ticker datasets...")
 # Clear environment
 rm(list=ls())
-# Read in shared functions
-source('shared_functions.R')
+# Read in data_pipeline functions
+source('data_pipeline_functions.R')
 # Time the script
 begin <- Sys.time()
 
 #########################################################################################
 # Start function here
 # This function accepts a data_log and a dataset
-# data_log is a dataframe created by convert_datalog to dataframe() from shared_functions.R
+# data_log is a dataframe created by convert_datalog to dataframe() from data_pipeline_functions.R
 # dataset is either ticker_fundamental_data or ticke_market_data
 ticker_datalog_to_dataset <- function(data_log, dataset) {
   # load libraries
@@ -38,7 +38,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   registerDoParallel(cl)
   
   foreach(i = 1:length(tickers)) %dopar% {
-    source('shared_functions.R')
+    source('data_pipeline_functions.R')
     # Define table name for the ticker
     table_name <- stringr::str_replace_all(tickers[i],"[[:punct:]\\s]+","_")
     # Get list of files relating to the ticker

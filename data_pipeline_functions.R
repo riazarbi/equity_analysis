@@ -21,7 +21,6 @@ datalog_directory <- file.path(working_directory, "datalog")
 dataset_directory <- file.path(working_directory, "datasets")
 dir.create(dataset_directory, showWarnings = FALSE)
 
-
 ##################################################################
 # DATALOG FUNCTIONS
 ##################################################################

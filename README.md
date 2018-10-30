@@ -1,9 +1,8 @@
 TODO:
 
 1. Bloomberg scraper script to become currency-aware  
-2. Migrate dimensions into a parameters file; build in functionality for  other sources. Note - each source will have unique index codes, metadtaa, fundamental and market data fields, but not unique date fields. Do we need date, ISIN dimensions? ISINs is computed at runtime and date is defined by start and end.
+2. Migrate dimensions into json scraper parameters file. Or a connections file? 
 3. Document the features of the datalog for point-in-time datasets, total eraseablity and portability
-
 
 # Technical Document: A fully replicable Equity backtesting workflow
 
@@ -41,47 +40,66 @@ The dimensions directory contains dimensions relevant to the backtest. These dim
 
 # Replication and Extension to other use cases
 
-To replicate the results of this paper, simply clone this git repository to your computer, and run each script in sequence. 
+The only files that change between different backtests are `alorgithm.R`, which houses the portfolio weighting rules, and `parameters.R`, which houses the backtest parameters. 
 
-To replicate the results of this paper on another equity index, change the 'indexes.csv' dimension in the `dimensions` directory to another Bloomberg index code.
+To replicate the results of a backtest using this codebase, simply clone this git repository to your computer, and run the the `trade.R` script.
 
-To alter the algorithm..... TBC.
+To replicate the results of this paper on another equity index, change the index parameter in the `parameters.R` file to another index.
+
+To alter the algorithm, modify the `compute_weights` function in the `algorithm.R` script.
 
 # Code flow
 The scripts in this repository are written in a procedural manner. That is, it is intended that parameters are set prior to execution and that the scripts are executed noninteractively. The code logic flows down each script in a linear manner wherever possible. This style facilitates the auditing of how data is manipulated as it flows through the code logic.
 
-It should be possible to modify these scripts to run in a scheduled, automated fashion with the assistance of a scheduling daemon such as `cron` or `anacron`.
+### Data Pipeline
+The data pipeline scripts can be run as in a standalone fashion. This facilitates spreading scripts across multiple machines, whic can be helpful when data vendor terminals are shared or on different machines. In such instances, the query scripts can be run on each terminal, and the logs can be copied across to a single logfile for downstream processing. Logfiles are timestamped to Unix time, so logs from different machines will sort correctly.
+
+Because each data pipeline script can be run standalone (ie from a clean R environment), they are amenable to scheduling using `cron`, `anacron  or similar.
+
+### Simulation
+Effort has been made to keep the simulation scripts as simple as possible, to keep them true to the spirit of this project. Nevertheless, the event-driven nature of the simulation renders
+
 
 ## Limiting the number of code files
 Wherever possible, the code is kept in a single file. Code is split between several files when the contents of the files do not naturally run as the same execution batch. For instance, in an academic setting, data is often collected from vendors through the use of shared terminals, often situated in a library or laboratory. It does not make sense to include the data collection code with downstream processing code because downstream processing can be done on a another machine at a different time, freeing up the terminal for another user. 
 
-## Chunking
-Researchers are often limited by their computing reosurces. Most of the time, research is conducted on consumer hardware with limited amounts of RAM. To accommodate this, workloads are chunked or run sequentially to limit RAM consumption. The tradeoff is that the code is quite slow, because there are more disk reads and writes, and parallelization is not utilized fully.
+## Chunking and Parallelization
+Researchers are often limited by their computing reosurces. Most of the time, research is conducted on consumer hardware with limited amounts of RAM. To accommodate this, workloads are chunked or run sequentially to limit RAM consumption. This slows down execution time. The worst offending code chinks have been parallelized to mitigate this, and data is stored on disk in `feather` format to speed up disk I/O.
 
-## Sequential list of procedures
+## Sequential list of procedures - Backtest Mode
 
+### Data Pipeline
 1. Index, ticker market, fundamental and meta data is collected from Bloomberg via the R Rblpapi package and saved to a log directory.
 2. The logfiles are transformed into three datasets -  
   a. Ticker market and fundamental data  
   b. Ticker metadata  
   c. Monthly index constituent lists  
+
+
+### Simulation
 3. Backtest parameters are defined  
   a. Target index  
   b. Date range  
   c. Salient ticker metrics  
-  d. Rebalancing periodicity  
+  d. Mode: Backtest or Live (live isn't implemented yet)  
 4. A portfolio constituent weighting criterion is defined  
   a. For instance, "this portfolio will weight the constituents of the index according to their Price to Book ratio."  
-  b. This weighting can be any mathematical function, and can contain binary statements such as "weight the constituents equally of their price to book raito is greate than 2, otherwise weight them as zero."  
-4. A master dataset is loaded into memory containing the data relevant only to the backtest parameters  
-5. The code steps through the backtest date range in increments related to the rebalancing periodicity, computing the portfolio weights for each period and appending these weights to a two dimensional `holdings matrix` with the dimensions `ticker(i -> n)` , `date(j -> m)`, where `entry(i,j)` corresponds to the weight of `ticker(i)` in the portfolio on `date(j)`.  
-6. A `return matrix` is computed with the same dimensions as the `holdings matrix`, but with `entry(i,j)` corresponding to the total return of ticker(i) at time (j+1) / total return index of ticker(i) at time (j). That is, each `entry(i,j)` tells us the total return that ticker(i) would have in the next period.  
-7. The `holdings matrix` and `return matrix` are multipied together to compute the `periodic portfolio return` (summed column-wise), the `lifetime ticker contribution to portfolio return` (multiplied row-wise) and the `lifetime portfolio return` (sumproduct).  
-8. These returns are used to compute various risk measures, Sharpe Ratio chief among them.  
-9. The risk and return results and various matrices and backtest parameters are bundled into an .RData object that can be passed to a report generator for automated reporting.
+  b. This weighting can be any mathematical function, and can contain binary statements such as "weight the constituents equally of their price to book ratio is greate than 2, otherwise weight them as zero."  
+4. A master dataset is loaded into memory  
+5. The code loops through the following steps in heartbeat increments (typically 10 minutes, but can be set in `parameters.R`) until the backtest date range ends (backtest mode) or never (live mode).  
+a. A runtime dataset is created, adjusting for survivorship and look-ahead bias.  
+b. The runtime dataset is passed to the `algorithm.R` function, and target portfolio weights are computed.  
+c. [Not implemented] Transaction logs and trade histroy is loaded to compute current portfolio positions.  
+d. [Not implemented] An order list is generared from the diff of target weights and existing weights.  
+e. [Not implemented] Orders are submitted to the trading engine.  
+f. [Not implemented] The trading engine reads market data for the tickers and submit trades.  
+g. [Not implemented] If volume limits are not hit, the trade completes and is appended to the trade history log.  Cash movements are appended to the transaction log.  
+
+8. [Not implemented] The final trade and transaction logs are used to compute portfolio retuirns. THese are used to compute various risk measures, Sharpe Ratio chief among them.  
+9. [Not implemented] The risk and return results and various matrices, backtest parameters and algorithm script are bundled into a folder that follows the Data naming conventions above. The folder that can be passed to a report generator for automated reporting.
 
 # Data flow
-The data query script saves four kinds of dataset to the `datalog` folder. These are -  
+The data query scripts save four kinds of dataset to the `datalog` folder. These are -  
 
 1. Index constituents for a certain date  
 2. Ticker metadata for an arbitrary list of tickers  
@@ -102,36 +120,71 @@ This file naming convention allows the datalog to be searchable by a conbination
 # Development Status
 
 ## Versioning and Support
-This project will continually change. A user is advised to compare between commits on github to see how the code changes over time. It is anticipated that this codebase will be altered significantly and rapidly until August 2018; thereafter development will slow. A good way to check the development status is look at the github commit logs.
+This project will continually change. A user is advised to compare between commits on github to see how the code changes over time. It is anticipated that this codebase will be altered significantly and rapidly until December 2018; thereafter development will slow. A good way to check the development status is look at the github commit logs.
 
 It is advised that a user of this codebase fork the repository in order to stabilize their codebase at a particular point in time. When sharing your work, you can facilitate peer review and replication by including access to your forked repository.
 
-There is no guaranteed support for this project past August 2018, but users are free to fork and develop it on their own. Wherever possible, the code is written in R, python and bash to ensure compatibility with generally avaiailable computer software for the forseeable future.
+There is no guaranteed support for this project past December 2018, but users are free to fork and develop it on their own. Wherever possible, the code is written in `R` to ensure compatibility with generally available computer software for the forseeable future.
 
 ###  Project Personnel, Reporting and Responsibility
-This codebase is being built out by Riaz Arbi, who can be contacted via riazarbi.github.io I take no responsibility for any errors contained in this code. A user of this code should verify each line of the codebase to ensure that it operates as expected.
+This codebase is being built out by Riaz Arbi, who can be contacted via riazarbi.github.io. I take no responsibility for any errors contained in this code. A user of this code should verify each line of the codebase to ensure that it operates as expected.
 
 ### Intellectual Property Statement
 This is the intellectual property of Riaz Arbi. This code will be released under a strong copyleft license. A license is included in the repository.
 
+### Feature List
+#### Data pipeline
 
-### Milestones and Project Deliverables
-The end goal of this project is to have a complete equity backtesting workflow by August 2018. This project is being built solely by Riaz Arbi.
+| Feature | Planned | Implemented |
+|:--------------|:---------:|:-----------:|
+| Specification: Log formats |X|X|
+| Pipeline: Bootstrap regeneration if data lost |X|X|
+| Log Dataset: Keep query logs forever |X|X|
+| Mining: Summary statistics of logfiles |||
+| Pipeline: Accept arbitrary data sources |X|X|
+| Pipeline: Bloomberg query script|X|X|
+| Pipeline: Datastream query script|X||
+| Pipeline: iNet query script|X||
+| Pipeline: Random Ticker Dataset Generator |||
+| Pipeline: Data compaction|X|X|
+| Pipeline: Log to dataset |X|X|
+| Specification: Dataset formats|X|X|
+| Master Dataset: Data versioning|X|X|
+| Mining: Summary statistics of datasets |||
+| Pipeline: Join ticker, constituent and metadata into master dataset |X|X|
+|In-memory Dataset: Automate loading |X|X|
+|Scoring Dataset: Compute ticker returns timeseries for scoring |||
+|Scoring Dataset: Compute benchmark returns timeseries for scoring |||
 
-| Date | Milestone | Status |
-|--------------|----------------------------------|-----------|
-| October 2017 | Set up server with necessary dependencies | Complete | 
-| November 2017 |Build Bloomberg Excel VBA Workbook to scrape data | Complete |
-| January 2018 |Scrape Bloomberg terminal for data | Complete |
-| January 2018 |Merge raw files into single csv files | Complete |
-| February 2018 |Clean, join and interpolate data | In Progress |
-| February 2018 |Transform raw data into Sqlite file | In Progress |
-| March 2018 | Build out code to control for backtesting biases (look-ahead, survivorship etc) |  Not Started |
-| April 2018 | Perform a case study backtest | Not Started | 
-| May 2018 | Debug, refactor, refine | Not Started |
-| June 2018 | Add additional data sources: iNet, Datastream | Not Started |
-| July 2018 | Replicate case study backtest on alternative data and compare differential results | Not Started |
-| August 2018 | Create second backtest and document workflow steps and benchmark timing | Not Started |
+#### Simulation
+| Feature | Planned |Implemented  |
+|:--------------|:---------:|:-----------:|
+|Easily switch between backtesting and live trading |X||
+|Specify generic portfolio weighting rule |X|X|
+|Automatically load master dataset|X|X|
+|Simulate market data stream|||
+|Build trading engine|||
+|Model slippage and trading costs|||
+|Keep track of trades|||
+|Keep track of cash balances|||
+|Build event-driven while-loop|X|X|
+|Inside loop: dynamically refresh dataset|X|X|
+|Inside loop: Eliminate survivorship bias|X|X|
+|Inside loop: Eliminate look-ahead bias|X|X|
+|Inside loop: Create target portfolio weights|X|X|
+|Inside loop: Track existing portfolio weights|||
+|Inside loop: Compute order list|||
+|Inside loop: Submit orders to trading engine|||
+|Inside loop: Save successful orders to transaction log|||
+|Logging: Create backtest archive directory |||
+|Logging: Save transactions|||
+|Logging: Save trades |||
+|Logging: Save algorithm script|||
+|Logging: Save parameters script |||
+|Evaluation: Compute portfolio returns|||
+|Evaluation: Compare portfolio returns to index|||
+|Evaluation: Generate backtest report|||
+| Reproducibility: Create Dockerfile and docker image to replicate environment|||
 
 ## Requirements Specification
 1. Hardware
@@ -141,10 +194,10 @@ The end goal of this project is to have a complete equity backtesting workflow b
 
 2. Software
   - At a minimum, you need to have python 3.5, R version 3.4.3 running on a modern x86 linux distribution.
-  - A complete browser-based software suite can be set up automatically using this repo https://github.com/riazarbi/serversetup. The scripts contained in that repo will, among other things, set up RStudio Server, JupyterHub with Python 3.5, NextCloud and secure the server with approproate firewall rules. It can also set up a Tor hidden ssh service, private key access and automated standard user creation.
+  - A Dockerfile and docker image will be made available to facilitate the setup of an environment.
 
 3. Data 
-  - This project presupposes that a user has access to a data vendor subscription. It contains VBA enabled Excel workbooks that can automatically extract relevant data from the Bloomberg Excel Add-In. It is anticipated that support will be added for similar automated VBA-based extraction of DataStream and iNet sources.
+  - This project presupposes that a user has access to a data vendor subscription. It contains R scripts that can automatically extract relevant data from the Bloomberg BBCOM.exe server. It is anticipated that support will be added for similar automated R-based extraction of DataStream and iNet sources.
 
 4. Maintenance
   - The user will have to periodically upload new data if this environment is to be converted into a production trading system. The Excel scrapers can easily be modified to perform incremental additons to `raw` directories but a produciton system should probably talk directly to an API using a native data vendor API.

@@ -4,8 +4,8 @@ print("NEXT: Cleaning up datalog and converting CSVs to feather...")
 rm(list=ls())
 # Log the time taken for the script
 begin <- Sys.time()
-# Read in shared functions
-source('shared_functions.R')
+# Read in data pipeline functions
+source('data_pipeline_functions.R')
 
 # Create a dataframe of data log files
 print("Scanning datalog...")
