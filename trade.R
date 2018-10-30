@@ -10,14 +10,14 @@ source("data_pipeline_scripts/101_datalog_csv_to_feather.R")
 source("data_pipeline_scripts/102_constituents_to_dataset.R")
 source("data_pipeline_scripts/102_metadata_to_dataset.R")
 source("data_pipeline_scripts/102_ticker_logs_to_dataset.R")
-# Clean out environment so we know this script works in a clean environment
-rm(list=ls())
-source("load_slow_moving_data.R")
 
 #####################################################
 # TRADE SCRIPTS #####################################
 # Check the trading mode in parameters.R
-source("data_pipeline_functions.R")
+# Clean out environment so we know this script works in a clean environment
+rm(list=ls())
+source("load_slow_moving_data.R")
+source("data_pipeline_scripts/data_pipeline_functions.R")
 source("parameters.R")
 source("algorithm.R")
 source("trading_functions.R")
@@ -91,6 +91,8 @@ repeat{
     }
   } else {
     print("OK: Target weights are fine.")}
+  
+  #### NEXT: TRADING ENGINE
   
   # 4. Compute current portfolio weights
   # 5. Compute required trades

@@ -35,7 +35,6 @@ for (i in seq_along(stock_lifetimes$stock_universe)){
   # Vol is poisson, with lambda as some small percentage of Shares in issue.
   }
 
-
 constituent_list_simulation <- seq(start_simulation, end_simulation, by="month")
 for (i in seq_along(constituent_list_simulation)){
   # Define the date
@@ -50,16 +49,6 @@ for (i in seq_along(constituent_list_simulation)){
   nrow(constituent_list)
 }
 
-
-
-
-
-
-
-
-
-
-
 # Filename
 timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
 data_source <- "random_generator"
@@ -71,10 +60,7 @@ save_file <- file.path(data_directory, file_string)
 # saving the file
 write.table(simulation, save_file, row.names = FALSE, sep = ",")
 
-
-#
 # Simulate stock price data with random walk
-#
 n = 1000 # Walk n steps
 p = .5 # Probability of moving left
 trials = 100 # Num times to repeate sim

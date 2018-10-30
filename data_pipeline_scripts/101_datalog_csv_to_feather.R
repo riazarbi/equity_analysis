@@ -5,7 +5,7 @@ rm(list=ls())
 # Log the time taken for the script
 begin <- Sys.time()
 # Read in data pipeline functions
-source('data_pipeline_functions.R')
+source("data_pipeline_scripts/data_pipeline_functions.R")
 
 # Create a dataframe of data log files
 print("Scanning datalog...")
