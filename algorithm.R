@@ -27,11 +27,11 @@ compute_weights <- function(algo_data, metrics) {
   index_mkt_cap <- algo_data %>% map(function(x) sum(x$CUR_MKT_CAP)) %>% reduce(`+`)
   
   # ASSIGN WEIGHTS AS % OF AGGREGATE
-  weights <- sapply(algo_data, function(x) sum(x$CUR_MKT_CAP)/index_mkt_cap )  
+  target_weight <- sapply(algo_data, function(x) sum(x$CUR_MKT_CAP)/index_mkt_cap )  
   # CREATE LIST OF TICKER NAMES
   portfolio_members <- names(algo_data)
   # PAIR EACH TICKER TO ITS WEIGHT
-  target_weights <- data.frame(portfolio_members, weights)
+  target_weights <- data.frame(portfolio_members, target_weight)
   target_weights$portfolio_members <- as.character(target_weights$portfolio_members)
   algo_end <- Sys.time()
   print(paste("INFO: Algorithm runtime:", algo_end - algo_start, "seconds."))

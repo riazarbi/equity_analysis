@@ -18,8 +18,6 @@
 ## ENVIRONMENT SET UP
 print("NEXT: Loading slow-moving data into memory...")
 # Clear environment and load common functions
-source("data_pipeline_scripts/data_pipeline_functions.R")
-source("parameters.R")
 begin <- Sys.time()
 
 ## BUILD DATASETS

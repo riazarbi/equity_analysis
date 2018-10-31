@@ -1,32 +1,42 @@
 # LOAD ENVIRONMENT ##################################
 all_begin <- Sys.time()
+
 # data_pipeline_scripts - ONCE DAILY
+# Maybe wrap into their own script
 # All these scripts can be run independently - they actually clear the
 # environment before running.
 # These scripts are not parametrized, and they don't need to be.
-source("data_pipeline_scripts/100_bloombergUSD_to_datalog.R")
-source("data_pipeline_scripts/100_bloombergZAR_to_datalog.R")
-source("data_pipeline_scripts/101_datalog_csv_to_feather.R")
-source("data_pipeline_scripts/102_constituents_to_dataset.R")
-source("data_pipeline_scripts/102_metadata_to_dataset.R")
-source("data_pipeline_scripts/102_ticker_logs_to_dataset.R")
+#source("data_pipeline_scripts/100_bloombergUSD_to_datalog.R")
+#source("data_pipeline_scripts/100_bloombergZAR_to_datalog.R")
+#source("data_pipeline_scripts/101_datalog_csv_to_feather.R")
+#source("data_pipeline_scripts/102_constituents_to_dataset.R")
+#source("data_pipeline_scripts/102_metadata_to_dataset.R")
+#source("data_pipeline_scripts/102_ticker_logs_to_dataset.R")
 
 #####################################################
 # TRADE SCRIPTS #####################################
 # Check the trading mode in parameters.R
 # Clean out environment so we know this script works in a clean environment
-rm(list=ls())
-source("load_slow_moving_data.R")
-source("data_pipeline_scripts/data_pipeline_functions.R")
+#rm(list=ls())
+# Load the parameters and the algorithm
+source("set_paths.R")
 source("parameters.R")
 source("algorithm.R")
-source("trading_functions.R")
-source("initialize_portfolio.R")
 
+# Load data and utils
+# Maybe this should be wrapped into an 'initialize_environment' script
+#source("load_slow_moving_data.R")
+
+# CHECK PARAMETER HEALTH
 if(!(run_mode %in% allowed_modes)) {
   print("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
 } else {
-  
+
+source("trading_functions.R")
+source("connect_to_broker.R")
+
+con <- connect_to_broker()
+
 # Create trading heartbeat
 print(paste("Running in", run_mode, "mode."))
 all_begin <- Sys.time()
@@ -82,9 +92,9 @@ repeat{
     print("WARNING: New target weights need to be generated.")
     # Compute new target weights
     print("ACTION: Running algorithm.R.")
-     target_weights <- compute_weights(runtime_ticker_data, metrics)
+    target_weights <- compute_weights(runtime_ticker_data, metrics)
     # Validate new target weights
-    weight_validation <- sum(target_weights$weights)
+    weight_validation <- sum(target_weights$target_weight)
     print(paste("CHECK: Sum of all weights is", round(weight_validation, 5), "(rounded to 5 decimal points)."))
     if(round(weight_validation, 5) != 1) {
       stop("ERROR: Weights don't sum to 1")
@@ -92,11 +102,16 @@ repeat{
   } else {
     print("OK: Target weights are fine.")}
   
-  #### NEXT: TRADING ENGINE
+  #### NEXT: TRADE SUBMISSION
+  transaction_log <- get_transaction_log()
+  trade_history <- get_trade_history()
+  positions <- compute_positions(transaction_log, trade_history)
+  trades <- compute_trades(target_weights, positions)
+  # submit_orders(trades)
+  # rm(transaction_log, trade_history, positions, trades)
+  # 
   
-  # 4. Compute current portfolio weights
-  # 5. Compute required trades
-  # 6. Submit orders -> save to feather? 
+  #### NEXT: TRADER SIMULATION
   #    Another process - the trader - can read feather and trade
   
   

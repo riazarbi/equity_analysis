@@ -5,6 +5,7 @@ rm(list=ls())
 # Log the time taken for the script
 begin <- Sys.time()
 # Read in data pipeline functions
+source("set_paths.R")
 source("data_pipeline_scripts/data_pipeline_functions.R")
 
 # Create a dataframe of data log files
@@ -24,7 +25,7 @@ print("Converting all csv files in the datalog to feather file format...")
 filenames <- data_log$filename  
 
 # For each csv, check if there is a feather and, if not, create a feather sidecar
-lapply(filenames, function(i){
+mclapply(filenames, function(i){
   # only look at csv files
   if(tools::file_ext(i) == "csv") {
     # define the new possible feather file path

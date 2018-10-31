@@ -25,6 +25,7 @@ end_backtest <- "2010-01-05"
 portfolio_starting_configs <- c("CASH", "STOCK")
 portfolio_starting_config <- "CASH"
 portfolio_starting_value <- 1000000
+cash_buffer_percentage <- 0.05
 
 ###################################################################
 
@@ -51,3 +52,4 @@ if (length(metrics)==0){
 # Convert date strings to date objects
 start_backtest <- ymd(start_backtest)
 end_backtest <- ymd(end_backtest)
+

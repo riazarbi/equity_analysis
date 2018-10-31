@@ -71,4 +71,67 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
 }
 
 #########################################################################################
+get_stock_price <- function(ticker, execution_date) {
+  prices <- runtime_ticker_data[[ticker]] %>% 
+         dplyr::filter(date == max(date)) %>% 
+         select(PX_LAST, PX_LOW, PX_VOLUME)
 
+}
+
+#########################################################################################
+
+# COMPUTE POSITIONS
+
+compute_positions <- function(transaction_log, trade_history) {
+  positions <- data.frame(matrix(ncol = 3, nrow = 0))
+  x <- c("portfolio_members", "starting_position", "starting_value" )
+  colnames(positions) <- x
+  cash_row <- c("CASH", sum(transaction_log$amount), sum(transaction_log$amount))
+  positions[nrow(positions)+1,] <- cash_row
+  positions$starting_position <- as.numeric(positions$starting_position)
+  positions$starting_value <- as.numeric(positions$starting_value)
+  if(nrow(trade_history) != 0) {
+    # here we compute portfolio member positions
+  }
+  return(positions)
+}
+#########################################################################################
+
+# COMPUTE TRADES
+compute_trades <- function(target_weights, positions) {
+  # Bind target weights and positions
+  trades <- plyr::rbind.fill(positions, target_weights)
+  # Get price of each stock
+  trades$price <- 1
+  # Convert all NA to 0
+  trades[is.na(trades)] <- 0
+  # Compute portfolio value
+  portfolio_value <- sum(trades$starting_value)
+  # Adjust target weights for cash buffer percentage
+  trades$target_weight <- trades$target_weight*(1-cash_buffer_percentage)
+  # Fill in the cash target weight
+  trades[trades$portfolio_members == 'CASH', "target_weight"] <- cash_buffer_percentage
+  # Compute target values
+  trades$target_value <- trades$target_weight*portfolio_value
+  # Compute the value of the equalizing trades
+  trades$order_value <- trades$target_value - trades$starting_value
+  # Compute how many units need to be trades of each stock
+  trades$order_units <- trades$order_value/trades$price
+  trades$order_units_int <- round(trades$order_units,0)
+  # Assign each order as a BUY or SELL
+  trades <- trades %>%
+    mutate(order_type = ifelse(order_value < 0, "SELL", ifelse(order_value > 0, "BUY", "NO TRADE" )))
+  # Make sure the math works
+  if(round(sum(trades$target_value),2) != round(portfolio_value,2)) {
+    rm(trades)
+    stop("ERROR: Portfolio target values and existing portfolio value are not equal.")
+  } else if(round(sum(trades$target_weight),5) != 1) {
+    rm(trades)
+    stop("ERROR: Portfolio target weights don't sum to 1.")
+  } else if(round(sum(trades$order_value),2) != 0) {
+    rm(trades)
+    stop("ERROR: Order values are not cash neutral.")
+  }
+  return(trades)
+  
+}

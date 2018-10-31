@@ -3,6 +3,7 @@ print("NEXT: Creating individual ticker datasets...")
 # Clear environment
 rm(list=ls())
 # Read in data_pipeline functions
+source("set_paths.R")
 source("data_pipeline_scripts/data_pipeline_functions.R")
 # Time the script
 begin <- Sys.time()
