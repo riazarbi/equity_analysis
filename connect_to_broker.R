@@ -17,6 +17,39 @@ if(run_mode=="BACKTEST") {
   return(con)
   }
   
+# get stock price
+  result = tryCatch({
+    expr
+  }, warning = function(w) {
+    warning-handler-code
+  }, error = function(e) {
+    error-handler-code
+  
+  
+  get_stock_quote <- function(ticker) {
+    quote <- c(NA, NA, NA)
+    result = tryCatch({
+    quote_parameters <- price_data[[ticker]] %>% 
+            filter(date<=as.Date(runtime_date)) %>% 
+            filter(date==max(date)) %>% 
+            select(max_price, min_price, spread, PX_VOLUME)
+    # I take a random number between min and max,
+    # And then I compute bid and offer from the spread.
+    midpoint <- runif(1, quote_parameters$min_price, quote_parameters$max_price)
+    bid <- midpoint - quote_parameters$spread
+    offer <- midpoint + quote_parameters$spread
+    # How much volume is on offer? 
+    # I've simply divided the total volume
+    # Into trading windows, which are a function of the heartbeat_duration
+    # I assume trading day is 8 hours.
+    size <- quote_parameters$PX_VOLUME/(8*60*60/heartbeat_duration)
+    quote <- c(bid, offer, size)
+    }, error = function(e) {
+    })
+    names(quote) <- c("bid", "offer", "size")
+    return(quote)
+  }
+  
   # Get trade history
   get_trade_history <- function(con) {
     if(file.exists("trade_history.feather")){
@@ -66,6 +99,7 @@ if(run_mode=="BACKTEST") {
     return(transaction_log)
   }
   
+  # submit orders
   submit_orders <- function(trades) {
     # read trades
     

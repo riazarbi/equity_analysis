@@ -140,6 +140,42 @@ ticker_data <- sapply(ticker_data,
 print(paste("Slow Moving Data object size:", 
             format(object.size(ticker_data), units="auto", standard = "IEC")))
 
+#############################################################################################
+# Create a market dataset
+print("NEXT: Loading price data into memory...")
+price_related_data <- c("date", 
+                        "PX_OPEN",
+                        "PX_OFFICIAL_CLOSE",
+                        "PX_LAST",
+                        "PX_HIGH",
+                        "PX_LOW",
+                        "BLOOMBERG_CLOSE_PRICE")
+print("NEXT: Loading volume data into memory")
+
+volume_data <- c("date",
+                 "PX_VOLUME")
+
+price_data <- sapply(ticker_data, 
+       function(x) {
+         my.max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
+         my.min <- function(x) ifelse( !all(is.na(x)), min(x, na.rm=T), NA)
+         y <- x %>% 
+           dplyr::select(one_of(price_related_data))
+         date_stash <- y$date
+         y <- y %>% 
+           select(-date) %>% 
+           mutate(max_price = apply(., 1, my.max)) %>% 
+           mutate(min_price = apply(., 1, my.min)) %>%
+           mutate(spread = 0.001*min_price) %>%
+           add_column(date=date_stash)
+         z <- x %>% 
+           dplyr::select(one_of(volume_data))
+         # NOTE: Spread is arbitrary!
+         # https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf
+         # Try create a more realistic estimate of spread
+         x <- full_join(z, y, by = "date")
+})
+
 # Save the time this script completed so that we know it has run. 
 ticker_data_load_date <- Sys.time()
 # Print how long the script took to run

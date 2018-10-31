@@ -174,7 +174,7 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 |Inside loop: Eliminate look-ahead bias|X|X|
 |Inside loop: Create target portfolio weights|X|X|
 |Inside loop: Track existing portfolio weights|||
-|Inside loop: Compute order list|||
+|Inside loop: Compute order list|X||
 |Inside loop: Submit orders to trading engine|||
 |Inside loop: Save successful orders to transaction log|||
 |Logging: Create backtest archive directory |||

@@ -71,14 +71,6 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
 }
 
 #########################################################################################
-get_stock_price <- function(ticker, execution_date) {
-  prices <- runtime_ticker_data[[ticker]] %>% 
-         dplyr::filter(date == max(date)) %>% 
-         select(PX_LAST, PX_LOW, PX_VOLUME)
-
-}
-
-#########################################################################################
 
 # COMPUTE POSITIONS
 
@@ -102,6 +94,9 @@ compute_trades <- function(target_weights, positions) {
   # Bind target weights and positions
   trades <- plyr::rbind.fill(positions, target_weights)
   # Get price of each stock
+  quotes <- as.data.frame(
+    t(do.call(cbind, lapply(trades$portfolio_members, get_stock_quote)))) %>%
+    mutate(portfolio_members=trades$portfolio_members)
   trades$price <- 1
   # Convert all NA to 0
   trades[is.na(trades)] <- 0
@@ -133,5 +128,6 @@ compute_trades <- function(target_weights, positions) {
     stop("ERROR: Order values are not cash neutral.")
   }
   return(trades)
-  
 }
+
+
