@@ -163,7 +163,7 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 |Easily switch between backtesting and live trading |X||
 |Specify generic portfolio weighting rule |X|X|
 |Automatically load master dataset|X|X|
-|Simulate market data stream|||
+|Simulate market data stream|X|X|
 |Build trading engine|||
 |Model slippage and trading costs|||
 |Keep track of trades|||
@@ -174,8 +174,8 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 |Inside loop: Eliminate look-ahead bias|X|X|
 |Inside loop: Create target portfolio weights|X|X|
 |Inside loop: Track existing portfolio weights|||
-|Inside loop: Compute order list|X||
-|Inside loop: Submit orders to trading engine|||
+|Inside loop: Compute order list|X|X|
+|Inside loop: Submit orders to trading engine|X|X|
 |Inside loop: Save successful orders to transaction log|||
 |Logging: Create backtest archive directory |||
 |Logging: Save transactions|||

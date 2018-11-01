@@ -18,8 +18,8 @@ market_metrics <- c("CUR_MKT_CAP", "PX_LAST")
 fundamental_metrics <- c() 
 
 # Timeframe
-start_backtest <- "2010-01-01"
-end_backtest <- "2010-01-05"
+start_backtest <- "2017-01-01"
+end_backtest <- "2017-01-05"
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")

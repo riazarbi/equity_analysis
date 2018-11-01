@@ -142,7 +142,7 @@ print(paste("Slow Moving Data object size:",
 
 #############################################################################################
 # Create a market dataset
-print("NEXT: Loading price data into memory...")
+print("NEXT: Loading price and volume data into memory...")
 price_related_data <- c("date", 
                         "PX_OPEN",
                         "PX_OFFICIAL_CLOSE",
@@ -150,7 +150,6 @@ price_related_data <- c("date",
                         "PX_HIGH",
                         "PX_LOW",
                         "BLOOMBERG_CLOSE_PRICE")
-print("NEXT: Loading volume data into memory")
 
 volume_data <- c("date",
                  "PX_VOLUME")

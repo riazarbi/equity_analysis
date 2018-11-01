@@ -93,13 +93,13 @@ compute_positions <- function(transaction_log, trade_history) {
 compute_trades <- function(target_weights, positions) {
   # Bind target weights and positions
   trades <- plyr::rbind.fill(positions, target_weights)
+  # Convert all NA to 0
+  trades[is.na(trades)] <- 0
   # Get price of each stock
   quotes <- as.data.frame(
     t(do.call(cbind, lapply(trades$portfolio_members, get_stock_quote)))) %>%
     mutate(portfolio_members=trades$portfolio_members)
-  trades$price <- 1
-  # Convert all NA to 0
-  trades[is.na(trades)] <- 0
+  trades <- left_join(trades,quotes, by="portfolio_members")
   # Compute portfolio value
   portfolio_value <- sum(trades$starting_value)
   # Adjust target weights for cash buffer percentage
@@ -110,12 +110,15 @@ compute_trades <- function(target_weights, positions) {
   trades$target_value <- trades$target_weight*portfolio_value
   # Compute the value of the equalizing trades
   trades$order_value <- trades$target_value - trades$starting_value
+  
+  trades <- trades %>% mutate(price = (bid+offer)/2)
   # Compute how many units need to be trades of each stock
-  trades$order_units <- trades$order_value/trades$price
+  trades$order_units <- trades$order_value/trades$price*100
   trades$order_units_int <- round(trades$order_units,0)
   # Assign each order as a BUY or SELL
   trades <- trades %>%
-    mutate(order_type = ifelse(order_value < 0, "SELL", ifelse(order_value > 0, "BUY", "NO TRADE" )))
+    mutate(order_type = ifelse(order_value < 0, "SELL", ifelse(order_value > 0, "BUY", "NO TRADE" ))) %>%
+    mutate(limit = ifelse(order_value < 0, bid, ifelse(order_value > 0, offer, NA )))
   # Make sure the math works
   if(round(sum(trades$target_value),2) != round(portfolio_value,2)) {
     rm(trades)
@@ -127,6 +130,11 @@ compute_trades <- function(target_weights, positions) {
     rm(trades)
     stop("ERROR: Order values are not cash neutral.")
   }
+  # Select only the most relevant columns
+  trades <- trades %>%
+    select(portfolio_members, order_type, limit, order_units_int, order_value) %>%
+    tidyr::drop_na()
+  
   return(trades)
 }
 

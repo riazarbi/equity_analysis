@@ -18,14 +18,6 @@ if(run_mode=="BACKTEST") {
   }
   
 # get stock price
-  result = tryCatch({
-    expr
-  }, warning = function(w) {
-    warning-handler-code
-  }, error = function(e) {
-    error-handler-code
-  
-  
   get_stock_quote <- function(ticker) {
     quote <- c(NA, NA, NA)
     result = tryCatch({
@@ -49,7 +41,7 @@ if(run_mode=="BACKTEST") {
     names(quote) <- c("bid", "offer", "size")
     return(quote)
   }
-  
+
   # Get trade history
   get_trade_history <- function(con) {
     if(file.exists("trade_history.feather")){
@@ -101,8 +93,21 @@ if(run_mode=="BACKTEST") {
   
   # submit orders
   submit_orders <- function(trades) {
+    # b. get quotes
+    quotes <- as.data.frame(
+      t(do.call(cbind, lapply(trades$portfolio_members, get_stock_quote)))) %>%
+      mutate(portfolio_members=trades$portfolio_members)
+    
+    # c. join trades and quotes
+    trades <- left_join(trades, quotes, on="portfolio_members")
+    # b. only allocate the min of amount or available
+
+    # c. create transaction logs and trade history
+    # d. append to feather files
+    # e. write to feather files
     # read trades
     
+
     # Append trades to logs
     transaction_log <- get_transaction_log(con)
     trade_history <- get_trade_history(con)

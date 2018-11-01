@@ -103,9 +103,13 @@ repeat{
     print("OK: Target weights are fine.")}
   
   #### NEXT: TRADE SUBMISSION
+  print("ACTION: Loading Transaction Log")
   transaction_log <- get_transaction_log()
+  print("ACTION: Loading Trade History")
   trade_history <- get_trade_history()
+  print("ACTION: Computing Current Positions")
   positions <- compute_positions(transaction_log, trade_history)
+  print("ACTION: Creating Order List")
   trades <- compute_trades(target_weights, positions)
   # submit_orders(trades)
   # rm(transaction_log, trade_history, positions, trades)
