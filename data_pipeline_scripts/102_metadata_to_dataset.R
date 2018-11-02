@@ -34,7 +34,8 @@ if(nrow(filtered_data_log >= 1)) {
     metadata$timestamp <- filtered_data_log$timestamp[1]
     metadata$source <- filtered_data_log$source[1]
     # Melt the data into the correct format
-    all_data <- metadata %>% gather(metric, value, -timestamp, -source, -TICKER_AND_EXCH_CODE)}
+    all_data <- metadata %>% gather(metric, value, -timestamp, -source, -market_identifier)
+    }
 }
 
 if(nrow(filtered_data_log > 1)) {
@@ -45,7 +46,8 @@ if(nrow(filtered_data_log > 1)) {
       metadata$timestamp <- filtered_data_log$timestamp[i]
       metadata$source <- filtered_data_log$source[i]
       # Melt the data into the correct format
-      new_data <- metadata %>% gather(metric, value, -timestamp, -source, -TICKER_AND_EXCH_CODE)}
+      new_data <- metadata %>% gather(metric, value, -timestamp, -source, -market_identifier)
+      }
       # Bind the data
       all_data <- bind_rows(all_data, new_data)
       # Drop NA values
@@ -66,13 +68,15 @@ if (file.exists(persistent_storage)) {
 # Keep only the most recent timestamp
 # Of identical entries
 filtered <- all_data %>% 
-  mutate(key=paste(source, TICKER_AND_EXCH_CODE, metric, value, sep = "|")) %>%
+  mutate(key=paste(source, market_identifier, metric, value, sep = "|")) %>%
   arrange(desc(key)) %>%
   filter(key != lag(key, default="0")) %>% 
   select(-key)
 
 # Finally, write dataframe to disk
 write_feather(filtered, persistent_storage)
-
+# Confirm it's there
+glimpse(feather(persistent_storage))
+# Benchmark script timing
 end <- Sys.time()
 print(end - begin)

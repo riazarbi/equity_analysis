@@ -24,10 +24,10 @@ compute_weights <- function(algo_data, metrics) {
   algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
   # 2. COMPUTE AGGREGATE MEASURE
   # Compute the index market cap
-  index_mkt_cap <- algo_data %>% map(function(x) sum(x$CUR_MKT_CAP)) %>% reduce(`+`)
+  index_mkt_cap <- algo_data %>% map(function(x) sum(x$market_cap)) %>% reduce(`+`)
   
   # ASSIGN WEIGHTS AS % OF AGGREGATE
-  target_weight <- sapply(algo_data, function(x) sum(x$CUR_MKT_CAP)/index_mkt_cap )  
+  target_weight <- sapply(algo_data, function(x) sum(x$market_cap)/index_mkt_cap )  
   # CREATE LIST OF TICKER NAMES
   portfolio_members <- names(algo_data)
   # PAIR EACH TICKER TO ITS WEIGHT

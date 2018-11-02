@@ -38,7 +38,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   cl <- makeCluster(n_cores, outfile="")
   registerDoParallel(cl)
   
-  foreach(i = 1:length(tickers)) %dopar% {
+  foreach(i = 1:length(tickers), .packages = c("magrittr", "dplyr", "feather")) %dopar% {
     source("data_pipeline_scripts/data_pipeline_functions.R")
     # Define table name for the ticker
     table_name <- stringr::str_replace_all(tickers[i],"[[:punct:]\\s]+","_")

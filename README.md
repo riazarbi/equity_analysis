@@ -4,6 +4,12 @@ TODO:
 2. Migrate dimensions into json scraper parameters file. Or a connections file? 
 3. Document the features of the datalog for point-in-time datasets, total eraseablity and portability
 
+THINGS I WANT TO DETECT:
+Survivorship bias
+Lookahead bias
+Vendors changing data
+
+
 # Technical Document: A fully replicable Equity backtesting workflow
 
 _Created by Riaz Arbi in fulfilment of the dissertation requirements for an MSc in Data Science at the University of Cape Town_

@@ -5,6 +5,7 @@ library(data.table)
 library(lubridate)
 library(magrittr)
 library(dplyr)
+library(parallel)
 
 ###################################################################
 # SET DIRECTORIES

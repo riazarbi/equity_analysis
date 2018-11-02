@@ -42,7 +42,7 @@ tickers <- unique(tickers)
 # Load metadata array
 # Rename metadata TICKER_AND_EXCH_CODE column to ticker
 metadata <- read_feather(file.path(dataset_directory, "metadata_array", "metadata_array.feather")) %>%
-  rename(ticker = TICKER_AND_EXCH_CODE)
+  rename(ticker = market_identifier)
 
 # Replace ticker whitepace with _
 # so they can be legal variable names (as above)
@@ -73,10 +73,10 @@ rm(tickers)
 # Build list of ticker dataframes
 # Create a filename column in the metadata array for marketdata lookups.
 metadata$marketdata_filename <- str_replace_all(metadata$ticker," ","_") %>% 
-                                   paste("_Equity.feather", sep="")
+                                   paste(".feather", sep="")
 # Infer fundamental filename for each ticker
-metadata$fundamental_filename <- str_replace_all(metadata$ID_ISIN," ","_") %>%
-                                   paste("_Equity.feather", sep="")
+metadata$fundamental_filename <- str_replace_all(metadata$fundamental_identifier," ","_") %>%
+                                   paste(".feather", sep="")
 
 ##########################################################################
 # NBNBNBNB: Metadata dataset will need to be timestamp filtered
@@ -86,7 +86,7 @@ metadata$fundamental_filename <- str_replace_all(metadata$ID_ISIN," ","_") %>%
 # Load each ticker into a dataframe
 ticker_data <- list()
 for (i in 1:length(metadata$ticker)){
-  ticker <- (metadata$ticker[i])
+  ticker <- metadata$ticker[i]
   cat("\r", paste("Loading", ticker, "              "))
   # Define the file paths of the datasets
   marketdata_filename <- metadata$marketdata_filename[i]
@@ -132,10 +132,9 @@ ticker_data <- ticker_data[sapply(ticker_data,
                               function(x) (dim(x)[1]) > 0)]
 # TRANSFORM: into FLATFILE form
 print("Casting ticker_data into flatfile form.")
-ticker_data <- sapply(ticker_data, 
+ticker_data <- lapply(ticker_data, 
                     function(x)
-                      x %>% reshape2::dcast(date + source ~ metric))
-
+                      x %>% spread(metric, value))
 # Get object size of test data
 print(paste("Slow Moving Data object size:", 
             format(object.size(ticker_data), units="auto", standard = "IEC")))
@@ -144,17 +143,16 @@ print(paste("Slow Moving Data object size:",
 # Create a market dataset
 print("NEXT: Loading price and volume data into memory...")
 price_related_data <- c("date", 
-                        "PX_OPEN",
-                        "PX_OFFICIAL_CLOSE",
-                        "PX_LAST",
-                        "PX_HIGH",
-                        "PX_LOW",
-                        "BLOOMBERG_CLOSE_PRICE")
+                        "open",
+                        "high",
+                        "low",
+                        "close",
+                        "last")
 
 volume_data <- c("date",
-                 "PX_VOLUME")
+                 "volume")
 
-price_data <- sapply(ticker_data, 
+price_data <- lapply(ticker_data, 
        function(x) {
          my.max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
          my.min <- function(x) ifelse( !all(is.na(x)), min(x, na.rm=T), NA)
@@ -162,10 +160,10 @@ price_data <- sapply(ticker_data,
            dplyr::select(one_of(price_related_data))
          date_stash <- y$date
          y <- y %>% 
-           select(-date) %>% 
+           select(-date)  %>% 
            mutate(max_price = apply(., 1, my.max)) %>% 
            mutate(min_price = apply(., 1, my.min)) %>%
-           mutate(spread = 0.001*min_price) %>%
+           mutate(spread = standard_spread*max_price) %>%
            add_column(date=date_stash)
          z <- x %>% 
            dplyr::select(one_of(volume_data))

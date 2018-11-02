@@ -24,6 +24,7 @@ stock_listing_date <- sample(long_duration_date_sequence, number_constituents)
 stock_lifetimes <- data.frame(stock_universe, stock_listing_date) 
 stock_lifetimes$stock_universe <- as.character(stock_lifetimes$stock_universe)
 
+#
 row(stock_lifetimes)
 for (i in seq_along(stock_lifetimes$stock_universe)){
   listing_date <- stock_lifetimes[i,2]

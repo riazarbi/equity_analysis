@@ -33,7 +33,7 @@ if(nrow(filtered_data_log >= 1)) {
   
   constituents <- read_feather(paste("datalog", filtered_data_log[1,]$filename, sep = "/"))
   
-  constituents <- constituents[,-2]
+  constituents <- constituents[,1]
   colnames(constituents)[1] <- "ticker"
   
   if (nrow(constituents) >= 1) {
@@ -51,7 +51,7 @@ if(nrow(filtered_data_log > 1)) {
     new_constituents <- read_feather(paste("datalog", filtered_data_log[i,]$filename, sep = "/"))
     index <- str_split_fixed(filtered_data_log[i,]$data_label, "_", 2)[2]
     date_of_fact <- str_split_fixed(filtered_data_log[i,]$data_label, "_", 2)[1]
-    new_constituents <- new_constituents[,-2]
+    new_constituents <- new_constituents[,1]
     colnames(new_constituents)[1] <- "ticker"
     if (nrow(new_constituents) >= 1) {
       # add timestamp ID and source
@@ -90,6 +90,8 @@ filtered <- constituents %>%
 
 # Finally, write dataframe to disk
 write_feather(filtered, persistent_storage)
-
+# Confirm it's there
+glimpse(feather(persistent_storage))
+# Benchmark script timing
 end <- Sys.time()
 print(end - begin)

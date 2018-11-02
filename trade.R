@@ -1,44 +1,26 @@
 # LOAD ENVIRONMENT ##################################
 all_begin <- Sys.time()
-
-# data_pipeline_scripts - ONCE DAILY
-# Maybe wrap into their own script
-# All these scripts can be run independently - they actually clear the
-# environment before running.
-# These scripts are not parametrized, and they don't need to be.
-#source("data_pipeline_scripts/100_bloombergUSD_to_datalog.R")
-#source("data_pipeline_scripts/100_bloombergZAR_to_datalog.R")
-#source("data_pipeline_scripts/101_datalog_csv_to_feather.R")
-#source("data_pipeline_scripts/102_constituents_to_dataset.R")
-#source("data_pipeline_scripts/102_metadata_to_dataset.R")
-#source("data_pipeline_scripts/102_ticker_logs_to_dataset.R")
-
 #####################################################
 # TRADE SCRIPTS #####################################
-# Check the trading mode in parameters.R
 # Clean out environment so we know this script works in a clean environment
-#rm(list=ls())
+rm(list=ls())
 # Load the parameters and the algorithm
 source("set_paths.R")
 source("parameters.R")
 source("algorithm.R")
-
-# Load data and utils
-# Maybe this should be wrapped into an 'initialize_environment' script
-#source("load_slow_moving_data.R")
-
 # CHECK PARAMETER HEALTH
 if(!(run_mode %in% allowed_modes)) {
-  print("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
-} else {
-
+  stop("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
+} 
+print(paste("Running in", run_mode, "mode."))
+# Load trading functions
 source("trading_functions.R")
 source("connect_to_broker.R")
-
+#####################################################
+# ACTUALLY TRADE  ###################################
 con <- connect_to_broker()
 
 # Create trading heartbeat
-print(paste("Running in", run_mode, "mode."))
 all_begin <- Sys.time()
 # Set heartbeat count to 0
 heartbeat_count <- 0
@@ -48,11 +30,11 @@ repeat{
   runtime_date <- Sys.Date()
   # If backtest, runtime_date = start backtest + heartbeat in seconds
   } else if (run_mode == "BACKTEST") {
-  runtime_date <- start_backtest + seconds(heartbeat_count)
+  runtime_date <- as.POSIXct(start_backtest) + seconds(heartbeat_count)
   }
   
   print(paste("=========== Runtime date:", runtime_date, "==========="))
-  
+  runtime_begin <- Sys.time()
   # THE BELOW CODE RUNS REGARDLESS OF TRADING MODE
   # 1. VERIFY SLOW MOVING DATA IS IN MEMORY
   print("CHECK: Has slow-moving data been loaded into memory?")
@@ -111,13 +93,13 @@ repeat{
   positions <- compute_positions(transaction_log, trade_history)
   print("ACTION: Creating Order List")
   trades <- compute_trades(target_weights, positions)
-  # submit_orders(trades)
-  # rm(transaction_log, trade_history, positions, trades)
-  # 
+  print("ACTION: Submitting Trades")
+  submit_orders(trades)
+  rm(transaction_log, trade_history, positions, trades)
   
-  #### NEXT: TRADER SIMULATION
-  #    Another process - the trader - can read feather and trade
-  
+  # RUNTIME PROCESSING TIME
+  runtime_end <- Sys.time()
+  print(paste("INFO: Heartbeat processing time:", runtime_end - runtime_begin, "seconds"))
   
   # SLEEP CONDITIONS
   # Sleep the runtime if trading mode is live
@@ -138,29 +120,6 @@ repeat{
   heartbeat_count <- heartbeat_count + heartbeat_duration
 }  
 
-
 all_end <- Sys.time()
 print(all_end - all_begin)
-}
 
-# CREATE A TARGET PORTFOLIO - ALSO ONCE DAILY
-
-#What does a trader do? 
-#  2. Check target portfolio weights
-#  3. Check existing portfolio
-#  4. Compute required trades
-#  5. Trade to resolve
-#  6. Repeat every 10 min
-
-  
-
-
-
-# TRADE TOWARDS THE TARGET PORTFOLIO
-# source("400_trade.R")
-# Restore output to console
-#sink() 
-#sink(type="message")
-
-# And look at the log...
-#cat(readLines("test.log"), sep="\n")

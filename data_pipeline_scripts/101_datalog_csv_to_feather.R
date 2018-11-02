@@ -45,6 +45,11 @@ mclapply(filenames, function(i){
 })
 
 print("CSV to feather conversions done.")
+print("Checking there are the same number of CSVs and feather files:")
+data_log <- convert_datalog_to_dataframe()
+print(knitr::kable(data_log %>% 
+  group_by(ext) %>% 
+  summarise(n())))
 # Get execution time
 end <- Sys.time()
 print(end-begin)
