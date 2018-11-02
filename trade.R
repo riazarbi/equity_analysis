@@ -2,20 +2,23 @@
 all_begin <- Sys.time()
 #####################################################
 # TRADE SCRIPTS #####################################
-# Clean out environment so we know this script works in a clean environment
-rm(list=ls())
 # Load the parameters and the algorithm
+rm(list=ls())
 source("set_paths.R")
-source("parameters.R")
-source("algorithm.R")
+source("portfolio/parameters.R")
+source("portfolio/algorithm.R")
+# Load trading functions
+source("trading_functions.R")
+source("connect_to_broker.R")
+# Clean out environment so we know this script works in a clean environment
+unlink("portfolio/transaction_log.feather")
+unlink("portfolio/trade_history.feather")
+unlink("portfolio/runtime_log")
 # CHECK PARAMETER HEALTH
 if(!(run_mode %in% allowed_modes)) {
   stop("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
 } 
 print(paste("Running in", run_mode, "mode."))
-# Load trading functions
-source("trading_functions.R")
-source("connect_to_broker.R")
 #####################################################
 # ACTUALLY TRADE  ###################################
 con <- connect_to_broker()
@@ -35,6 +38,8 @@ repeat{
   
   print(paste("=========== Runtime date:", runtime_date, "==========="))
   runtime_begin <- Sys.time()
+  # START LOGGING
+  log <- as.character(runtime_date)
   # THE BELOW CODE RUNS REGARDLESS OF TRADING MODE
   # 1. VERIFY SLOW MOVING DATA IS IN MEMORY
   print("CHECK: Has slow-moving data been loaded into memory?")
@@ -91,8 +96,16 @@ repeat{
   trade_history <- get_trade_history()
   print("ACTION: Computing Current Positions")
   positions <- compute_positions(transaction_log, trade_history)
+  # obtain valuation
+  # log total value
+  valuation <- portfolio_valuation(positions)
+  total_value <- sum(valuation$value)
+  log <- paste(log, total_value, sep = ", ")
   print("ACTION: Creating Order List")
   trades <- compute_trades(target_weights, positions)
+  # log value of trades
+  value_of_trades <- sum(trades$order_value) - (trades %>% filter(portfolio_members == "CASH"))$order_value
+  log <- paste(log, value_of_trades, sep = ", ")
   print("ACTION: Submitting Trades")
   submit_orders(trades)
   rm(transaction_log, trade_history, positions, trades)
@@ -101,12 +114,16 @@ repeat{
   runtime_end <- Sys.time()
   print(paste("INFO: Heartbeat processing time:", runtime_end - runtime_begin, "seconds"))
   
+  # WRITE OUT TO LOG
+  write(log, file="portfolio/runtime_log",append=TRUE)
+  
   # SLEEP CONDITIONS
   # Sleep the runtime if trading mode is live
   if(run_mode == "LIVE") {
     print(paste("Heartbeat count:", heartbeat_count, "(seconds)."))
     print(paste("Sleeping for", heartbeat_duration, "seconds."))
-    Sys.sleep(heartbeat_duration)}
+    Sys.sleep(heartbeat_duration)
+    } 
   
   # BREAK CONDITIONS
   # Break the runtime if the backtest ends
@@ -120,6 +137,11 @@ repeat{
   heartbeat_count <- heartbeat_count + heartbeat_duration
 }  
 
+output <- list.files("portfolio")
+file.copy(from=file.path("portfolio",output), to=portfolio_directory, 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE)
+
+
 all_end <- Sys.time()
 print(all_end - all_begin)
-

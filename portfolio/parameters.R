@@ -12,7 +12,7 @@ run_mode <- "BACKTEST"
 heartbeat_duration <- 1200
 
 # Universe
-constituent_index <- "SIMPLE_XYHVQ"
+constituent_index <- "SINGLE_STOCK"
 data_source <- "simulated"
 market_metrics <- c()
 fundamental_metrics <- c() 
@@ -25,11 +25,11 @@ end_backtest <- "2017-01-10"
 portfolio_starting_configs <- c("CASH", "STOCK")
 portfolio_starting_config <- "CASH"
 portfolio_starting_value <- 1000
-cash_buffer_percentage <- 0#0.05
+cash_buffer_percentage <- 0
 
 # Trading characteristics
-commission_rate <- 0 #0.005
-minimum_commission <- 0 #0.1
+commission_rate <- 0
+minimum_commission <- 0
 standard_spread <- 0
 
 ###################################################################
@@ -42,8 +42,7 @@ dir.create(portfolios_directory, showWarnings = FALSE)
 
 timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
 data_type <- "backtest_data"
-#portfolio_data_identifier <- "data" 
-portfolio_directory <- paste(timestamp, data_source, data_type, sep = "__")
+portfolio_directory <- paste(data_source, constituent_index, data_type, sep = "__")
 portfolio_directory <- file.path(portfolios_directory, portfolio_directory)
 dir.create(portfolio_directory, showWarnings = FALSE)
 ###################################################################

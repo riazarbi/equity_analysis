@@ -30,7 +30,7 @@ simulation_monthly_date_sequence <- seq(early_start_simulation, end_simulation, 
 #################################################################################################
 print("CREATING SIMPLE INDEX ===================================>")
 # Create index
-index <- paste("SIMPLE", do.call(paste0, replicate(5, sample(LETTERS, 1, TRUE), FALSE)), sep="_")
+index <- "SINGLE_STOCK"
 number_constituents <- 1
 
 # Create stock universe
@@ -134,7 +134,7 @@ for (stock in metadata$fundamental_identifier) {
 #################################################################################################
 print("CREATING SIMPLE INDEX ===================================>")
 # Create index
-index <- paste("SIMPLE", do.call(paste0, replicate(5, sample(LETTERS, 1, TRUE), FALSE)), sep="_")
+index <- "FIFTY_STOCKS"
 number_constituents <- 50
 
 # Create stock universe

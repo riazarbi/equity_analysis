@@ -1,7 +1,7 @@
 # DATA FILES
 datalog/*
 datasets/*
-portfolio_weights/*
+portfolios/*
 #dimensions/*
 !datalog/000000000000000__source__data_type__data_identifier.csv
 
