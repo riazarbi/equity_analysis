@@ -3,8 +3,8 @@ print("NEXT: Creating metadata dataset...")
 # Clear environment
 rm(list=ls())
 # Read in data_pipeline functions
-source("set_paths.R")
-source("data_pipeline_scripts/data_pipeline_functions.R")
+source("scripts/data_pipeline/set_paths.R")
+source("scripts/data_pipeline/data_pipeline_functions.R")
 # Time the script
 begin <- Sys.time()
 
@@ -28,7 +28,7 @@ nrow(filtered_data_log)
 print("Processing ticker metadata files...")
 # Process the first metadata file
 if(nrow(filtered_data_log >= 1)) {
-  metadata <- read_feather(paste("datalog", filtered_data_log[1,]$filename, sep = "/"))
+  metadata <- read_feather(paste(datalog_directory, filtered_data_log[1,]$filename, sep = "/"))
   if (nrow(metadata) >= 1) {
     # add timestamp ID and source
     metadata$timestamp <- filtered_data_log$timestamp[1]
@@ -40,7 +40,7 @@ if(nrow(filtered_data_log >= 1)) {
 
 if(nrow(filtered_data_log > 1)) {
   for (i in 1:nrow(filtered_data_log)) {
-    metadata <- read_feather(paste("datalog", filtered_data_log[i,]$filename, sep = "/"))
+    metadata <- read_feather(paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"))
     if (nrow(metadata) >= 1) {
       # add timestamp ID and source
       metadata$timestamp <- filtered_data_log$timestamp[i]

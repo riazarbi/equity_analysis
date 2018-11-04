@@ -22,7 +22,7 @@ convert_datalog_to_dataframe <- function() {
 remove_empty_csvs <- function(data_log) {
   for (datalog in data_log$filename) { 
     if(tools::file_ext(datalog) == "csv") {
-      filepath <- file.path("datalog",datalog)
+      filepath <- file.path("data/datalog",datalog)
       loglength <- length(readLines(filepath))
       message <- paste(filepath, "                 ")
       cat("\r",message)
@@ -87,24 +87,3 @@ compact_dataset <- function(dataframe) {
   return(compact_data)
   
 }
-
-################################################################
-# LOAD DIMENSIONS
-################################################################
-# Read in the fundamental data fields dimension
-#fundamental_fields_file <- file.path(dimensions_directory, "fundamental_fields.csv")
-#fundamental_fields <- read.csv(fundamental_fields_file, header = FALSE, colClasses = "character")
-#fundamental_fields <- fundamental_fields[,1]
-#rm(fundamental_fields_file)
-
-# Read in the marketdata dimension
-#market_fields_file <- file.path(dimensions_directory, "market_fields.csv")
-#market_fields <- read.csv(market_fields_file, header = FALSE, colClasses = "character")
-#market_fields <- market_fields[,1]
-#rm(market_fields_file)
-
-# Read in the metadata dimension
-#metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
-#metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
-#metadata_fields <- metadata_fields[,1]
-#rm(metadata_fields_file)

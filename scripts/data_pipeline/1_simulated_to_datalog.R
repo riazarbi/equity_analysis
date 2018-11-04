@@ -5,13 +5,13 @@ library(feather)
 library(magrittr)
 library(dplyr)
 library(stringr)
-source("set_paths.R")
-source("data_pipeline_scripts/data_pipeline_functions.R")
+source("scripts/data_pipeline/set_paths.R")
+source("scripts/data_pipeline/data_pipeline_functions.R")
 
 # Make sure directories exist
 working_directory <- getwd()
 # Define directory paths
-data_directory <- file.path(working_directory, "datalog")
+data_directory <- file.path(working_directory, "data/datalog")
 # Make sure data_directory exists, create it if it does not
 dir.create(data_directory, showWarnings = FALSE)
 

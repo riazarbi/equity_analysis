@@ -3,8 +3,8 @@ print("NEXT: Creating individual ticker datasets...")
 # Clear environment
 rm(list=ls())
 # Read in data_pipeline functions
-source("set_paths.R")
-source("data_pipeline_scripts/data_pipeline_functions.R")
+source("scripts/data_pipeline/set_paths.R")
+source("scripts/data_pipeline/data_pipeline_functions.R")
 # Time the script
 begin <- Sys.time()
 
@@ -39,7 +39,8 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   registerDoParallel(cl)
   
   foreach(i = 1:length(tickers), .packages = c("magrittr", "dplyr", "feather")) %dopar% {
-    source("data_pipeline_scripts/data_pipeline_functions.R")
+    source("scripts/data_pipeline/set_paths.R")
+    source("scripts/data_pipeline/data_pipeline_functions.R")
     # Define table name for the ticker
     table_name <- stringr::str_replace_all(tickers[i],"[[:punct:]\\s]+","_")
     # Get list of files relating to the ticker
@@ -47,7 +48,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
     
     # build a master dataframe
     # read in the first data file
-    all_data <- feather::read_feather(paste("datalog", data_files$filename[1], sep = "/")) 
+    all_data <- feather::read_feather(paste(datalog_directory, data_files$filename[1], sep = "/")) 
     # Check if the data has any rows
     if (nrow(all_data) >= 1) {
       # add timestamp ID and source
@@ -64,7 +65,7 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
       # For each additional file
       for (j in 2:nrow(data_files)) {
         # Read the file data
-        table_data <- feather::read_feather(paste("datalog", data_files$filename[j], sep = "/")) 
+        table_data <- feather::read_feather(paste(datalog_directory, data_files$filename[j], sep = "/")) 
         # if the file has data
         if (nrow(table_data) >= 1) {
           # Melt the data into the correct format

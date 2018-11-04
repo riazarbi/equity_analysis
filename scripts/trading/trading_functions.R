@@ -191,8 +191,8 @@ if(run_mode=="BACKTEST") {
   
   # Get trade history
   get_trade_history <- function(con) {
-    if(file.exists("portfolio/trade_history.feather")){
-      trade_history <- read_feather("portfolio/trade_history.feather")
+    if(file.exists(file.path(results_path, "trade_history.feather"))){
+      trade_history <- read_feather(file.path(results_path, "trade_history.feather"))
     } else {
       trade_history <- data.frame(runtime_date - 1,
                                   as.character(as.numeric(as.POSIXct(runtime_date - 1))*10^5),
@@ -220,8 +220,8 @@ if(run_mode=="BACKTEST") {
   
   # Get transaction log
   get_transaction_log <- function(con){
-    if(file.exists("portfolio/transaction_log.feather")) {
-      transaction_log <- read_feather("portfolio/transaction_log.feather")
+    if(file.exists(file.path(results_path, "transaction_log.feather"))) {
+      transaction_log <- read_feather(file.path(results_path, "transaction_log.feather"))
     } else {
       x <- c("timestamp", 
              "transaction", 

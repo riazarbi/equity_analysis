@@ -5,7 +5,7 @@ library(lubridate)
 set.seed(42)
 
 #################################################################
-# SET PARAMETERS
+# GLOBAL PARAMETERS
 # Mode - either LIVE or BACKTEST
 run_mode <- "BACKTEST"
 # Heartbeat duration: how long between heartbeats (seconds)
@@ -36,17 +36,6 @@ standard_spread <- 0
 # DON'T MODIFY THINGS BELOW THIS LINE #############################
 ###################################################################
 
-# CREATE SAVE DIRECTORY
-portfolios_directory <- file.path(working_directory, "portfolios")
-dir.create(portfolios_directory, showWarnings = FALSE)
-
-timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
-data_type <- "backtest_data"
-portfolio_directory <- paste(data_source, constituent_index, data_type, sep = "__")
-portfolio_directory <- file.path(portfolios_directory, portfolio_directory)
-dir.create(portfolio_directory, showWarnings = FALSE)
-###################################################################
-
 # PROCESS THE PARAMETERS
 allowed_modes <- c("LIVE", "BACKTEST")
 # Combine market and fundamental metrics
@@ -58,4 +47,3 @@ metrics <- c(market_metrics, fundamental_metrics)
 # Convert date strings to date objects
 start_backtest <- ymd(start_backtest)
 end_backtest <- ymd(end_backtest)
-

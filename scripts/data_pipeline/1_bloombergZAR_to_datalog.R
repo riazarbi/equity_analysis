@@ -1,8 +1,10 @@
 #######################################################################################
 print("")
-print("NEXT: Scraping USD data from Bloomberg...")
+print("NEXT: Scraping ZAR data from Bloomberg...")
+
 # Clear environment
 rm(list=ls())
+
 # Log the time taken for the script
 begin <- Sys.time()
 
@@ -17,6 +19,7 @@ if(conn == "Bloomberg Connection Failed.") {
   print("Skipping datalog queries.")
 } else {
   
+
 #######################################################################################
 print("################################")
 print("Defining functions")
@@ -47,8 +50,8 @@ smallbegin <- Sys.time()
 working_directory <- getwd()
 
 # Define directory paths
-dimensions_directory <- file.path(working_directory, "dimensions")
-data_directory <- file.path(working_directory, "datalog")
+dimensions_directory <- file.path(working_directory, "data/dimensions")
+data_directory <- file.path(working_directory, "data/datalog")
 # Make sure data_directory exists, create it if it does not
 dir.create(data_directory, showWarnings = FALSE)
 
@@ -62,9 +65,13 @@ dates_file <- file.path(dimensions_directory, "dates.csv")
 write.table(dates, dates_file, col.names = FALSE, row.names = FALSE)
 rm(dates_file)
 
-# Define indexes
+# Read in the indexes dimension
 # These are stock indexs (eg. SPX Index)
-indexes <- c("SPX", "RTY")
+#indexes_file <- file.path(dimensions_directory, "indexes.csv")
+#indexes <- read.csv(indexes_file, header = FALSE, colClasses = "character")
+#indexes <- indexes[,1]
+#rm(indexes_file)
+indexes <- c("JALSH", "TOP40")
 
 # Read in the fundamental data fields dimension
 fundamental_fields_file <- file.path(dimensions_directory, "fundamental_fields.csv")
@@ -83,6 +90,12 @@ metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
 metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
 metadata_fields <- metadata_fields[,1]
 rm(metadata_fields_file)
+
+### DON'T THINK YOU ACTUALLY NEED THIS
+# Read in the tickers field dimension
+#tickers_file <- file.path(dimensions_directory, "tickers.csv")
+#tickers <- read.csv(tickers_file, header = FALSE, colClasses = "character")
+#tickers
 
 # Print time elapsed
 end <- Sys.time()
@@ -113,7 +126,7 @@ while (index_iter <= length(indexes)) {
   index_iter <- index_iter + 1
   print(the_index_ticker)
   # Date loop starts here
-  date_iter <- length(dates) - 2
+  date_iter <- length(dates) - 6
   while(date_iter <= length(dates)) {
     the_date <- (gsub("-", "", dates[date_iter]))  
     date_iter <- date_iter + 1
@@ -201,10 +214,8 @@ smallbegin <- Sys.time()
 # It returns a flat data frame which is saved to file
 
 # the actual query
-#metadata <- bdp("AAPL US Equity", metadata_fields)
-metadata <- bdp("AAPL US Equity", "PX_LAST")
-
-View(metadata)
+metadata <- bdp(tickers, metadata_fields)
+#View(metadata)
 # Defining the filename parameters for logging
 data_source <- "bloomberg"
 query <- metadata
@@ -254,7 +265,7 @@ while (ticker_iter <= length(tickers)) {
   ticker_iter <- endticker + 1
 
   # the actual query
-  opt <- c("currency"="USD")
+  opt <- c("currency"="ZAR")
   marketdata <- bdh(securities = tickers[startticker:endticker],
            fields = market_fields,
            start.date = start_date,
@@ -347,7 +358,7 @@ while (ISIN_iter <= length(ISINs)) {
   
     # Now run the query on chunked fields
     opt <- c(#"periodicitySelection"="MONTHLY", # removed periodicity because we now have compaction so might as well get the exact date something changes 
-             "currency"="USD")
+             "currency"="ZAR")
     fundamentaldata <- bdh(securities = ISINs[startISIN:endISIN],
                        fields = fundamental_fields[startfield:endfield],
                        start.date = start_date,
@@ -390,5 +401,5 @@ print("############################")
 print("Total Script Run Time")
 print(end - begin)
 print("############################")
-print("Script completed")
+print("Script completed") 
 }

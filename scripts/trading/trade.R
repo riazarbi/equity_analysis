@@ -3,17 +3,12 @@ all_begin <- Sys.time()
 #####################################################
 # TRADE SCRIPTS #####################################
 # Load the parameters and the algorithm
-rm(list=ls())
-source("set_paths.R")
-source("portfolio/parameters.R")
-source("portfolio/algorithm.R")
+source("scripts/trading/parameters.R")
+source(trial_path)
 # Load trading functions
-source("trading_functions.R")
-source("connect_to_broker.R")
+source("scripts/trading/trading_functions.R")
 # Clean out environment so we know this script works in a clean environment
-unlink("portfolio/transaction_log.feather")
-unlink("portfolio/trade_history.feather")
-unlink("portfolio/runtime_log")
+
 # CHECK PARAMETER HEALTH
 if(!(run_mode %in% allowed_modes)) {
   stop("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
@@ -46,10 +41,10 @@ repeat{
   # Load it if it hasn't already been
   if(!exists("ticker_data_load_date")){
     print("WARNING: Slow moving data has not been loaded.")
-    source("load_slow_moving_data.R")
+    source("scripts/trading/load_slow_moving_data.R")
   } else if (difftime(begin, ticker_data_load_date,  units="days") >= 1) {
     print("WARNING: Slow moving data was loaded more than 24 hours ago, and might be stale.")
-    source("load_slow_moving_data.R")
+    source("scripts/trading/load_slow_moving_data.R")
   } else { print("OK: Slow moving data is loaded and not stale.")}
   
   # 2. VERIFY RUNTIME TICKER DATA IS HEALTY
@@ -115,7 +110,7 @@ repeat{
   print(paste("INFO: Heartbeat processing time:", runtime_end - runtime_begin, "seconds"))
   
   # WRITE OUT TO LOG
-  write(log, file="portfolio/runtime_log",append=TRUE)
+  write(log, file = file.path(results_path,"runtime_log"),append=TRUE)
   
   # SLEEP CONDITIONS
   # Sleep the runtime if trading mode is live
@@ -136,12 +131,6 @@ repeat{
     break}
   heartbeat_count <- heartbeat_count + heartbeat_duration
 }  
-
-output <- list.files("portfolio")
-file.copy(from=file.path("portfolio",output), to=portfolio_directory, 
-          overwrite = TRUE, recursive = FALSE, 
-          copy.mode = TRUE)
-
 
 all_end <- Sys.time()
 print(all_end - all_begin)

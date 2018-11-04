@@ -3,8 +3,8 @@ print("NEXT: Creating index constituents dataset...")
 # Clear environment
 rm(list=ls())
 # Read in data_pipeline functions
-source("set_paths.R")
-source("data_pipeline_scripts/data_pipeline_functions.R")
+source("scripts/data_pipeline/set_paths.R")
+source("scripts/data_pipeline/data_pipeline_functions.R")
 # Time the script
 begin <- Sys.time()
 
@@ -31,7 +31,7 @@ if(nrow(filtered_data_log >= 1)) {
   index <- str_split_fixed(filtered_data_log[1,]$data_label, "_", 2)[2]
   date_of_fact <- str_split_fixed(filtered_data_log[1,]$data_label, "_", 2)[1]
   
-  constituents <- read_feather(paste("datalog", filtered_data_log[1,]$filename, sep = "/"))
+  constituents <- read_feather(paste(datalog_directory, filtered_data_log[1,]$filename, sep = "/"))
   
   constituents <- constituents[,1]
   colnames(constituents)[1] <- "ticker"
@@ -48,7 +48,7 @@ if(nrow(filtered_data_log >= 1)) {
 
 if(nrow(filtered_data_log > 1)) {
   for (i in 1:nrow(filtered_data_log)) {
-    new_constituents <- read_feather(paste("datalog", filtered_data_log[i,]$filename, sep = "/"))
+    new_constituents <- read_feather(paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"))
     index <- str_split_fixed(filtered_data_log[i,]$data_label, "_", 2)[2]
     date_of_fact <- str_split_fixed(filtered_data_log[i,]$data_label, "_", 2)[1]
     new_constituents <- new_constituents[,1]
