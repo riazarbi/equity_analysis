@@ -67,7 +67,7 @@ for (constituent_list_date in as.character(constituent_list_dates)){
   timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
   data_source <- "simulated"
   data_type <- "constituent_list"
-  data_identifier <- paste(constituent_list_dates[[1]], index, sep = "_")
+  data_identifier <- paste(constituent_list_date, index, sep = "_")
   file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
   file_string <- paste(file_string, ".csv", sep = "")
   save_file <- file.path(datalog_directory, file_string)
@@ -171,7 +171,7 @@ for (constituent_list_date in as.character(constituent_list_dates)){
   timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
   data_source <- "simulated"
   data_type <- "constituent_list"
-  data_identifier <- paste(constituent_list_dates[[1]], index, sep = "_")
+  data_identifier <- paste(constituent_list_date, index, sep = "_")
   file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
   file_string <- paste(file_string, ".csv", sep = "")
   save_file <- file.path(datalog_directory, file_string)
@@ -231,6 +231,12 @@ for (stock in metadata$fundamental_identifier) {
   write.table(fundamental_data, save_file, row.names = FALSE, sep = ",")
   
 }
+
+
+#################################################################################################
+# CREATE TICKER INDEX WITH VARYING EARNINGS AND DIVIDENDS########################################
+#################################################################################################
+
 
 #################################################################################################
 # CREATE TICKER INDEX WITH SURVIVORSHIP BIAS#####################################################

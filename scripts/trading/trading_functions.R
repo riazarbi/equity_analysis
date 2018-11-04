@@ -96,7 +96,6 @@ compute_trades <- function(target_weights, positions) {
   trades <- trades %>% mutate(price = (bid+offer)/2) %>%
     mutate(starting_value = price*starting_position)
   portfolio_value <- sum(trades$starting_value)
-  print(paste(trades$starting_value, portfolio_value))
   # Adjust target weights for cash buffer percentage
   trades$target_weight <- trades$target_weight*(1-cash_buffer_percentage)
   # Fill in the cash target weight
@@ -260,6 +259,7 @@ if(run_mode=="BACKTEST") {
       dplyr::filter(match == TRUE) 
     if(nrow(successful_trades) == 0) {
       print("RESULT: NO TRADES")
+      return("0, 0")
     } else {
       
       # create session trade history
@@ -278,13 +278,14 @@ if(run_mode=="BACKTEST") {
         mutate(commission = ifelse(commission >= minimum_commission, commission, minimum_commission)) %>%
         mutate(net_amount = principal_amount + commission) 
       
-      session_trades <- session_trades %>%
+      # create session trade log
+       session_trades <- session_trades %>%
         mutate(too_expensive = ifelse((commission < minimum_commission), TRUE, FALSE)) %>%
         dplyr::filter(too_expensive == FALSE)  %>%
         select(-too_expensive)
-      
       # append session trade history to trade history
       trade_history <- bind_rows(trade_history, session_trades)
+      
       # create session transaction log
       session_transactions <- session_trades %>%
         mutate(description = paste(action, quantity, symbol)) %>%
@@ -294,9 +295,30 @@ if(run_mode=="BACKTEST") {
       # append session transaction log to transaction log
       transaction_log <- bind_rows(transaction_log, session_transactions)
       # write to feather files
-      write_feather(transaction_log, "portfolio/transaction_log.feather")
-      write_feather(trade_history, "portfolio/trade_history.feather")
-      print(paste("RESULT:", nrow(session_trades), "trades were made in this session."))
+      write_feather(transaction_log, file.path(results_path, "transaction_log.feather"))
+      write_feather(trade_history, file.path(results_path, "trade_history.feather"))
+      
+      trade_values <- session_trades %>% 
+        select(action, net_amount) %>% 
+        group_by(action) %>% 
+        summarise(sum(net_amount))
+      
+      # Compute return string
+      buyval <- (trade_values %>% dplyr::filter(action == "BUY"))
+      if(nrow(buyval) == 1) {
+      buyval <- buyval[[1,2]] 
+      } else {buyval = 0}
+      
+      sellval <- (trade_values %>% dplyr::filter(action == "SELL"))
+      if(nrow(sellval) == 1) {
+        sellval <- sellval[[1,2]] 
+      } else {sellval = 0}
+      trade_success_val <- paste(buyval, sellval, sep=", ") 
+      
+      # Print result
+      print(paste("RESULT:", nrow(session_trades), "trades were made in this session"))
+      # Return result for logging
+      return(trade_success_val)
     }
   }
   
@@ -305,4 +327,3 @@ if(run_mode=="BACKTEST") {
 } else {
   print("ERROR: Something went wrong - malformed run_mode")
 }
-

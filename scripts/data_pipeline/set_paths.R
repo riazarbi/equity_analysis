@@ -14,9 +14,11 @@ library(parallel)
 working_directory <- getwd()
 
 # Define data directory paths
+data_directory <- file.path(working_directory, "data")
 dimensions_directory <- file.path(working_directory, "data/dimensions")
 datalog_directory <- file.path(working_directory, "data/datalog")
 dataset_directory <- file.path(working_directory, "data/datasets")
+dir.create(data_directory, showWarnings = FALSE)
 dir.create(dataset_directory, showWarnings = FALSE)
 
 # Define trial directory

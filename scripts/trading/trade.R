@@ -1,22 +1,14 @@
-# LOAD ENVIRONMENT ##################################
+# TIME THE BACKTEST #################################
 all_begin <- Sys.time()
-#####################################################
-# TRADE SCRIPTS #####################################
-# Load the parameters and the algorithm
-source("scripts/trading/parameters.R")
+# Load the algorithm
 source(trial_path)
-# Load trading functions
-source("scripts/trading/trading_functions.R")
-# Clean out environment so we know this script works in a clean environment
 
-# CHECK PARAMETER HEALTH
-if(!(run_mode %in% allowed_modes)) {
-  stop("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
-} 
-print(paste("Running in", run_mode, "mode."))
-#####################################################
 # ACTUALLY TRADE  ###################################
 con <- connect_to_broker()
+
+# CREATE LOG HEADERS
+write("timestamp, portfolio_value, value_trades_submitted, value_successful_buys, value_successful_sells", 
+      file = file.path(results_path,"runtime_log"),append=TRUE)
 
 # Create trading heartbeat
 all_begin <- Sys.time()
@@ -102,7 +94,8 @@ repeat{
   value_of_trades <- sum(trades$order_value) - (trades %>% filter(portfolio_members == "CASH"))$order_value
   log <- paste(log, value_of_trades, sep = ", ")
   print("ACTION: Submitting Trades")
-  submit_orders(trades)
+  trade_success_val <- submit_orders(trades)
+  log <- paste(log, trade_success_val, sep = ", ")
   rm(transaction_log, trade_history, positions, trades)
   
   # RUNTIME PROCESSING TIME

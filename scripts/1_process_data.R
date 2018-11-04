@@ -15,4 +15,3 @@ source("scripts/data_pipeline/3_constituents_to_dataset.R")
 source("scripts/data_pipeline/3_metadata_to_dataset.R")
 source("scripts/data_pipeline/3_ticker_logs_to_dataset.R")
 #####################################################
-
