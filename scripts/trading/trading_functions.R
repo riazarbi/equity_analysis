@@ -126,7 +126,6 @@ compute_trades <- function(target_weights, positions) {
   trades <- trades %>%
     select(portfolio_members, order_type, limit, order_units_int, order_value) %>%
     tidyr::drop_na()
-  
   return(trades)
 }
 

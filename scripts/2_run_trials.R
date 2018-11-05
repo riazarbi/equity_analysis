@@ -14,7 +14,7 @@ run_mode <- "BACKTEST"
 heartbeat_duration <- 1200
 
 # Universe
-constituent_index <- "FIFTY_STOCKS"
+constituent_index <- "FIFTY_GROWING"
 data_source <- "simulated"
 market_metrics <- c()
 fundamental_metrics <- c() 
@@ -30,7 +30,7 @@ portfolio_starting_value <- 10000
 cash_buffer_percentage <- 0
 
 # Trading characteristics
-commission_rate <- 0.01
+commission_rate <- 0
 minimum_commission <- 0
 standard_spread <- 0
 
