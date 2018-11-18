@@ -1,0 +1,795 @@
+\documentclass[11pt,preprint, authoryear]{elsarticle}
+
+\usepackage{lmodern}
+%%%% My spacing
+\usepackage{setspace}
+\setstretch{1.2}
+\DeclareMathSizes{12}{14}{10}{10}
+
+% Wrap around which gives all figures included the [H] command, or places it "here". This can be tedious to code in Rmarkdown.
+\usepackage{float}
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][2] {
+    \expandafter\origfigure\expandafter[H]
+} {
+    \endorigfigure
+}
+
+\let\origtable\table
+\let\endorigtable\endtable
+\renewenvironment{table}[1][2] {
+    \expandafter\origtable\expandafter[H]
+} {
+    \endorigtable
+}
+
+
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+
+\usepackage{amssymb, amsmath, amsthm, amsfonts}
+
+\def\bibsection{\section*{References}} %%% Make "References" appear before bibliography
+
+
+\usepackage[round]{natbib}
+\bibliographystyle{plainnat}
+
+\usepackage{longtable}
+\usepackage[margin=2.3cm,bottom=2cm,top=2.5cm, includefoot]{geometry}
+\usepackage{fancyhdr}
+\usepackage[bottom, hang, flushmargin]{footmisc}
+\usepackage{graphicx}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{1.3ex plus 0.5ex minus 0.3ex}
+\usepackage{textcomp}
+\renewcommand{\headrulewidth}{0.2pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+\usepackage{array}
+\newcolumntype{x}[1]{>{\centering\arraybackslash\hspace{0pt}}p{#1}}
+
+%%%%  Remove the "preprint submitted to" part. Don't worry about this either, it just looks better without it:
+\journal{Journal of Finance}
+
+ \def\tightlist{} % This allows for subbullets!
+
+\usepackage{hyperref}
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=blue,
+            pdfborder={0 0 0}}
+
+
+% The following packages allow huxtable to work:
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage{hhline}
+\usepackage{calc}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{colortbl}
+
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{5}
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+
+%%% Include extra packages specified by user
+% Insert custom packages here as follows
+% \usepackage{tikz}
+
+%%% Hard setting column skips for reports - this ensures greater consistency and control over the length settings in the document.
+%% page layout
+%% paragraphs
+\setlength{\baselineskip}{12pt plus 0pt minus 0pt}
+\setlength{\parskip}{12pt plus 0pt minus 0pt}
+\setlength{\parindent}{0pt plus 0pt minus 0pt}
+%% floats
+\setlength{\floatsep}{12pt plus 0 pt minus 0pt}
+\setlength{\textfloatsep}{20pt plus 0pt minus 0pt}
+\setlength{\intextsep}{14pt plus 0pt minus 0pt}
+\setlength{\dbltextfloatsep}{20pt plus 0pt minus 0pt}
+\setlength{\dblfloatsep}{14pt plus 0pt minus 0pt}
+%% maths
+\setlength{\abovedisplayskip}{12pt plus 0pt minus 0pt}
+\setlength{\belowdisplayskip}{12pt plus 0pt minus 0pt}
+%% lists
+\setlength{\topsep}{10pt plus 0pt minus 0pt}
+\setlength{\partopsep}{3pt plus 0pt minus 0pt}
+\setlength{\itemsep}{5pt plus 0pt minus 0pt}
+\setlength{\labelsep}{8mm plus 0mm minus 0mm}
+\setlength{\parsep}{\the\parskip}
+\setlength{\listparindent}{\the\parindent}
+%% verbatim
+\setlength{\fboxsep}{5pt plus 0pt minus 0pt}
+
+
+
+\begin{document}
+
+\begin{frontmatter}  %
+
+\title{A Data Scientific Approach to Equity Backtesting}
+
+% Set to FALSE if wanting to remove title (for submission)
+
+
+
+
+\author[Add1]{Riaz Arbi}
+\ead{}
+
+
+
+
+
+\address[Add1]{University of Cape Town, South Africa}
+
+
+\begin{abstract}
+\small{
+Abstract to be written here. The abstract should not be too long and
+should provide the reader with a good understanding what you are writing
+about. Academic papers are not like novels where you keep the reader in
+suspense. To be effective in getting others to read your paper, be as
+open and concise about your findings here as possible. Ideally, upon
+reading your abstract, the reader should feel he / she must read your
+paper in entirety.
+}
+\end{abstract}
+
+\vspace{1cm}
+
+\begin{keyword}
+\footnotesize{
+Equity Backtesting \sep Reproducible Research \sep Event-based
+Backtesting \sep R \sep RStudio \\ \vspace{0.3cm}
+\textit{JEL classification} 
+}
+\end{keyword}
+\vspace{0.5cm}
+\end{frontmatter}
+
+
+\renewcommand{\contentsname}{Table of Contents}
+{\tableofcontents}
+
+%________________________
+% Header and Footers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\chead{}
+\rhead{}
+\lfoot{}
+\rfoot{\footnotesize Page \thepage\\}
+\lhead{}
+%\rfoot{\footnotesize Page \thepage\ } % "e.g. Page 2"
+\cfoot{}
+
+%\setlength\headheight{30pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%________________________
+
+\headsep 35pt % So that header does not go over title
+
+
+
+
+\pagebreak 
+
+\section{\texorpdfstring{Introduction
+\label{Introduction}}{Introduction }}\label{introduction}
+
+Intro intro intro
+
+Last paragraph
+
+This paper is organised as follows. Section \ref{Backtest section}
+briefly introduces the practice of backtesting of investment strategies
+in academia and industry, discusses the replication crisis in the
+academic literature, and enumerates common methodological issues that
+compromise the validity of research. Section \ref{Reproducible Research}
+describes the goals and philosophy of the reproducible research movement
+and its links to the open source software movement, with a special focus
+on the R statistical programming language, the Tidy approach to data
+organization and the use of scripting to facilitate reprducibility and
+transparency in scientific research. Section
+\ref{Backtester Documentation} introduces a backtesting template that is
+roughly compatible with the structure of a research compendium - that
+is, a basic minimum viable unit of reproducible research.
+
+\section{\texorpdfstring{Anomalies Research in Theory and
+Practice\label{Backtest section}}{Anomalies Research in Theory and Practice}}\label{anomalies-research-in-theory-and-practice}
+
+Investigations into why the returns of some common stocks outperform
+others have a long history. Professional bodies of knowledge, often
+captured in heuristics or rules of thumb, have existed since at least
+the early 20th century. ({\textbf{???}}) collected the body of knowledge
+of one approach, value investing, into a single textbook in 1934.
+
+As time has progressed, professionals and academics have sought to test
+these heuristics in a rigorous manner. A standard way to test whether a
+particular heuristic or rule of thumb may drive returns is to
+investigate whether an investor that followed the rule in the past would
+have significantly different results from an investor that did not. This
+process is known as backtesting. Several foundational papers of
+investment management (for instance, ({\textbf{???}}), ({\textbf{???}}))
+use backtesting methods as a basis for their findings.
+
+Unfortunately, backtesting is a very difficult operation to achieve
+correctly. A backtester has to ensure that their dataset is complete and
+free of error, which is difficult to know after the fact. For instance,
+the exact date on which the financial results of a company were released
+may not be known - end-of-year results are never released on the 31st of
+December, since those financials need to be computed and audited after
+the fact prior to release. The actual release date may be months later,
+and if the information contained in the financials drive returns, the
+timing of the impact of the release on the market be simply be
+unknowable. This problem (which is just an example of many) can be dealt
+with in a variety of ways, all of which require a judgment call from the
+researcher.
+
+It is standard practice for a researcher to disclose all the judgment
+calls made during the backtest process, but these disclosures are
+invariably incomplete. This makes validation by other researchers very
+difficult. At the extreme, independent validators may arrive at a
+completely different conclusion (Hou, Xue, and Zhang
+(\protect\hyperlink{ref-Hou2017}{2017})); with ambiguity on both sides
+it is unclear whether the discrepancy is due to differences in
+underlying data, prepearation methodologies, mathematical errors or some
+other factor unrelated to the question at hand.
+
+The academic discipline of anomalies research (as this area is now
+known) has grown into a substantial corpus of contradictory claims,
+which have been mirrored in the business of investment management by
+competing investment philosopies, each with its own library of
+peer-reviewed papers (({\textbf{???}})). While markets may very well
+accommodate contradictory drivers of returns it is often difficult to
+discern whether differing claims are the result of geniune facts or the
+result of methodological differences.
+
+Issues with anamalies research The relationship between the issues and
+difficulty replicating
+
+\subsection{Characteristics of an Academic Equity
+Backtest}\label{characteristics-of-an-academic-equity-backtest}
+
+Basically rip the guts out of the Replicating Anomalies paper - Poor
+documentaiton of data collection and munging - Ambiguity around actual
+operations done to organise, clean and drop data - No verifiability of
+error - Unable to detect p-hacking - Biases: look-ahead, survivorship,
+data mining - No transparency (replication, verifiability) - Backtest
+overfitting - de Prado, Bailey et al
+
+\subsection{Commercial and Open Source Backtesting Software
+Packages}\label{commercial-and-open-source-backtesting-software-packages}
+
+\begin{itemize}
+\tightlist
+\item
+  Survey: Proprietary, free web, free open source
+\item
+  Prop are out because not transparent
+\item
+  Open Source: See zipline, qstrader,
+\item
+  Poor data provenance (yahoo)
+\item
+  Absence of fundamental data
+\item
+  Built for pairs and single stocks, not portfolios
+\item
+  OOP makes transparency difficult (black box)
+\item
+  Presupposes good data hygeine \& pre-munging
+\end{itemize}
+
+\subsection{The Replication Crisis}\label{the-replication-crisis}
+
+\subsection{Common Biases and Methodological
+Errors}\label{common-biases-and-methodological-errors}
+
+\section{\texorpdfstring{Reproducible Research and The R Programming
+Language\label{Reproducible Research}}{Reproducible Research and The R Programming Language}}\label{reproducible-research-and-the-r-programming-language}
+
+In recent years, as computational power and storage has become
+increasingly cheap and available, there have been persistent calls for a
+review of the way that scientific reseach is packaged and presented
+(Stodden et al. (\protect\hyperlink{ref-Stodden2013}{2013}), Koenker and
+Zeileis (\protect\hyperlink{ref-Koenker2009}{2009})).
+
+Although scientific research is an accretive process, involving
+verification and building upon earlier datasets and findings, the
+computational work done by researchers is often poorly documented, or
+absent (Stodden et al. (\protect\hyperlink{ref-Stodden2013}{2013})).
+This introduces the risk that views or principles that are considered to
+be scientifically verified may, in fact, be false.
+
+Gaps in documentation allow bad reasoning, calculation errors or
+spurious results to creep in to the corpus of knowledge of a discipline
+because peers are forced to take it on faith that a researcher has a
+proper understanding of underlying mathematical concepts, and that
+workings have been thouroughly cross-checked before release.
+
+Worse still, because follow-up replication is difficult to impossible
+with poor documentation or data availability, incorrect beliefs can
+persist for years, or even decades (Munafò et al.
+(\protect\hyperlink{ref-Munafo2017}{2017})). \emph{P-hacking}, or the
+selection of data and finessing of results to conform to significance
+tests of 5\% or lower, has resulted in a situation where a research
+finding is as likely to to be false it is to be true (J. P. A. Ioannidis
+(\protect\hyperlink{ref-Ioannidis2005}{2005})).
+
+\subsection{Reproducible Research
+Terminology}\label{reproducible-research-terminology}
+
+In response to these critiques, a taxonomy of reproducibility has
+emerged, allowing peers to effectively categorize research.
+
+This taxonomy allows us to dinstinguish reveiwability (which assumes
+mathematical competence and focuses on reasoning) from reproducibility
+(which allow the extension of the review into assessement of
+mathematical competence and quality of data).
+
+\begin{longtable}[]{@{}ll@{}}
+\caption{Common Terminology in Reproducible Science (Stodden et al.
+(\protect\hyperlink{ref-Stodden2013}{2013}))\label{Table1}}\tabularnewline
+\toprule
+\begin{minipage}[b]{0.18\columnwidth}\raggedright\strut
+Term\strut
+\end{minipage} & \begin{minipage}[b]{0.61\columnwidth}\raggedright\strut
+Description\strut
+\end{minipage}\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{0.18\columnwidth}\raggedright\strut
+Term\strut
+\end{minipage} & \begin{minipage}[b]{0.61\columnwidth}\raggedright\strut
+Description\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Confirmable\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+Main conclusions can be attained independently\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Reviewable\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+Descriptions of methods can be independently assessed and judged\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Replicable\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+Tools are made available that would allow duplication of results\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Auditable\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+Sufficient records exist (perhaps privately) to defend research\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+Reproducable\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+Auditable research is made openly available, including code and
+data\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+To Verify\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+To check that computer code correctly performs the intended
+operation\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
+To Validate\strut
+\end{minipage} & \begin{minipage}[t]{0.61\columnwidth}\raggedright\strut
+To check that the results of a computation agree with observations\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+This paper uses reproducibility in the sense defined in \ref{Table1},
+which is to say, it refers to research output being bundled and
+distributed with well documented, fully transparent code and data that
+allows a peer to fully review, replicate, audit and thereby confirm
+results of a body of work (Stodden et al.
+(\protect\hyperlink{ref-Stodden2013}{2013})).
+
+\subsection{Distinguising Between Open Source ands Closed Source
+Software}\label{distinguising-between-open-source-ands-closed-source-software}
+
+In general, software is written in text files, by humans, in a
+particular programming language. This \emph{source code} is
+\emph{compiled} or \emph{interpreted} by another program into binary
+machine code (which is not readable by humans) and distributed for
+execution. The software for the popular spreasheet program Microsoft
+Excel, for instance, would be written by a group of humans in a
+programming language. These text files would be compiled by a compiler
+program into a binary executable program, which is distributed to
+consumers who can execute the binary. When someone clicks the Excel icon
+on their computer to `launch' the program, they are executing the
+binary.
+
+Open source software is software for which the \emph{source code} is
+made publically available. Microsoft Excel is closed source, and the
+source code is not made available. Source code can be read by humans,
+binary cannot. Changes to source code can be meaningfully interpreted by
+humans, because one can read the changes in plain text. Changes to
+binary code cannot be interpreted by humans, because the changes are
+simply alterations to a very long sequence of \texttt{0} and \texttt{1}
+digits. It is trivial to compile source code into binary code. It is
+extremely difficult to accurately decompile binary code into source
+code, and the tools are not readilty available (({\textbf{???}})).
+
+\subsection{The Relationship between Reproducible Research and Open
+Source
+Software}\label{the-relationship-between-reproducible-research-and-open-source-software}
+
+Open source software development principles exhibit properties which are
+useful to practitioners of reproducible research.
+
+By definition, the text-based nature of source code makes all source
+code reproducible (and, by corollary, auditable). The implications of
+this are twofold. Firstly, a researcher using open source software for
+computation can be assured that the full software stack will be open to
+scrutiny. That is, at the limit, an auditor could inspect every single
+line of code from some arbitrary `open starting point' up to verify that
+the computations are correct. This `open starting point' is as the
+operating systme level for linux based machines, and from the
+application level up for Mac and Windows based machines.
+
+Secondly, and perhaps more importantly, the open source software
+community has decades of experience in defining good practices for
+creating and maintaining large, open, verfiable and repeatable
+enviroments. These principles are often quoted in the folkloric `Unix
+Way', which manifests in epithets such as ``text is the universal
+interface'' (Baum and Sirin (\protect\hyperlink{ref-Baum2002}{2002})),
+``each unit should do one thing and do it well'', and ``build things to
+talk to other things'' (({\textbf{???}})). Reproducible research
+practice is built on the same principles - simple, readable text-based
+data and code where possible; clear separation between data, code and
+results; complete transparency coverage; and portability by design (see
+Baum and Sirin (\protect\hyperlink{ref-Baum2002}{2002}), Bache and
+Wickham (\protect\hyperlink{ref-Bache2014}{2014}), Wickham
+(\protect\hyperlink{ref-Wickham2014}{2014})).
+
+Historically, there has been close collaboration between the open source
+software and the free software communities. This means that, as a rule,
+most open source software is free or has a free analogue. The core tools
+of Data Science, for instance (such as the python and R programming
+languages, the Apache Foundation of big data processing packages and the
+Jupyter and RStudio interactive development environemnts), are all open
+source and free. This means that the \emph{cost} of replication is not
+prohibitive: in general, reproducible research should be reproducible
+for free on commodity hardware.
+
+\subsection{The Suitability of R for Reproducible
+Research}\label{the-suitability-of-r-for-reproducible-research}
+
+The R programming language was originally conceived as a project to
+build out an open source statistical programming environment. In
+development since 1997, base R is now a mature ecosystem comprising a
+scriptable language, graphical rendering system and debugger (R Core
+Team (\protect\hyperlink{ref-RCoreTeam2018}{2018})). A large community
+of third party developers (some commercial, most free) have extended
+base R with over 13000 packages, including a fully-fledged interactive
+development environmnent (Rstudio), interactive dashboarding web server
+(Shiny) and bindings to LaTex for simple rendering of publication-ready
+LaTex documents from markdown (knitr and rmarkdown) (RStudio Team
+(\protect\hyperlink{ref-RStudioTeam2015}{2015})). Because of its roots
+in open source, it adheres to many open source software conventions. For
+instance-
+
+\begin{itemize}
+\tightlist
+\item
+  All source code is freely available
+\item
+  All development work in R is done in plain text files, which are
+  transparently human and machine readable.
+\item
+  The R project has adopted the GNU General Public License verison 2,
+  which ``does not restrict anyone from making use of the program in a
+  specific field of endeavor'' (R Core Team
+  (\protect\hyperlink{ref-RCoreTeam2018}{2018})). This free
+  avaialability means that anybody with a commodity computer and an
+  internet connection can install and use R.
+\end{itemize}
+
+Although the reproducible research community is principles-based and
+language-agnostic, the free, text-based nature of the R language have
+made it a good candidate for reproducible work (({\textbf{???}})).
+Marwick, Boettiger, and Mullen
+(\protect\hyperlink{ref-Marwick2018}{2018}) review the concept of a
+\emph{research compendium}, and explore how research done in R can be
+packaged into compendia. They argue that a compendium is defined by
+three principles - 1. Files should be organised according to a
+prevailing standard so that others can immediately understand the
+structure of the project, and pipe the compendium to environments that
+expect the standard structure with no structural modifications. 2.
+Maintain a clear separation between data, method and output. Separation
+means that data is treated as read only, and that all steps in getting
+from source data to output is documented. Output should be treated as
+disposable, and rebuildable from the programmatic application of the
+method to the data. 3. Specify the computational environment that was
+used to conduct the research. This provides critical information to a
+replicator on the undelrying tooling needed to support the analysis.
+
+These principles are intended to ensure that, given a certain input (the
+data) and a certain operation (the method), a deterministic output
+results (the analysis). With these details out of the way, an auditor
+can focus on verifying the correctness of the reasoning (i.e should we
+use this theory) and of the implementation (i.e are there any errors in
+the math).
+
+The richness of the R ecosystem means that one can complete the full
+research life cycle from data loading to publishing without leaving the
+R ecosystem (({\textbf{???}})). Data can be loaded, cleaned,
+transformed, modeled and aggregated in R. The results can be written up
+in RStudio - in fact, the code and write-up can be combined into a
+single text-only document using the RMarkdown format - and exported to a
+wide range of academically accepted typsets and formats (such as Tex,
+Microsoft Word, Markdown and HTML). Because R is scriptable, R scripts
+can also be used in production environments, where results can be
+periodically recomputed and handed on to some other production process.
+
+This property dramatically simplifies the complexity of building a
+compendium and the required skill-set of a replicator. For instance, a
+single-platform research compendium can be assessed by anyone with
+knowledge of that single environment. Multi-platform compendia need
+replicators well-versed in each platform, which dramatically reduces the
+pool of potential replicators.
+
+Upon publication, code versioning tools such as Git allow the public to
+view all future changes to the code or data transparently, and, if code
+changes over time, to assess the impact of those changes on the result.
+
+\subsection{Tidy Extensions to Base R}\label{tidy-extensions-to-base-r}
+
+The open source and reproducible science principles of interoperability,
+readibility, modular code and common standards have been extended into
+the prcatice of data manipulation by Wickham
+(\protect\hyperlink{ref-Wickham2014}{2014}). The collection of R
+packages which fall under this banner are collectively known as the
+`Tidyverse'. These packages provide a common, idiosyncratic syntax for
+data ingestion, munging, manipulation and visualization that are
+opinionated in their expectations about data structure and focused on
+enabling readable code (Wickham
+(\protect\hyperlink{ref-Wickham2017}{2017})). According to Wickham, tidy
+data intuitively maps the meaning of a dataset to its structure -
+
+\begin{quote}
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Each variable forms a column.
+\item
+  Each observation forms a row.
+\item
+  Each type of observational unit forms a table.
+\end{enumerate}
+\end{quote}
+
+Whether there is a single optimal data structure is up for debate. What
+is not up for debate is that that the adoption of a common standard for
+structures allows researchers to make assumptions about the meaning of
+data before engaging with the content, i.e simply knowing that data is
+`tidy' means that a researcher knows that each column maps to a
+variable, and each row an observation, \emph{prior to looking at the
+data}. Setting of standards enables the decoupling of processes -
+process (a) can produce some peice of analytical output \emph{with no
+knowledge of what it will be used for}. As long as it is `tidy', and
+process can consume that output on the understanding that is confirms to
+the `tidy' standard and take the analysis further. In this way, the
+`tidy data' concept push the Unix Way concept of `build things that talk
+to other things' into the practice of structuring data for reproducible
+research.
+
+\subsection{The Potential for Reproducible Research to Address The
+Replication Crisis in Anomalies
+Research}\label{the-potential-for-reproducible-research-to-address-the-replication-crisis-in-anomalies-research}
+
+\begin{itemize}
+\tightlist
+\item
+  An argument that these approaches and tools will improve backtesting,
+  both for academics and for practitioners
+\item
+  A proviso that none of this replaces critical thinking or good data
+  hygeine. Still need to get data, scrutinize it, make judgment calls
+  etc etc.
+\item
+  Reference the definition of a compendium
+\end{itemize}
+
+\section{\texorpdfstring{A Reference Implementation of a Data Scientific
+Equity Backtester in
+R\label{Backtester Documentation}}{A Reference Implementation of a Data Scientific Equity Backtester in R}}\label{a-reference-implementation-of-a-data-scientific-equity-backtester-in-r}
+
+The problem of proprietary data, the use of the log, and the
+transformation into tidy data
+
+Restructure code along the ines of a compendium Packaging Data
+analytical Work Reproducibly Using R (and Friends)
+
+\subsection{My documentation goes
+here}\label{my-documentation-goes-here}
+
+\subsection{Features}\label{features}
+
+\begin{itemize}
+\tightlist
+\item
+  data versioning
+\item
+  multi-source
+\item
+  multi-index
+\item
+  code version control
+\item
+  clear procedural workflow
+\item
+  event-driven
+\item
+  tidy data
+\item
+  pbo
+\item
+  host of metrics
+\item
+  bias avoidance
+\end{itemize}
+
+\section{\texorpdfstring{Conclusion\label{conclusion}}{Conclusion}}\label{conclusion}
+
+This paper has explored the various ways in which the lack of
+transparency in anomalies research makes it difficult to discern
+spurious results from geniune findings. This `replication crisis' has
+strong analogues in other academic disciplines. We have argued that the
+`reproducible science' response to this crisis in science at large has
+potential to address much of the issues that bedevil anomalies
+replication.
+
+We have introduced a collection of R scripts, organised into a
+compendium, that can be used to conduct anomalies research in a
+transparent and reproducible way. These scripts utilize only free, open
+source software and to organize data along the lines of `tidy' data.
+Using plain text computer code to collect, process, structure and
+analyse data represents a good approach to producing research that is
+easy to reproduce.
+
+We avoid the problem of proprietary data distribution by including
+customizable data query scripts. These scripts query proprietary vendors
+and save the results in a standard way. Bundling these query scripts in
+a compendium enables a replicator to rebuild the dataset programatically
+and non-interactively from source.
+
+This collection of scripts make it possible to test an investment
+algorithm against an index of stocks, where each stock comprises a set
+of daily observations of price data plus an arbitrary number of
+attributes. The scripts use the event-based backtest method (as opposed
+to vectorized methods) which make it easy to avoid look-ahead bias and
+to introduce non-standard data to the algorithm. Transaction cost and
+slippage modelling, while rudimentary, exist and can be refined.
+
+Using this code base as a starting point should save a research a great
+deal of time in preparing stock data for backtesting, and the open
+source nature of the project ensures that any researcher can comb the
+operations for bugs or implement features that are not present. While it
+is not expected that this code base is necessary or sufficient for
+end-to-end backtesting, it represents a solid base for ongoing
+development.
+
+Katzke (\protect\hyperlink{ref-Katzke2017}{2017})
+
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\hypertarget{ref-Bache2014}{}
+Bache, Stefan Milton, and Hadley Wickham. 2014. ``magrittr: A
+Forward-Pipe Operator for R.''
+\url{https://cran.r-project.org/package=magrittr}.
+
+\hypertarget{ref-Baum2002}{}
+Baum, Christopher F., and Selcuk Sirin. 2002. ``Why should you avoid
+using point-and-click method in statistical software packages?''
+\url{http://fmwww.bc.edu/GStat/docs/pointclick.html}.
+
+\hypertarget{ref-Hou2017}{}
+Hou, Kewei, Chen Xue, and Lu Zhang. 2017. ``Replicating anomalies.''
+\emph{NBER Working Papers}, no. No. 23394.
+doi:\href{https://doi.org/10.2139/ssrn.2190976}{10.2139/ssrn.2190976}.
+
+\hypertarget{ref-Ioannidis2005}{}
+Ioannidis, John P. A. 2005. ``Why Most Published Research Findings Are
+False.'' \emph{PLoS Medicine} 2 (8). Public Library of Science: e124.
+doi:\href{https://doi.org/10.1371/journal.pmed.0020124}{10.1371/journal.pmed.0020124}.
+
+\hypertarget{ref-Katzke2017}{}
+Katzke, N F. 2017. ``Texevier: Package to create Elsevier templates for
+Rmarkdown.'' Stellenbosch, South Africa.
+
+\hypertarget{ref-Koenker2009}{}
+Koenker, Roger, and Achim Zeileis. 2009. ``On reproducible econometric
+research.'' \emph{Journal of Applied Econometrics}.
+doi:\href{https://doi.org/10.1002/jae.1083}{10.1002/jae.1083}.
+
+\hypertarget{ref-Marwick2018}{}
+Marwick, Ben, Carl Boettiger, and Lincoln Mullen. 2018. ``Packaging Data
+Analytical Work Reproducibly Using R (and Friends).'' \emph{American
+Statistician}.
+doi:\href{https://doi.org/10.1080/00031305.2017.1375986}{10.1080/00031305.2017.1375986}.
+
+\hypertarget{ref-Munafo2017}{}
+Munafò, Marcus R, Brian A Nosek, Dorothy V.M. Bishop, Katherine S
+Button, Christopher D Chambers, Nathalie Percie Du Sert, Uri Simonsohn,
+Eric Jan Wagenmakers, Jennifer J Ware, and John P.A. Ioannidis. 2017.
+``A manifesto for reproducible science.''
+doi:\href{https://doi.org/10.1038/s41562-016-0021}{10.1038/s41562-016-0021}.
+
+\hypertarget{ref-RCoreTeam2018}{}
+R Core Team. 2018. ``R: A Language and Environment for Statistical
+Computing.'' Vienna, Austria. \url{https://www.r-project.org/}.
+
+\hypertarget{ref-RStudioTeam2015}{}
+RStudio Team. 2015. ``RStudio: Integrated Development Environment for
+R.'' Boston, MA. \url{http://www.rstudio.com/}.
+
+\hypertarget{ref-Stodden2013}{}
+Stodden, V, D H Bailey, J Borwein, R J Leveque, W Rider, and W Stein.
+2013. ``Setting the Default to Reproducible Reproducibility in
+Computational and Experimental Mathematics.'' In \emph{ICERM Workshop},
+19. \url{http://www.davidhbailey.com/dhbpapers/icerm-report.pdf}.
+
+\hypertarget{ref-Wickham2014}{}
+Wickham, Hadley. 2014. ``Tidy Data.'' \emph{Journal of Statistical
+Software}.
+doi:\href{https://doi.org/10.18637/jss.v059.i10}{10.18637/jss.v059.i10}.
+
+\hypertarget{ref-Wickham2017}{}
+---------. 2017. ``tidyverse: Easily Install and Load the 'Tidyverse'.''
+\url{https://cran.r-project.org/package=tidyverse}.
+
+% Force include bibliography in my chosen format:
+
+\bibliographystyle{Tex/Texevier}
+\bibliography{Tex/ref}
+
+
+
+
+
+\end{document}

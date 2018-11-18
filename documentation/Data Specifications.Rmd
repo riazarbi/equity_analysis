@@ -25,3 +25,15 @@ knitr::opts_chunk$set(echo = TRUE)
 - Dataset objects
 ---
 
+Context
+
+    Software for 'data science' is evolving
+    In R, packages ggplot2 and dplyr have become immensely popular and now they are a part of the tidyverse
+    These packages use the 'tidy data' principles for consistency and speed of processing (from vignette("tidy-data")):
+
+        Each variable forms a column.
+        Each observation forms a row.
+        Each type of observational unit forms a table
+
+    Historically spatial R packages have not been compatible with the tidyverse
+
