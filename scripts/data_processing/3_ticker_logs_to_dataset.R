@@ -3,8 +3,8 @@ print("NEXT: Creating individual ticker datasets...")
 # Clear environment
 rm(list=ls())
 # Read in data_pipeline functions
-source("scripts/data_pipeline/set_paths.R")
-source("scripts/data_pipeline/data_pipeline_functions.R")
+source("R/set_paths.R")
+source("R/data_pipeline_functions.R")
 # Time the script
 begin <- Sys.time()
 
@@ -39,8 +39,8 @@ ticker_datalog_to_dataset <- function(data_log, dataset) {
   registerDoParallel(cl)
   
   foreach(i = 1:length(tickers), .packages = c("magrittr", "dplyr", "feather")) %dopar% {
-    source("scripts/data_pipeline/set_paths.R")
-    source("scripts/data_pipeline/data_pipeline_functions.R")
+    source("R/set_paths.R")
+    source("R/data_pipeline_functions.R")
     # Define table name for the ticker
     table_name <- stringr::str_replace_all(tickers[i],"[[:punct:]\\s]+","_")
     # Get list of files relating to the ticker

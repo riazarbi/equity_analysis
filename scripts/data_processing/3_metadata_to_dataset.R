@@ -3,8 +3,8 @@ print("NEXT: Creating metadata dataset...")
 # Clear environment
 rm(list=ls())
 # Read in data_pipeline functions
-source("scripts/data_pipeline/set_paths.R")
-source("scripts/data_pipeline/data_pipeline_functions.R")
+source("R/set_paths.R")
+source("R/data_pipeline_functions.R")
 # Time the script
 begin <- Sys.time()
 

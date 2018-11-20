@@ -80,7 +80,7 @@ compute_positions <- function(transaction_log, trade_history) {
 
 compute_trades <- function(target_weights, positions) {
   # Bind target weights and positions
-  trades <- full_join(positions, target_weights) 
+  trades <- full_join(positions, target_weights, by="portfolio_members") 
   # Convert all NA to 0
   trades[is.na(trades)] <- 0
   # Get price of each stock

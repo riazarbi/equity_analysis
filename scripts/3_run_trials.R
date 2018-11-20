@@ -1,7 +1,7 @@
 # Define paths
 
-#rm(list=ls())
-source("scripts/data_pipeline/set_paths.R")
+rm(list=ls())
+source("R/set_paths.R")
 
 # Define parameters
 #################################################################
@@ -22,7 +22,7 @@ fundamental_metrics <- c()
 
 # Timeframe
 start_backtest <- "2017-01-01" # inclusive
-end_backtest <- "2018-01-01" # not inclusive
+end_backtest <- "2017-01-04" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
@@ -53,7 +53,7 @@ print(paste("Running in", run_mode, "mode."))
 # Load trading functions
 ###############################################################
 # Depends on run mode
-source("scripts/trading/trading_functions.R")
+source("R/trading_functions.R")
 
 # Run trials
 ###############################################################

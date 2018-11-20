@@ -5,8 +5,8 @@ library(feather)
 library(magrittr)
 library(dplyr)
 library(stringr)
-source("scripts/data_pipeline/set_paths.R")
-source("scripts/data_pipeline/data_pipeline_functions.R")
+source("R/set_paths.R")
+source("R/data_pipeline_functions.R")
 
 # Make sure directories exist
 working_directory <- getwd()

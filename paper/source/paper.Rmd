@@ -324,6 +324,16 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 
 Because the workflow is linear and procedural in design, this documentation will proceed in a linear, procedural fashion. After familiarising the reader with the directory structure, we will work through the code in a stepwise fashion from data acquisition through to final reporting.
 
+## Design Considerations
+
+Because this compendium is designed to be run by researchers on commodity consumer hardware, our design choices sacrifice speed in order to keep memory usage low. We have split the backtesting procedure into four stages - querying, data processing, backtesting, cross-validation and reporting. Each stage expects to read in files from a pre-specified location and writes files to a prespecified location. Often the first script in a stage will clear the environment in order to release memory. 
+
+This has the added benefit of making these stages asynchronous. Processing data does not require a new query to have been conducted; cross validation does not require new trials to be run. These stages can even be run on different machines that share network drives - although the benefits will only be apparent if each stage's processing time is longer than the network transfer time. 
+
+Where possible, we have made I/O optimizations. This includes converting `.csv` files to `.feather` files, which are much faster to read and write, and parallelizing select prices of code. Ticker-wise data pipelining is multi-threaded, and the trading engine could be sped up by making each trial run on its own thread.
+
+All the actions required to conduct a complete backtest are captured in plain text files. This means that every single computation and data manipulation can be inspected and its functioning verified. The entire code base can be versioned using a software verisoning tool such as git. A researcher can fork this codebase, modify it, and push the modifications back to the origin. All of these changes are immutably recorded; future researchers can alway see exactly what has changed, who has made the changes and what the reason for the change was.
+
 ## Directory Structure
 
 The directory structure loosely conforms to @Marwick2018's definition of a valid R packages structure, and most closely resembles the author's example of an intermediate-level compendium. The root directory contains the following files and directories: 
@@ -359,6 +369,10 @@ Complete directory structure:
 |    |   |  ticker_market_data/
 |    |   |  |  ticker_1.feather
 |    |   |  |  ticker_n.feather
+|    R/
+|    |   |   data_pipeline_functions.R
+|    |   |   set_paths.R
+|    |   |   trading_functions.R
 |    scripts/
 |    |   1_query_source.R
 |    |   2_process_data.R
@@ -372,13 +386,10 @@ Complete directory structure:
 |    |   |   3_constituents_to_dataset.R
 |    |   |   3_metadata_to_dataset.R
 |    |   |   3_ticker_logs_to_dataset.R
-|    |   |   data_pipeline_functions.R
-|    |   |   set_paths.R
 |    |   trading/
 |    |   |   example_trial.R
 |    |   |   load_slow_moding_data.R
 |    |   |   trade.R
-|    |   |   trading_functions.R
 |    |   reporting/
 |    trials/
 |    results/
@@ -440,8 +451,6 @@ Relevant parts of the directory tree:
 |    |   data_processing/
 |    |   |   1_bloomberg_to_datalog.R
 |    |   |   1_simulated_to_datalog.R
-|    |   |   data_pipeline_functions.R
-|    |   |   set_paths.R
 ```
 
 
@@ -536,8 +545,6 @@ Relevant parts of the directory tree:
 |    |   |   3_constituents_to_dataset.R
 |    |   |   3_metadata_to_dataset.R
 |    |   |   3_ticker_logs_to_dataset.R
-|    |   |   data_pipeline_functions.R
-|    |   |   set_paths.R
 ```
 
 In order to speed up downstream processing time, all `.csv` files in the `datalog` are converted to `.feather` format. `.feather` files are much faster to read and write, and do not require the type parsing typically required of `.csv` files.
@@ -623,7 +630,6 @@ Relevant parts of the directory tree:
 |    |   |   example_trial.R
 |    |   |   load_slow_moding_data.R
 |    |   |   trade.R
-|    |   |   trading_functions.R
 |    trials/
 |    results/
 ```
