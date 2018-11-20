@@ -1,9 +1,7 @@
 # DATA FILES
-datalog/*
-datasets/*
-portfolio_weights/*
-#dimensions/*
-!datalog/000000000000000__source__data_type__data_identifier.csv
+data/*
+results/*
+trials/*
 
 # R TEMPLATE
 # History files

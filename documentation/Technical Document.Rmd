@@ -1,20 +1,16 @@
-TODO:
+---
+title: "Technical Document"
+subtitle: "A fully replicable Equity backtesting workflow"
+author: Created by Riaz Arbi in fulfilment of the dissertation requirements for an MSc in Data Science at the University of Cape Town
+date: "30 October 2018"
+output: 
+    pdf_document:
+       toc: true
+       toc_depth: 2
+geometry: margin=1in
+---
 
-1. Bloomberg scraper script to become currency-aware  
-2. Migrate dimensions into json scraper parameters file. Or a connections file? 
-3. Document the features of the datalog for point-in-time datasets, total eraseablity and portability
-
-THINGS I WANT TO DETECT:
-Survivorship bias
-Lookahead bias
-Vendors changing data
-
-
-# Technical Document: A fully replicable Equity backtesting workflow
-
-_Created by Riaz Arbi in fulfilment of the dissertation requirements for an MSc in Data Science at the University of Cape Town_
-
-__This codebase is being heavily modified weekly. You should assume that the structure and functionality will vary significantly in the immediate future.__  
+\pagebreak
 
 # Project Purpose
 This paper provides a working example of an equity backtest that has been conducted in R according to the principles of transparency and reproducability in research. It provides working code to conduct the full analysis chain of equity backtesting in a way that is totally automated and modifiable. The companion git repository to this paper can be cloned and, with minimal modifications, new backtests can be created that avoid the pitfalls of common statistical biases. It is hoped that this work will make quality research into the cross section of equity returns more accessible to practitioners.
@@ -77,30 +73,29 @@ Researchers are often limited by their computing reosurces. Most of the time, re
 ### Data Pipeline
 1. Index, ticker market, fundamental and meta data is collected from Bloomberg via the R Rblpapi package and saved to a log directory.
 2. The logfiles are transformed into three datasets -  
-  a. Ticker market and fundamental data  
-  b. Ticker metadata  
-  c. Monthly index constituent lists  
+    a. Ticker market and fundamental data  
+    b. Ticker metadata  
+    c. Monthly index constituent lists  
 
 
 ### Simulation
 3. Backtest parameters are defined  
-  a. Target index  
-  b. Date range  
-  c. Salient ticker metrics  
-  d. Mode: Backtest or Live (live isn't implemented yet)  
+    a. Target index  
+    b. Date range  
+    c. Salient ticker metrics  
+    d. Mode: Backtest or Live (live isn't implemented yet)  
 4. A portfolio constituent weighting criterion is defined  
-  a. For instance, "this portfolio will weight the constituents of the index according to their Price to Book ratio."  
-  b. This weighting can be any mathematical function, and can contain binary statements such as "weight the constituents equally of their price to book ratio is greate than 2, otherwise weight them as zero."  
+    a. For instance, "this portfolio will weight the constituents of the index according to their Price to Book ratio."  
+    b. This weighting can be any mathematical function, and can contain binary statements such as "weight the constituents equally of their price to book ratio is greate than 2, otherwise weight them as zero."  
 4. A master dataset is loaded into memory  
 5. The code loops through the following steps in heartbeat increments (typically 10 minutes, but can be set in `parameters.R`) until the backtest date range ends (backtest mode) or never (live mode).  
-a. A runtime dataset is created, adjusting for survivorship and look-ahead bias.  
-b. The runtime dataset is passed to the `algorithm.R` function, and target portfolio weights are computed.  
-c. [Not implemented] Transaction logs and trade histroy is loaded to compute current portfolio positions.  
-d. [Not implemented] An order list is generared from the diff of target weights and existing weights.  
-e. [Not implemented] Orders are submitted to the trading engine.  
-f. [Not implemented] The trading engine reads market data for the tickers and submit trades.  
-g. [Not implemented] If volume limits are not hit, the trade completes and is appended to the trade history log.  Cash movements are appended to the transaction log.  
-
+    a. A runtime dataset is created, adjusting for survivorship and look-ahead bias.  
+    b. The runtime dataset is passed to the `algorithm.R` function, and target portfolio weights are computed.  
+    c. [Not implemented] Transaction logs and trade histroy is loaded to compute current portfolio positions.  
+    d. [Not implemented] An order list is generared from the diff of target weights and existing weights.  
+    e. [Not implemented] Orders are submitted to the trading engine.  
+    f. [Not implemented] The trading engine reads market data for the tickers and submit trades.  
+    g. [Not implemented] If volume limits are not hit, the trade completes and is appended to the trade history log.  Cash movements are appended to the transaction log.  
 8. [Not implemented] The final trade and transaction logs are used to compute portfolio retuirns. THese are used to compute various risk measures, Sharpe Ratio chief among them.  
 9. [Not implemented] The risk and return results and various matrices, backtest parameters and algorithm script are bundled into a folder that follows the Data naming conventions above. The folder that can be passed to a report generator for automated reporting.
 
@@ -142,7 +137,7 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 #### Data pipeline
 
 | Feature | Planned | Implemented |
-|:--------------|:---------:|:-----------:|
+|:------------------------------------------------------------|:---------:|:-----------:|
 | Specification: Log formats |X|X|
 | Pipeline: Bootstrap regeneration if data lost |X|X|
 | Log Dataset: Keep query logs forever |X|X|
@@ -164,11 +159,11 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 
 #### Simulation
 | Feature | Planned |Implemented  |
-|:--------------|:---------:|:-----------:|
+|:------------------------------------------------|:---------:|:-----------:|
 |Easily switch between backtesting and live trading |X||
 |Specify generic portfolio weighting rule |X|X|
 |Automatically load master dataset|X|X|
-|Simulate market data stream|||
+|Simulate market data stream|X|X|
 |Build trading engine|||
 |Model slippage and trading costs|||
 |Keep track of trades|||
@@ -179,8 +174,8 @@ This is the intellectual property of Riaz Arbi. This code will be released under
 |Inside loop: Eliminate look-ahead bias|X|X|
 |Inside loop: Create target portfolio weights|X|X|
 |Inside loop: Track existing portfolio weights|||
-|Inside loop: Compute order list|||
-|Inside loop: Submit orders to trading engine|||
+|Inside loop: Compute order list|X|X|
+|Inside loop: Submit orders to trading engine|X|X|
 |Inside loop: Save successful orders to transaction log|||
 |Logging: Create backtest archive directory |||
 |Logging: Save transactions|||

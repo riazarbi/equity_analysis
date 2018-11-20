@@ -1,0 +1,39 @@
+---
+title: "Data Specifications"
+author: "Riaz Arbi"
+date: "02 November 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# List of objects
+# Minimum specification attributes
+- Thing being measured
+- Required columns
+- Required rows
+
+*OBJECTIVE: As long as we provide well specified datalog objects, everything else should work*
+
+- Datalog objects
+--- market data
+--- fundamental data
+--- constituent lists
+--- metadata arrays
+- Dataset objects
+---
+
+Context
+
+    Software for 'data science' is evolving
+    In R, packages ggplot2 and dplyr have become immensely popular and now they are a part of the tidyverse
+    These packages use the 'tidy data' principles for consistency and speed of processing (from vignette("tidy-data")):
+
+        Each variable forms a column.
+        Each observation forms a row.
+        Each type of observational unit forms a table
+
+    Historically spatial R packages have not been compatible with the tidyverse
+
