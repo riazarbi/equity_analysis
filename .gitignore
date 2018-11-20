@@ -22,8 +22,8 @@ trials/*
 
 # RStudio files
 .Rproj.user/
-#keep the Rproj file. Look innocuous
-#*.Rproj
+# Rproj file
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
