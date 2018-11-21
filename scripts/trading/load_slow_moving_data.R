@@ -163,7 +163,7 @@ price_data <- lapply(ticker_data,
            select(-date)  %>% 
            mutate(max_price = apply(., 1, my.max)) %>% 
            mutate(min_price = apply(., 1, my.min)) %>%
-           mutate(spread = standard_spread*max_price) %>%
+           #mutate(spread = standard_spread*max_price) %>%
            add_column(date=date_stash)
          z <- x %>% 
            dplyr::select(one_of(volume_data))

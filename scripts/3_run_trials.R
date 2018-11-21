@@ -1,5 +1,4 @@
 # Define paths
-
 rm(list=ls())
 source("R/set_paths.R")
 
@@ -22,7 +21,7 @@ fundamental_metrics <- c()
 
 # Timeframe
 start_backtest <- "2017-01-01" # inclusive
-end_backtest <- "2017-01-04" # not inclusive
+end_backtest <- "2018-01-01" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
@@ -55,6 +54,10 @@ print(paste("Running in", run_mode, "mode."))
 # Depends on run mode
 source("R/trading_functions.R")
 
+if (run_mode == "BACKTEST") {
+source("R/backtest_trading_functions.R") 
+  } else {
+source("R/live_trading_functions.R")}
 # Run trials
 ###############################################################
 all_trials_begin <- Sys.time()
@@ -75,7 +78,7 @@ for (trial in trials) {
   # clearing out results folder
   print("INFO: Deleting results directory if it exists already.")
   results_path <- file.path(results_directory, 
-                            paste(constituent_index, tools::file_path_sans_ext(trial), sep="__"))
+                            paste(data_source, constituent_index, tools::file_path_sans_ext(trial), sep="__"))
   unlink(results_path, recursive=T )
   print("INFO: Creating new results directory.")
   dir.create(results_path, showWarnings = FALSE)

@@ -45,7 +45,7 @@ toc: yes                         # Add a table of contents
 numbersections: yes             # Should sections (and thus figures and tables) be numbered?
 fontsize: 11pt                  # Set fontsize
 linestretch: 1.2                # Set distance between lines.
-link-citations: TRUE            # This creates dynamic links to the papers in reference list.
+link-citations: TRUE    # This creates dynamic links to the papers in reference list.
 output:
   pdf_document:
     keep_tex: TRUE
