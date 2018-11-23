@@ -28,9 +28,10 @@ holdings_matrix <- left_join(holdings_matrix, daily_holdings, by="symbol")
 symbols <- holdings_matrix[,1]
 holdings_matrix <- as.data.frame(t(holdings_matrix[,-1]))
 colnames(holdings_matrix) <- symbols
+
 # What do I want to report on?
 
-# Anualized return
+# Annualized return
 # Annualized excess return
 # Risk adjusted return
 # Information ratio

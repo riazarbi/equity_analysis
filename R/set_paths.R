@@ -11,7 +11,7 @@ library(parallel)
 # SET DIRECTORIES
 
 # Get working directory
-working_directory <- getwd()
+working_directory <- here::here()
 
 # Define data directory paths
 data_directory <- file.path(working_directory, "data")

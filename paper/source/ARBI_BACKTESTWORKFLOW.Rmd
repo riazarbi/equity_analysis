@@ -35,11 +35,11 @@ bottom: 2 # bottom
 top: 2.5 # Top
 
 linenumbers: FALSE # Used when submitting to journal
-AddTitle: TRUE # Used when submitting to peer reviewed platform. This will remove author names. 
+AddTitle: FALSE # Used when submitting to peer reviewed platform. This will remove author names. 
 
 HardSet_layout: TRUE # Hard-set the spacing of words in your document. This will stop LaTeX squashing text to fit on pages, e.g. This is done by hard-setting the spacing dimensions. Set to FALSE if you want LaTeX to optimize this for your paper. 
 bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
-RemovePreprintSubmittedTo: FALSE  # Removes the 'preprint submitted to...' at bottom of titlepage
+RemovePreprintSubmittedTo: TRUE  # Removes the 'preprint submitted to...' at bottom of titlepage
 Journal: "Journal of Finance"   # Journal that the paper will be submitting to, if RemovePreprintSubmittedTo is set to TRUE.
 toc: yes                         # Add a table of contents
 numbersections: yes             # Should sections (and thus figures and tables) be numbered?
