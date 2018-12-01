@@ -2,6 +2,7 @@
 data/*
 results/*
 trials/*
+temp/*
 
 # R TEMPLATE
 # History files

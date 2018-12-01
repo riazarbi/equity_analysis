@@ -101,9 +101,15 @@ compute_trades <- function(target_weights, positions) {
   trades[trades$portfolio_members == 'CASH', "target_weight"] <- cash_buffer_percentage
   # Compute target values
   trades$target_value <- trades$target_weight*portfolio_value
+  # compute the closeness to the target
+  trades <- trades %>%
+    mutate(deviation = abs(target_value/starting_value-1)) %>%
+    mutate(soft_balanced = ifelse(deviation <= soft_rebalancing_constraint,
+                                 TRUE,
+                                 FALSE))
   # Compute the value of the equalizing trades
   trades$order_value <- trades$target_value - trades$starting_value
-  # Compute how many units need to be trades of each stock
+  # Compute how many units need to be traded of each stock
   trades$order_units <- trades$order_value/trades$price
   trades$order_units_int <- round(trades$order_units,0)
   # Assign each order as a BUY or SELL
@@ -123,6 +129,7 @@ compute_trades <- function(target_weights, positions) {
   }
   # Select only the most relevant columns
   trades <- trades %>%
+    dplyr::filter(soft_balanced == FALSE) %>%
     select(portfolio_members, order_type, limit, order_units_int, order_value) %>%
     tidyr::drop_na()
   return(trades)

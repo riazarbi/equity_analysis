@@ -93,8 +93,11 @@ repeat{
   # log value of trades
   value_of_trades <- sum(trades$order_value) - (trades %>% filter(portfolio_members == "CASH"))$order_value
   log <- paste(log, value_of_trades, sep = ", ")
-  print("ACTION: Submitting Trades")
-  trade_success_val <- submit_orders(trades)
+  if(nrow(trades)!=0) {
+    print("ACTION: Submitting Trades")
+    trade_success_val <- submit_orders(trades)
+  } else {
+    trade_success_val <- "0,0"}
   log <- paste(log, trade_success_val, sep = ", ")
   rm(transaction_log, trade_history, positions, trades)
   

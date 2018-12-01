@@ -132,7 +132,8 @@ library(magrittr)
         dplyr::filter(too_expensive == FALSE)  %>%
         select(-too_expensive)
       # append session trade history to trade history
-      trade_history <- bind_rows(trade_history, session_trades)
+      trade_history <- bind_rows(trade_history, session_trades) %>%
+        dplyr::filter(quantity != 0)
       
       # create session transaction log
       session_transactions <- session_trades %>%
@@ -141,7 +142,8 @@ library(magrittr)
         select(timestamp, transaction, description, net_amount) %>%
         dplyr::rename(amount = net_amount)
       # append session transaction log to transaction log
-      transaction_log <- bind_rows(transaction_log, session_transactions)
+      transaction_log <- bind_rows(transaction_log, session_transactions) %>%
+        dplyr::filter(amount !=0)
       # write to feather files
       write_feather(transaction_log, file.path(results_path, "transaction_log.feather"))
       write_feather(trade_history, file.path(results_path, "trade_history.feather"))

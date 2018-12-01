@@ -135,8 +135,8 @@ for (results_subdirectory in results_directories) {
   write_feather(portfolio_stats,
             file.path(results_directory, results_subdirectory, "portfolio_stats.feather"))
   # copy in the template tearsheet
-  #file.copy("scripts/reporting/tearsheet.Rmd", 
-  #          file.path(results_directory, results_subdirectory, "tearsheet.Rmd"), overwrite = T)
+  file.copy("scripts/reporting/tearsheet.Rmd", 
+            file.path(results_directory, results_subdirectory, "tearsheet.Rmd"), overwrite = T)
   # knit it
   rmarkdown::render(file.path(results_directory, results_subdirectory, "tearsheet.Rmd"),
                     params = list(results_subdirectory = results_subdirectory))
@@ -152,10 +152,15 @@ for (results_subdirectory in results_directories) {
 }
 
 # Merge all the portfolio value dataframes into a single dataframe 
-portfolio_returns <- Reduce(function(x,y)merge(x,y,by="date"), portfolio_returns)
+portfolio_values <- Reduce(function(x,y)merge(x,y,by="date"), portfolio_values)
 # write to results root directory
-write_feather(portfolio_returns,
+write_feather(portfolio_values,
           file.path(results_directory, "portfolio_values.feather"))
+
+####################################################
+# Cross-strategy report
+# Basically pbo + all price charts
+# + best strategies
 
 ####################################################
 
@@ -163,7 +168,8 @@ allend <- Sys.time()
 print(allend - allbegin)
 ###################################################
 
-# misunderstood drawdown and spent a whole afternoon crafting the below code.
+# misunderstood how to calculate drawdown and 
+# spent a whole afternoon crafting the below code.
 # it works, but doesn't calculate drawdown.
 # I can't bear to delete it because I sweated so hard
 #mutate(daily_drawdown = ifelse(
