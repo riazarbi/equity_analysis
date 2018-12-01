@@ -46,7 +46,7 @@ fundamental_metrics <- c()
 
 # Timeframe
 start_backtest <- "2008-01-01" # inclusive
-end_backtest <- "2018-01-01" # not inclusive
+end_backtest <- "2009-01-01" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
@@ -74,5 +74,5 @@ end_backtest <- ymd(end_backtest)
 if(!(run_mode %in% allowed_modes)) {
   stop("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
 } 
-print(paste("Running in", run_mode, "mode."))
+print(paste("Parameters file specifies", run_mode, "mode."))
 

@@ -3,6 +3,7 @@ data/*
 results/*
 trials/*
 temp/*
+scripts/temp/*
 
 # R TEMPLATE
 # History files

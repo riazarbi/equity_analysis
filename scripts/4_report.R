@@ -1,7 +1,12 @@
 # Define paths and load parameters
 rm(list=ls())
 source("R/set_paths.R")
-source("scripts/parameters.R")
+# copy across the parameters file
+file.copy(from="scripts/parameters.R", to="results/parameters.R", 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE)
+# source the parameters file
+source("results/parameters.R")
 
 # Time the script
 allbegin <- Sys.time()
@@ -22,12 +27,15 @@ get_stock_last_price <- function(ticker, query_date) {
   }
 
 #######################################################
+
 # Get a list of results subdirectories
-results_directories <- list.files(results_directory)
-portfolio_values <- list()
+results_directories <- list.dirs(results_directory, 
+                                  full.names = FALSE)
+daily_returns <- list()
+total_returns <- list()
 print(paste("Directory Found:" , results_directories))
 # For each results subdirectory, create a return vector
-for (results_subdirectory in results_directories) {
+for (results_subdirectory in results_directories[-1]) {
   begin <- Sys.time()
   # Parse the directory name
   dirname_data <- str_split_fixed(results_subdirectory, "__", 3)
@@ -143,30 +151,67 @@ for (results_subdirectory in results_directories) {
   
   # Sending some stats to the root directory for CSCV stats
   # Add the dataframe to the portfolio values list
-  portfolio_returns <- portfolio_stats %>% 
+  trial_daily_returns <- portfolio_stats %>% 
     select(date, daily_return) %>%
     dplyr::rename(!!trial := daily_return)
-  portfolio_values[[trial]] <- portfolio_returns
-  end <- Sys.time()
+  daily_returns[[trial]] <- trial_daily_returns
+
+  trial_total_returns <- portfolio_stats %>% 
+    select(date, total_return) %>%
+    dplyr::rename(!!trial := total_return)
+  total_returns[[trial]] <-trial_total_returns
+  
+  
+    end <- Sys.time()
   print(end - begin)  
 }
 
 # Merge all the portfolio value dataframes into a single dataframe 
-portfolio_values <- Reduce(function(x,y)merge(x,y,by="date"), portfolio_values)
+total_returns <- Reduce(function(x,y)merge(x,y,by="date"), total_returns)
 # write to results root directory
-write_feather(portfolio_values,
-          file.path(results_directory, "portfolio_values.feather"))
+write_feather(total_returns,
+              file.path(results_directory, "total_returns.feather"))
 
-####################################################
-# Cross-strategy report
-# Basically pbo + all price charts
-# + best strategies
+# Merge all the portfolio value dataframes into a single dataframe 
+daily_returns <- Reduce(function(x,y)merge(x,y,by="date"), daily_returns)
+# write to results root directory
+write_feather(daily_returns,
+          file.path(results_directory, "daily_returns.feather"))
 
-####################################################
-
+###################################################
 allend <- Sys.time()
 print(allend - allbegin)
 ###################################################
+
+# What do I want to report on?
+
+# Annualized return
+# Annualized excess return
+# Risk adjusted return
+# Information ratio
+# Max drawdown # Weekly daily monnthly annually
+# Turnover
+# Ave number of trades
+# Expense ratio
+# Attribution: absolute return vs loss to trading
+# Beta relative to benchmark
+
+# Can you confirm that your rebalancing strategy correction re-invests based on the PL.
+
+# Do you have a transaction cost model? 
+# At least square-root law: cost \approx spread + \sigma_(daily) *\sqrt(Volume/ADV)
+
+# Summary statistics - 
+# - backtest start and end date
+# - index
+# - number constituents
+
+# What do we need?
+# A benchmark -  define this in parameters
+
+# Where do we save this?
+# - in the results
+# - a report per stock
 
 # misunderstood how to calculate drawdown and 
 # spent a whole afternoon crafting the below code.

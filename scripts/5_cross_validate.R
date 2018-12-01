@@ -1,32 +1,48 @@
-# Load paths and functions
-source("scripts/data_pipeline/set_paths.R")
-source("scripts/data_pipeline/data_pipeline_functions.R")
+# Define paths and load libraries
+rm(list=ls())
+source("R/set_paths.R")
+source("results/parameters.R")
+library(pbo)
+# Time the script
+allbegin <- Sys.time()
 
-# Laod the datalog file names
-data_log <- convert_datalog_to_dataframe()
-# Take a quick look
-glimpse(data_log)
+######################################################
+# read in returns
+# remove date column because it is not required by pbo package
+portfolio_returns <- read_feather(file.path(results_directory, "portfolio_returns.feather"))
 
-# List the datalog sources
-unique(data_log$source)
-
-# Cuunt how many of each data type there are
-for (datasource in unique(data_log$source)) {
-  data_source_log <- data_log %>% 
-         filter(source == datasource) 
-  data_source_types <- data_source_log %>%
-         group_by(data_type) %>%
-         summarise(n())
-  print(paste("Data type counts for data source:", datasource))
-  print(knitr::kable(data_source_types))
-  
-  for (datalabel in unique(data_source_log$data_type)) {
-    data_type_log <- data_source_log %>% 
-      filter(data_type == datalabel) 
-    data_source_types <- data_type_log %>%
-      group_by(data_label) %>%
-      summarise(n())
-    print(paste("Data label counts for", datasource, datalabel))
-    print(knitr::kable(data_source_types))
-  }
+# define sharpe ratio calulation function
+# copied exactly from the pbo package vignette
+# but replaced their rf wih ours
+sharpe <- function(x,rf=daily_risk_free_rate) {
+  sr <- apply(x,2,function(col) {
+    er = col - rf
+    return(mean(er)/sd(er))
+  })
+  return(sr)
 }
+
+library(ggplot2)
+library(reshape2)
+
+df_melt = melt(portfolio_returns, id.vars = 'date')
+ggplot(df_melt, aes(x = date, y = value)) + 
+  geom_line() + 
+  facet_wrap(~ variable, scales = 'free_y', ncol = 1)
+
+portfolio_returns <- portfolio_returns %>% select(-date)
+ts.plot(portfolio_returns, gpars= list(col=rainbow(10)))
+
+my_pbo <- pbo(portfolio_returns,s=8,f=sharpe,threshold=0)
+
+summary(my_pbo) #closer to 1 pbo is more overfit
+
+require(lattice)
+require(latticeExtra)
+require(grid)
+histogram(my_pbo, type='density')
+xyplot(my_pbo,plotType="degradation")
+xyplot(my_pbo,plotType="dominance",increment=0.001)
+xyplot(my_pbo,plotType="pairs")
+xyplot(my_pbo,plotType="ranks",ylim=c(0,20))
+dotplot(my_pbo)
