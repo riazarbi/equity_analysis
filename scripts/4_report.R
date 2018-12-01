@@ -157,16 +157,40 @@ portfolio_values <- Reduce(function(x,y)merge(x,y,by="date"), portfolio_values)
 write_feather(portfolio_values,
           file.path(results_directory, "portfolio_values.feather"))
 
-####################################################
-# Cross-strategy report
-# Basically pbo + all price charts
-# + best strategies
-
-####################################################
-
+###################################################
 allend <- Sys.time()
 print(allend - allbegin)
 ###################################################
+
+# What do I want to report on?
+
+# Annualized return
+# Annualized excess return
+# Risk adjusted return
+# Information ratio
+# Max drawdown # Weekly daily monnthly annually
+# Turnover
+# Ave number of trades
+# Expense ratio
+# Attribution: absolute return vs loss to trading
+# Beta relative to benchmark
+
+# Can you confirm that your rebalancing strategy correction re-invests based on the PL.
+
+# Do you have a transaction cost model? 
+# At least square-root law: cost \approx spread + \sigma_(daily) *\sqrt(Volume/ADV)
+
+# Summary statistics - 
+# - backtest start and end date
+# - index
+# - number constituents
+
+# What do we need?
+# A benchmark -  define this in parameters
+
+# Where do we save this?
+# - in the results
+# - a report per stock
 
 # misunderstood how to calculate drawdown and 
 # spent a whole afternoon crafting the below code.

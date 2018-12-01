@@ -276,7 +276,7 @@ In the following section we detail a rudimentary reference implementation of a r
 
 We provide an example of a reproducable equity backtesting workflow that covers the full data processing chain from acquisition to reporting. 
 
-All code is available at http://github.com/riazarbi/equity_analysis. 
+All code is available at [Github - Equity Analysis](https://github.com/riazarbi/equity_analysis).
 
 The data processing scripts can consume multiple data sources, for multiple equity indexes, for any timeframe, for arbitrary data attributes. The implementation is index-based. That is, data acquisition begins with obtaining constituents for an equity index at a point in time, and then proceeds to obtaining metadata and timeseries attributes for the constituents.
 
@@ -316,7 +316,9 @@ We also include a script for generating a range of simulated index datasets, com
 This project is ongoing, and many rudimentary features will be refined as time unfolds. For this reason, we recommend that users fork the project prior to use, in order to lock their research to a particular version of the compendium. Users are encouraged to submit pull requests on [GitHub](https://github.com) for bug fixes and to add features. 
 
 ## Intellectual Property Statement
-This is the intellectual property of Riaz Arbi. This code will be released under a strong copyleft license. A license is included in the repository.
+This paper is distributed under the terms of the Creative Commons Attribution License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.
+
+The source code referenced in this section is released under the GNU General Public License v3.0. A full copy of the license is avaialable in the code repository at [Github - Equity Analysis](https://github.com/riazarbi/equity_analysis).
 
 \newpage
 
@@ -330,9 +332,9 @@ Because this compendium is designed to be run by researchers on commodity consum
 
 This has the added benefit of making these stages asynchronous. Processing data does not require a new query to have been conducted; cross validation does not require new trials to be run. These stages can even be run on different machines that share network drives - although the benefits will only be apparent if each stage's processing time is longer than the network transfer time. 
 
-Where possible, we have made I/O optimizations. This includes converting `.csv` files to `.feather` files, which are much faster to read and write, and parallelizing select prices of code. Ticker-wise data pipelining is multi-threaded, and the trading engine could be sped up by making each trial run on its own thread.
+Where possible, we have made I/O optimizations. This includes converting `.csv` files to `.feather` files, which are much faster to read and write, and parallelizing select prices of code. Ticker-wise data pipelining is multi-threaded. The trading engine is single-threaded, but asynchronous. That is, several trading engines can simultaneously consume the `trials` directory contents and backtest in parallel without collision.
 
-All the actions required to conduct a complete backtest are captured in plain text files. This means that every single computation and data manipulation can be inspected and its functioning verified. The entire code base can be versioned using a software verisoning tool such as git. A researcher can fork this codebase, modify it, and push the modifications back to the origin. All of these changes are immutably recorded; future researchers can alway see exactly what has changed, who has made the changes and what the reason for the change was.
+All the actions required to conduct a complete backtest are captured in plain text files. This means that every single computation and data manipulation can be inspected and its functioning verified. The entire code base can be versioned using a software versioning tool such as git. A researcher can fork this codebase, modify it, and push the modifications back to the origin. All of these changes are immutably recorded; future researchers can alway see exactly what has changed, who has made the changes and what the reason for the change was.
 
 ## Directory Structure
 
@@ -373,7 +375,10 @@ Complete directory structure:
 |    |   |   data_pipeline_functions.R
 |    |   |   set_paths.R
 |    |   |   trading_functions.R
+|    |   |   backtest_trading_functions.R
+|    |   |   live_trading_functions.R
 |    scripts/
+|    |   parameters.R
 |    |   1_query_source.R
 |    |   2_process_data.R
 |    |   3_run_trials.R
@@ -388,7 +393,7 @@ Complete directory structure:
 |    |   |   3_ticker_logs_to_dataset.R
 |    |   trading/
 |    |   |   example_trial.R
-|    |   |   load_slow_moding_data.R
+|    |   |   load_slow_moving_data.R
 |    |   |   trade.R
 |    |   reporting/
 |    trials/
@@ -435,10 +440,28 @@ graph %>%  export_graph(file_name = "data/coarse_workflow.pdf")
 
 \newpage
 
+## Parameter Setting - `parameters.R`
+
+The `scripts/parameters.R` script contains all the parameters for the backtest session. This file, along with the `trials/algorithm_X.R` scripts, are the only ones that a user changes to run unique backtests. They are R files, rather than markdown or yaml, because it enables us to compute some parameters based on the values of other parameters. 
+
+```
+Relevant parts of the directory tree: 
+
+. equity_analysis/
+|    scripts/
+|    |   parameters.R
+
+```
+
+This file is sourced in various other scripts. It detemrined the structure of simulated datasets, the characteristics of the trading environment and the behaviour of the trading engine. It has the following sections - 
+
+1. Reporting Parameters: here we set the risk free rate, which is needed for computing the Sharpe Ratio
+2. Simulated Data Parameters: characteristics of simulated data such as universe size, index size, start and end of simulation, price and earnings growth.
+3. Trading parameters: mode (backtest or live), heartbeat duration, target index, start and end of backtest.
+
 ## Data Acquisition - `1_query_source.R`
 
 The objective of the scripts called in `scripts/0_query_source.R` is to query a data source (such as Bloomberg, Datastream or iNet) and save the results in an appropriate format in the `data/datalog` directory. This directory can grow without limit. It can be deleted and regenerated from the query scripts. It will be mined by downstream scripts to create datasets for backtesting.
-
 
 ```
 Relevant parts of the directory tree: 
@@ -447,13 +470,12 @@ Relevant parts of the directory tree:
 |    data/
 |    |   datalog
 |    scripts/
+|    |   parameters.R
 |    |   1_query_source.R
 |    |   data_processing/
 |    |   |   1_bloomberg_to_datalog.R
 |    |   |   1_simulated_to_datalog.R
 ```
-
-
 
 We include two sample scripts. One for querying Bloomberg, the other for generating simulated dummy data for demonstration purposes. These scripts can be found in the `scripts/data_processing/` directory. This directory adopts a sequential naming convention because they are intended to be run sequentially.
 
@@ -514,6 +536,8 @@ It is not necessary that all `data_types` attributes are contained in a single f
 > `152874575747580__bloomberg__ticker_fundamental_data__ZAE000018131 Equity.csv`  
 
 This chunking can be done along either rows or columns or both. Chunking does not have to be sequential, either. A query can be run multiple times, saving more and more data to the datalog. 
+
+`1_simulated_to_datalog.R` reads in parameters from the `parameters.R` file and generates a datalog that confirms to the above specification. The ticker names are randomly generated, but reproducable through the specification of a seed. This datalog can be consumed by downstream scripts in the same manner as queried data.
 
 \newpage
 
@@ -625,10 +649,11 @@ Relevant parts of the directory tree:
 |    data/
 |    |   datasets/
 |    scripts/
+|    |   parameters.R
 |    |   3_run_trials.R
 |    |   trading/
 |    |   |   example_trial.R
-|    |   |   load_slow_moding_data.R
+|    |   |   load_slow_moving_data.R
 |    |   |   trade.R
 |    trials/
 |    results/
@@ -638,7 +663,7 @@ Rather, these scripts follow a parent - child relationship. The parent script is
 
 ### Global parameters
 
-The first section of the script sets parameters global to the session. These parameters are -
+The `parameters.R` file sets parameters that are global to the trading session. The parameters in the trading section are -
 
 1. Mode
     - `run_mode` - BACKTEST or LIVE. LIVE mode not yet implemented.
@@ -729,21 +754,48 @@ In a backtest environment, this trade matching needs to be simulated. In this co
 
 A well specified `compute_weights` function will result in a successful backtest. The results of each backtest run by `3_run_trials.R` will be placed in the `results` directory according to the naming convention covered earlier.
 
-These `results` subdirectories contain five files -
+On completion of `3_run_trials.R`, the `results` subdirectories contain four files -
 
 1. The original `algorithm_X.R` script from the `trials` directory.
 2. A `runtime_log` file, which contains relevant runtime information. Each line of this file represents another heartbeat.
 3. A `trade_history.feather` file, which contains a full trade history, similar to what would be obtained from an external broker.
 4. A `transaction_log.feather` file, which contains a full transaction log, similar to what would be obtained fro an external broker. This log is analogous to a bank account, and keeps track of account cash balances as trades, deposits, withdrawals and account charges are levied.
-5. A `summary_statistics.Rmd` file, which presents an historical summary of the strategy performance, including (but not limited to) sharpe ratio, annualized return over a range of horizons, maximum drawdown, turnover and total expense ratio.
+
+In addition, the `parameters.R` file, which contains important information related to the environment, is copied into the root of the `results` directory.
 
 \newpage
 
-## Cross Validation
+## Reporting - `4_report.R`
+
+The `results` subdirectories contain all the necessary data to compute portfolio performance characteristics. 
+
+There exist several portfolio performance reporting packages on CRAN; it is beyond the scope of this exercise to replicate the functionality of those packages. The `4_report.R` script has three objectives - 
+
+1. Create a matrix of daily returns for piping into a downstream portfolio analysis package.
+2. Generate a minimal performance tearsheet in order to demonstrate that portfolio analysis can, in principle, be conducted on the folder contents.
+3. Collect the daily returns of all of the trials into a single matrix for downstream analysis for overfitting.
+
+To achieve these aims, the script performs the following steps on each result subdirectory - 
+
+1. Load the transaction log, trade history and runtime log
+2. Determine the start and end date of the backtest from the runtime log
+3. Compute cash balances, portfolio positions, and stock prices for each date in the backtest
+4. Compute the total portfolio value for each date in the backtest
+5. Combine the cash balance, total stock value, and total portfolio value into a Tidy dataframe
+6. Compute miscellanous rolling performance statistics, such as daily return, excess return and rolling average return and add them as columns to the dataframe
+7. Save the dataframe to a `portfolio_stats.feather` file in the subdirectory.
+8. Copy in the `tearsheet.Rmd` tmeplate from `scripts/reporting/`.
+9. Parametrically render the `tearsheet.Rmd` into a `tearsheet.html` web page that can be read and distributed.
+
+As the script works through each subdirectory it compiles a cross-sectional dataframe that contains all the trials' daily returns. That is, a dataframe with a row for every date, and a column for the daily returns for each trial result. This dataframe is saved to `results/portfolio_values.feather`, where it can be consumed by the `5_cross_validate.R` cross-validation script.
+
+It must be emphasised that the `portfolio_stats.feather` table and the tearsheet are minimal examples, and they could be heavily augmented. We decided not to flesh out a complete statistical summary because there are other R packages that can do that (see @Portfolioanalytics as an example). Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
 
 \newpage
 
-## Reporting
+## Cross Validation - `5-cross_validate.R`
+
+
 
 
 

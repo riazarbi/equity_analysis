@@ -10,7 +10,7 @@ glimpse(data_log)
 # List the datalog sources
 unique(data_log$source)
 
-# Cuunt how many of each data type there are
+# Count how many of each data type there are
 for (datasource in unique(data_log$source)) {
   data_source_log <- data_log %>% 
          filter(source == datasource) 
