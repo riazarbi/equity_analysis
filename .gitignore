@@ -5,6 +5,12 @@ trials/*
 temp/*
 scripts/temp/*
 
+# PAPER FILES
+paper/source/ARBI_BACKTESTWORKFLOW.pdf
+paper/source/ARBI_BACKTESTWORKFLOW.spl
+paper/source/ARBI_BACKTESTWORKFLOW.tex
+paper/source/data/coarse_workflow.pdf
+
 # R TEMPLATE
 # History files
 .Rhistory

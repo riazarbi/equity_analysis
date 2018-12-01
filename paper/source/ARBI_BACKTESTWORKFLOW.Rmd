@@ -67,7 +67,45 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width 
 
 # Introduction \label{Introduction}
 
-Intro intro intro
+Must address:
+
+1. Survivorship bias
+2. Look ahead bias
+3. Completeness: multi source
+4. Retroactive corrections: dataset monitoring
+
+5. Market impact
+6. Transaction Costs
+7. Portfolio bankruptcy
+8. Backtest overfitting: pbo
+
+Must try to:
+
+1. Be convertalbe to live with minimal effort
+2. Acommodate any sort of date
+3. Be interoperable with other packages (xes...)
+4. Use tidy data structures
+
+
+Second-order challenges
+Compaction: dropping useless data
+Speed: training vs trading
+Speed: parallel processing
+Speed: read/write: feather
+Memory: filtering and subsetting
+
+## Features
+
+- data versioning
+- multi-source
+- multi-index
+- code version control
+- clear procedural workflow
+- event-driven
+- tidy data
+- pbo
+- host of metrics
+- bias avoidance
 
 This paper is organised as follows. Section \ref{Backtest section} briefly introduces the practice of backtesting of investment strategies in academia and industry, enumerates common methodological issues that compromise the validity of research and discusses the replication crisis that exists in both domains. Section \ref{Reproducible Research} describes the goals and philosophy of the reproducible research movement and its links to the open source software movement, with a special focus on the R statistical programming language, the Tidy approach to data organization and the use of scripting to facilitate reprducibility and transparency in scientific research. Section \ref{Backtester Documentation} introduces a backtesting template that is roughly compatible with the structure of a research compendium - that is, a template which constitutes a basic minimum viable unit of reproducible research.
 
@@ -777,12 +815,12 @@ There exist several portfolio performance reporting packages on CRAN; it is beyo
 
 To achieve these aims, the script performs the following steps on each result subdirectory - 
 
-1. Load the transaction log, trade history and runtime log
-2. Determine the start and end date of the backtest from the runtime log
-3. Compute cash balances, portfolio positions, and stock prices for each date in the backtest
-4. Compute the total portfolio value for each date in the backtest
-5. Combine the cash balance, total stock value, and total portfolio value into a Tidy dataframe
-6. Compute miscellanous rolling performance statistics, such as daily return, excess return and rolling average return and add them as columns to the dataframe
+1. Load the transaction log, trade history and runtime log.
+2. Determine the start and end date of the backtest from the runtime log.
+3. Compute cash balances, portfolio positions, and stock prices for each date in the backtest.
+4. Compute the total portfolio value for each date in the backtest.
+5. Combine the cash balance, total stock value, and total portfolio value into a Tidy dataframe.
+6. Compute miscellanous rolling performance statistics, such as daily return, excess return and rolling average return and add them as columns to the dataframe.
 7. Save the dataframe to a `portfolio_stats.feather` file in the subdirectory.
 8. Copy in the `tearsheet.Rmd` tmeplate from `scripts/reporting/`.
 9. Parametrically render the `tearsheet.Rmd` into a `tearsheet.html` web page that can be read and distributed.
@@ -793,65 +831,39 @@ It must be emphasised that the trial-specific `portfolio_stats.feather` tables a
 
 \newpage
 
-## Cross Validation - `5-cross_validate.R`
+## Cross Validation - `5_cross_validate.R`
 
 
 ## Limitations and Weaknesses
 
-- More comprehensive results reporting
-- Implementation of LIVE
-- Automated testing of dataset quality
-- Collection of all tearsheets into a shiny app
-- Piping pbo into shiny app
+In order to keep the scope of this project manageable, we have had to allow the codebase to exist with certain limitations. These limitations are not inherent; their existence is a function of time limitations. 
 
-- Slow - in-memory will speed it up dramatically
-- Loading ticker data - can be more compact
-- Larger library of algorthms
+### Weaknesses
 
-- More realistic modelling of transaction costs and slippage
-- Make data processing less opinionated - can consume other data structures as well.
-- Decouple rebalancing heartbeat from trading heartbeat
+The data processing script (which converts the `datalog` into `datasets`) is highly opinionated, and expects only datalog-like files. In reality source data comes in a variety of formats. The challenge of transforming these data structures into the strict datalog format is considerable, and the data processing pipeline would benefit from becoming more agnistic in what it can consume. This is a fine balance, however, as a major feature of this project is that fact that the results are totally reproducible from source. 
 
+Trading heartbeat processing time increases linearly with time. This is a function of disk IO, and the fact that the transaction log and trade history files (which are read and written each heartbeat) grow with time. This processing time could be significantly reduced by keeping both of these datasets in memory. This has not been implemented because reading and writing to disk each heartbeat facilitates transparency. If a backtest crashes, a researcher can load the files of the last hearbeat to investigate the cause. If the files were kept in memory this would not be possible. There are several possible solutions to this problem. For instance, the process could write each heartbeat, but read from memory. Or the IO could write to a ramdisk which is regularly syncronised to the hard disk, effectively decoupling the heartbeat processing time from the bottleneck. But these solutions are not without their risks, and the risks have not been weighed up as part of this project.
 
-Must address:
+At present the entire ticker dataset for a particular index is loaded into memory ad traind runtime. This does not present problems for small datasets, but large datasets will consume large amounts of memory. This can be mitigated by dropping all metrics except those necessary for the backtest. This has not been implemented.
 
-1. Survivorship bias
-2. Look ahead bias
-3. Completeness: multi source
-4. Retroactive corrections: dataset monitoring
+The crafting of portfolio weighting algorithms is challenging. We have included three examples under `scripts/trading/sample_trials` - market capitalisation, equal, and random weighting. It would be useful to include more elaborate examples to give researchers a broader choice of starting points - especially with regard to subsetting portfolios according to sector and using fundamentals and ratios as a basis for portfolio weighting.
 
-5. Market impact
-6. Transaction Costs
-7. Portfolio bankruptcy
-8. Backtest overfitting: pbo
+Transaction costs and slippage are modelled naively - either as a percentage of the total trade value or a hard minimum. These two factors encompass entire fields of research in their own right. It would be useful to generalise how these factors are incorporated into the backtest so that more complex estimation methods can be dropped in easily.
 
-Must try to:
+As present portoflio rebalancing occurs daily, and trading periodicity is set by the heartbeat duration. This causes problems for strategies that imply a lot of churn, such as a random rebalancing strategy. Because the weights are recalculated daily by default, the churn on these portfolios is significant, which overwhelms other characteristics that researchers may be interested in. Modifying the `trade.R` script to accept a parameter that varies rebalancing time would add significant flexibility to the researchers toolkit. This parameter could also be an input to the algorithm, as it effectively translates to a holding period specification and is amenable to hyperparameter tuning.
 
-1. Be convertalbe to live with minimal effort
-2. Acommodate any sort of date
-3. Be interoperable with other packages (xes...)
-4. Use tidy data structures
+### Desirable Additions
 
+In line with our goal of enabling high-quality, reproducible research, it would be desirable to include automated report generation of dataset characteristics and quality. The data processing pipeline accommodates multiple sources and versions of data, so a reporting suite built around the comparative quality of various data sources would be useful. Such a suite could contain metrics such as breadth (number of tickers) and depth (number of metrics) of coverage, accuracy and frequency of retroactive updates. 
 
-Second-order challenges
-Compaction: dropping useless data
-Speed: training vs trading
-Speed: parallel processing
-Speed: read/write: feather
-Memory: filtering and subsetting
+On the other end of the pipeline, the tearsheets could be augmented with more summary statistics. Similarly to the data quality reporting, the underlying data is present in the appropriate form. What is needed is the computation of summary statistics and inclusion of those summary statistics in the parametrised report. This would require research into the relevant R packages and the modification of the `tearsheet.Rmd` template file into a more comprehensive report.
 
-## Features
+The `trade.R` script has been built to load a different set of trading functions depending on what trading mode (`BACKTEST` or `LIVE`) is selected. The tooling exists for the `trade.R` script to operate on live data and real trades unmodified. What is required is the building out of the `live_trading_functions.R` script to cover the same functions as the `backtest_trading_functions.R` script. Several brokers (for example, Interactive Brokers) offer paper trading accounts, which opens up the possibility of checking the backtest engine calibration by running the code in `LIVE` mode and then, after the fact, running the same algorighms over the same input data in `BACKTEST` mode and comparing the results.
 
-- data versioning
-- multi-source
-- multi-index
-- code version control
-- clear procedural workflow
-- event-driven
-- tidy data
-- pbo
-- host of metrics
-- bias avoidance
+Opening and reading each trial tearsheet is cumbersome, but allows a researcher to share the comprehensive results of a single trial in a human-readable format. Rapid comparison of each trial tearsheet would be made much less onerous by the building of a simple Shiny application that presents a drop-down list of all results in the results directory and allows a researcher to select one, immediately rendering the tearsheet.Rmd file inside that particular result subdirectory inside the Shiny app.
+
+The cross-validation results would also benefit from being packaged into a parametrised .Rmd file, similar to the individual results tearsheets. The results of the cross validation are primarily intended for human consumption and rendering these results into a more human-friendly format such as an html or PDF report would facilitate ease of interpretation.
+
 
 # Conclusion\label{conclusion}
 
