@@ -806,7 +806,7 @@ It must be emphasised that the trial-specific `portfolio_stats.feather` tables a
 
 - Slow - in-memory will speed it up dramatically
 - Loading ticker data - can be more compact
-- Larger library of 
+- Larger library of algorthms
 
 - More realistic modelling of transaction costs and slippage
 - Make data processing less opinionated - can consume other data structures as well.
