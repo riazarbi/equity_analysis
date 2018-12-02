@@ -23,14 +23,8 @@ dir.create(temp_path, showWarnings = FALSE)
 # Get a list of trials
 trials <- list.files(trial_directory)
 # length_of_trials
-repeat{
-  trials <- list.files(trial_directory)
-  if(length(trials) == 0){
-    print("No trials found. Exiting.")
-    break
-  }
-  trial <- trials[1]
-  print(paste("INFO: Running trial:", trial))
+for (trial in trials) {
+  print(paste("INFO: Running trial:", trial)) 
   trial_path <- file.path(trial_directory, trial)
   file.rename(from=trial_path, to=file.path(temp_path, trial))
   trial_path <- file.path(temp_path, trial)
