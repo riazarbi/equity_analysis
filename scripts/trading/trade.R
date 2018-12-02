@@ -41,16 +41,16 @@ repeat{
   
   # 2. VERIFY RUNTIME TICKER DATA IS HEALTY
   # Compute a new runtime_ticker_dataset only if it doesn't exist, 
-  # OR the runtime date has changed from the last time.
+  # OR if rebalancing_periodicity + last_rebalancing_date <= runtime_date.
   print("CHECK: Is runtime_ticker_data stale?")
   if(!exists("runtime_ticker_data") || 
-     !exists("last_runtime_date") ||
-     date(runtime_date) != last_runtime_date) {
+     !exists("last_rebalancing_date") ||
+     runtime_date >= (last_rebalancing_date + rebalancing_periodicity)) {
     print("WARNING: A new runtime_ticker_data dataframe needs to be generated.")
     # Compute new runtime ticker data
     runtime_ticker_data <- get_runtime_dataset(runtime_date, constituent_list, ticker_data)
     # Update the last runtime date
-    last_runtime_date <- date(runtime_date)
+    last_rebalancing_date <- runtime_date
     # Remove target weights if it exists so it can be re-computed
     if (exists("target_weights")) {
       rm(target_weights)

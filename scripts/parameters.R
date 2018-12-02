@@ -35,8 +35,10 @@ payout_ratio_stddev <- 0.1
 # Mode - either LIVE or BACKTEST
 run_mode <- "BACKTEST"
 # Heartbeat duration: how long between heartbeats (seconds)
-# I chose 11.5 hours - twice a day
-heartbeat_duration <- 60*60*11.5
+# I chose 12 hours - twice a day
+heartbeat_duration <- 60*60*12
+# rebalancing period: how long between portfolio rebalancing (seconds)
+rebalancing_periodicity <- 60*60*24*30
 
 # Universe
 constituent_index <- index

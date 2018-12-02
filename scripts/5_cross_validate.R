@@ -9,7 +9,8 @@ allbegin <- Sys.time()
 ######################################################
 # read in returns
 # remove date column because it is not required by pbo package
-portfolio_returns <- read_feather(file.path(results_directory, "portfolio_returns.feather"))
+daily_returns <- read_feather(file.path(results_directory, "daily_returns.feather"))
+total_returns <- read_feather(file.path(results_directory, "total_returns.feather"))
 
 # define sharpe ratio calulation function
 # copied exactly from the pbo package vignette
@@ -31,7 +32,7 @@ ggplot(df_melt, aes(x = date, y = value)) +
   facet_wrap(~ variable, scales = 'free_y', ncol = 1)
 
 portfolio_returns <- portfolio_returns %>% select(-date)
-ts.plot(portfolio_returns, gpars= list(col=rainbow(10)))
+ts.plot(total_returns %>% select(-date), gpars= list(col=rainbow(10)))
 
 my_pbo <- pbo(portfolio_returns,s=8,f=sharpe,threshold=0)
 

@@ -1,0 +1,179 @@
+---
+title: "Backtest Results Report"
+author: "Riaz Arbi"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    toc_depth: '2'
+    fig_width: 8
+    fig_height: 4
+params:
+  results_subdirectory:
+    value: x
+---
+
+```{r, include = F}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      message = F)
+
+## Set options
+options(scipen = 999, # prevent scientific notation on large numbers
+        stringsAsFactors = F) # prevent R from turning everything to factors
+```
+
+# Parameters
+
+```{r load_data, echo=F, warnings=F, message=F}
+library(magrittr)
+library(tidyverse)
+library(lubridate)
+working_directory <- here::here()
+source(file.path(working_directory,"R/set_paths.R"))
+
+results_subdirectory <- params$results_subdirectory
+#results_subdirectory <- "simulated__RISK_FREE_GROWERS__random_trial_2"
+results_subdirectory_path <- file.path(results_directory, results_subdirectory)
+
+# Read in the logs
+runtime_log <- read_csv(
+    file.path(results_directory, results_subdirectory, "runtime_log"))
+trade_history <- read_feather(
+    file.path(results_directory, results_subdirectory, "trade_history.feather"))
+transaction_log <- read_feather(
+    file.path(results_directory, results_subdirectory, "transaction_log.feather"))
+portfolio_stats <- read_feather(
+    file.path(results_directory, results_subdirectory, "portfolio_stats.feather"))
+```
+
+```{r get_parameters, echo=F, warnings=F, message=F}
+dirname_data <- str_split_fixed(results_subdirectory, "__", 3)
+data_source <- dirname_data[1]
+constituent_index <- dirname_data[2]
+trial <- dirname_data[3]
+num_stocks_traded <- length(unique(trade_history$symbol))
+start_backtest <- max(portfolio_stats$date)
+end_backtest <- min(portfolio_stats$date)
+backtest_duration <- interval(ymd(end_backtest),ymd(start_backtest)) %/% months(1)
+```
+
+The backtest is specified by the following parameters:
+
+|Parameter                 |Value|
+|--|--|
+|Data Source               |`r data_source`| 
+|Target Equity Index       |`r constituent_index`|
+|Number of Stocks Traded   |`r num_stocks_traded`|
+|Algorithm Name            |`r trial`|
+|Start of Backtest         |`r start_backtest`|
+|End of Backtest           |`r end_backtest`|
+|Backtest Duration (months)|`r backtest_duration`|
+# Trade Characteristics
+```{r trade_characteristics, echo=FALSE}
+trade_history <- trade_history %>% dplyr::filter(quantity != 0)
+final_portfolio_value <- portfolio_stats$portfolio_value[length(portfolio_stats$portfolio_value)]
+max_drawdown <- round(max(portfolio_stats$drawdown_pct),2)
+```
+
+|Characteristic                       |Value|
+|--|--|
+|Number of Trades                     | `r length(trade_history$quantity)`|
+|Total Pre-Commission Value of Trades | `r round(sum(trade_history$principal_amount),2)`|
+|Total Commission Paid                | `r round(sum(trade_history$commission),2)`|
+|Total Commission % of Trade Value    | `r round(sum(trade_history$commission)/sum(trade_history$principal_amount*100),2)`|
+|Trade Value / Final Portfolio Value  | `r round(sum(trade_history$principal_amount/final_portfolio_value),2)`|
+|Max Drawdown (%)                     | `r max_drawdown`|
+|Final Value of Portfolio             | `r round(final_portfolio_value,2)`|
+
+# Performance Characteristics
+```{r}
+library(xts)
+library(dygraphs)
+stats_xts <- xts(portfolio_stats %>% select(total_return, total_risk_free_return), order.by=portfolio_stats$date)
+dygraph(stats_xts) %>% 
+  dyOptions(maxNumberWidth = 20, stackedGraph = FALSE) %>%
+  dyRangeSelector %>%
+  dyRebase(value=100)
+```
+
+```{r}
+month_ends <- tapply(portfolio_stats$date, as.yearmon(portfolio_stats$date), max)
+portfolio_stats %>% filter(date %in% month_ends) %>% select(date, portfolio_value, drawdown_pct, rolling_30day_return, rolling_30day_ave_excess_return, rolling_30day_sharpe, rolling_30_day_drawdown) %>%
+  mutate(drawdown_pct = round(drawdown_pct*100,2),
+        rolling_30day_return = round(rolling_30day_return*100,2), 
+        rolling_30day_ave_excess_return = round(rolling_30day_ave_excess_return*100,2), 
+        rolling_30day_sharpe = round(rolling_30day_sharpe,2), 
+        rolling_30_day_drawdown = round(rolling_30_day_drawdown*100,2))
+```
+
+
+```{r, eval = FALSE}
+backtest_sequence <- seq(start_backtest, end_backtest, by="day")
+trades <- feather::read_feather(file.path(results_path, "trade_history.feather"))
+tickers <- unique(trades$symbol)
+price_matrix <- data.frame(matrix(NA, ncol = 0, nrow = length(tickers)))
+price_matrix$symbol <- tickers
+holdings_matrix <- price_matrix
+
+
+for (i in 1:length(backtest_sequence)) {
+  selected_date <- backtest_sequence[i]
+  #print(as.character(selected_date))
+daily_holdings <-   trades %>% 
+    filter(as.Date(timestamp) <= selected_date) %>%
+    group_by(symbol) %>% 
+    summarise(sum(quantity)) %>%
+  mutate(`sum(quantity)` = symbol) %>%
+  dplyr::rename(!!as.character(selected_date) := `sum(quantity)`)
+
+holdings_matrix <- left_join(holdings_matrix, daily_holdings, by="symbol")
+}
+
+symbols <- holdings_matrix[,1]
+holdings_matrix <- as.data.frame(t(holdings_matrix[,-1]))
+colnames(holdings_matrix) <- symbols
+
+# What do I want to report on?
+
+# Annualized return
+# Annualized excess return
+# Risk adjusted return
+# Information ratio
+# Max drawdown # Weekly daily monnthly annually
+# Turnover
+# Ave number of trades
+# Expense ratio
+# Attribution: absolute return vs loss to trading
+# Beta relative to benchmark
+
+# I assume that you will also put in the PBO using the CSCV method and 
+# plot the equity curves (excess wealth) against the index on a log scale 
+# i.e. ln((returns-RFR)*initial weight).
+
+# Can you confirm that your rebalancing strategy correction re-invests based on the PL.
+
+# Do you have a transaction cost model? 
+# At least square-root law: cost \approx spread + \sigma_(daily) *\sqrt(Volume/ADV)
+
+# Summary statistics - 
+# - backtest start and end date
+# - index
+# - number constituents
+# - 
+
+# What do we need?
+# A benchmark -  define this in parameters
+
+# Where do we save this?
+# - in the results
+# - a report per stock
+
+# Over and above, we want a PBO report for the entire set of trials
+
+#View(read_feather(file.path(results_path, "trade_history.feather")))
+#View(read_feather(file.path(results_path, "submitted_trades.feather")))
+#View(read_csv(file.path(results_path, "runtime_log"), col_names=F))
+```
