@@ -1,8 +1,39 @@
+---
+title: "Cross Validation"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    toc_depth: '2'
+    fig_width: 8
+    fig_height: 4
+---
+
+```{r, include = F}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      message = F)
+
+## Set options
+options(scipen = 999, # prevent scientific notation on large numbers
+        stringsAsFactors = F) # prevent R from turning everything to factors
+```
+
+```{r}
 # Define paths and load libraries
 rm(list=ls())
-source("R/set_paths.R")
-source("results/parameters.R")
+working_directory <- here::here()
+source(file.path(working_directory,"R/set_paths.R"))
+source(file.path(working_directory,"results/parameters.R"))
+
 library(pbo)
+library(xts)
+
+library(ggplot2)
+library(reshape2)
+library(dygraphs)
 # Time the script
 allbegin <- Sys.time()
 
@@ -13,6 +44,10 @@ tidy_tibble_to_xts <- function(tibble) {
   return(xts_tibble)
 }
 
+```
+
+
+```{r}
 ######################################################
 # read in returns
 # remove date column because it is not required by pbo package
@@ -21,6 +56,10 @@ daily_returns <- tidy_tibble_to_xts(
 total_returns <- tidy_tibble_to_xts(
   read_feather(file.path(results_directory, "total_returns.feather")))
 
+```
+
+
+```{r}
 
 # define sharpe ratio calulation function
 # copied exactly from the pbo package vignette
@@ -33,9 +72,10 @@ sharpe <- function(x,rf=daily_risk_free_rate) {
   return(sr)
 }
 
-library(ggplot2)
-library(reshape2)
-library(xts)
+```
+
+
+```{r}
 
 # Plot each trials total return on a separate axis
 df_melt = melt(total_returns, id.vars = 'date')
@@ -47,13 +87,19 @@ df_melt = melt(total_returns, id.vars = 'date')
 #color <- rainbow(ncol(total_returns))
 #ts.plot(total_returns, gpars= list(col=color))
 #legend("topright", legend=colnames(total_returns), lty=1, col=color)
-dygraph(total_returns) %>% 
+dygraph(total_returns, 
+                main = "All Trials Normalised Total Returns", 
+        ylab = "Indexed Value") %>%
+  dyLegend(width = 600) %>%
   dyOptions(maxNumberWidth = 20, stackedGraph = FALSE) %>%
   dyRangeSelector %>%
   dyRebase(value=100) %>%
   dyHighlight(highlightSeriesOpts = list(strokeWidth = 3))
+  
+```
 
-dygraph(total_returns)
+
+```{r}
 
 my_pbo <- pbo(daily_returns,s=8,f=sharpe,threshold=0)
 
@@ -68,4 +114,6 @@ xyplot(my_pbo,plotType="dominance",increment=0.001)
 xyplot(my_pbo,plotType="pairs")
 xyplot(my_pbo,plotType="ranks",ylim=c(0,20))
 dotplot(my_pbo)
+
+```
 
