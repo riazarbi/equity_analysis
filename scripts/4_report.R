@@ -137,8 +137,6 @@ for (results_subdirectory in results_directories[-1]) {
            rolling_30_day_drawdown_pct = rolling_30_day_drawdown / portfolio_value) %>%    # total return stats
     mutate(total_return = portfolio_value/portfolio_value[1])
     
-
-
   # write the dataframe to the subdirectory
   write_feather(portfolio_stats,
             file.path(results_directory, results_subdirectory, "portfolio_stats.feather"))
@@ -168,6 +166,7 @@ for (results_subdirectory in results_directories[-1]) {
 
 # Merge all the portfolio value dataframes into a single dataframe 
 total_returns <- Reduce(function(x,y)merge(x,y,by="date"), total_returns)
+total_returns$risk_free_return <- portfolio_stats$total_risk_free_return
 # write to results root directory
 write_feather(total_returns,
               file.path(results_directory, "total_returns.feather"))
@@ -189,7 +188,7 @@ print(allend - allbegin)
 # Annualized excess return
 # Risk adjusted return
 # Information ratio
-# Max drawdown # Weekly daily monnthly annually
+# Max drawdown # Weekly daily monthly annually
 # Turnover
 # Ave number of trades
 # Expense ratio
@@ -212,16 +211,3 @@ print(allend - allbegin)
 # Where do we save this?
 # - in the results
 # - a report per stock
-
-# misunderstood how to calculate drawdown and 
-# spent a whole afternoon crafting the below code.
-# it works, but doesn't calculate drawdown.
-# I can't bear to delete it because I sweated so hard
-#mutate(daily_drawdown = ifelse(
-#  daily_nominal_change < 0,
-#  daily_nominal_change,
-#  0)) %>%
-#  group_by(grp = cumsum(daily_drawdown==0)) %>% 
-#  mutate(rolling_drawdown = cumsum(daily_drawdown)) %>% 
-#  ungroup() %>% 
-#  select(-grp) %>%
