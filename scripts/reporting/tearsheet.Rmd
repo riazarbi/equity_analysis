@@ -1,6 +1,5 @@
 ---
 title: "Backtest Results Report"
-author: "Your Name Here"
 date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
 output:
   html_document:
