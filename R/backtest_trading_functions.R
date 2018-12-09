@@ -99,7 +99,7 @@ library(magrittr)
       mutate(portfolio_members=trades$portfolio_members)
     
     # c. join trades and quotes: match trades
-    successful_trades <- left_join(trades, quotes, on="portfolio_members") %>%
+    successful_trades <- left_join(trades, quotes, by="portfolio_members") %>%
       mutate(match = ifelse((order_type=="BUY" & limit >= offer), TRUE, 
                             ifelse(order_type=="SELL" & limit <= bid, TRUE, FALSE ))) %>%
       mutate(price = ifelse((order_type=="BUY"), offer, 
