@@ -1,1 +1,1 @@
-FROM ubuntu:18.04
+FROM rocker/tidyverse:3.5.1
