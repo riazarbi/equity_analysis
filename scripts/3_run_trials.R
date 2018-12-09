@@ -14,6 +14,7 @@ if (run_mode == "BACKTEST") {
 source("R/backtest_trading_functions.R") 
   } else {
 source("R/live_trading_functions.R")}
+
 # Run trials
 ###############################################################
 all_trials_begin <- Sys.time()
@@ -28,7 +29,7 @@ for (trial in trials) {
   trial_path <- file.path(trial_directory, trial)
   file.rename(from=trial_path, to=file.path(temp_path, trial))
   trial_path <- file.path(temp_path, trial)
-  # clearing out results folder
+  # clearing out results folder if it has data
   print("INFO: Deleting results directory if it exists already.")
   results_path <- file.path(results_directory, 
                             paste(data_source, constituent_index, tools::file_path_sans_ext(trial), sep="__"))

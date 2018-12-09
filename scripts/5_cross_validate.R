@@ -26,12 +26,11 @@ sharpe <- function(x,rf=daily_risk_free_rate) {
 library(ggplot2)
 library(reshape2)
 
-df_melt = melt(portfolio_returns, id.vars = 'date')
+df_melt = melt(total_returns, id.vars = 'date')
 ggplot(df_melt, aes(x = date, y = value)) + 
   geom_line() + 
   facet_wrap(~ variable, scales = 'free_y', ncol = 1)
 
-portfolio_returns <- portfolio_returns %>% select(-date)
 ts.plot(total_returns %>% select(-date), gpars= list(col=rainbow(10)))
 
 my_pbo <- pbo(portfolio_returns,s=8,f=sharpe,threshold=0)
