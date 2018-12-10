@@ -373,6 +373,26 @@ Where possible, we have made I/O optimizations. This includes converting `.csv` 
 
 All the actions required to conduct a complete backtest are captured in plain text files. This means that every single computation and data manipulation can be inspected and its functioning verified. The entire code base can be versioned using a software versioning tool such as git. A researcher can fork this codebase, modify it, and push the modifications back to the origin. All of these changes are immutably recorded; future researchers can alway see exactly what has changed, who has made the changes and what the reason for the change was.
 
+\newpage
+
+## Launching a Docker Image
+
+In order to ensure reproducability the repository includes a `Dockerfile`. The codebase has been written with broad compatability to the `rocker/tidyverse` docker image. Because of this our `Dockerfile` uses `rocker/tidyverse` as a base image and merely adds a few specific packages. Rocker is the most popular docker image download on docker hub. Any machine that has docker installed can build a Docker image from this `Dockerfile` which will run the entire codebase with no additional configuration required. 
+
+For a Linux-based computer with docker installed, the following steps should suffice to begin interacting with the codebase - 
+
+1. Open a terminal
+2. Enter the following command: `docker run -p 8787:8787 -e PASSWORD=complicatedpassword riazarbi/equity_analysis`
+3. Open a web browser
+4. Navigate to `localhost:8787`
+5. You should be prompted for a username and password
+6. Enter the username `rstudio` and password `complicatedpassword`
+7. Once inside Rstudio, launch a terminal `Tools -> Terminal -> Launch New Terminal`
+8. Clone the `equity_analysis` repository `git clone https://github.com/riazarbi/equity_analysis`
+
+\newpage
+
+
 ## Directory Structure
 
 The directory structure loosely conforms to @Marwick2018's definition of a valid R packages structure, and most closely resembles the author's example of an intermediate-level compendium. The root directory contains the following files and directories: 
@@ -388,8 +408,6 @@ The directory structure loosely conforms to @Marwick2018's definition of a valid
 - A `results/` directory houses the result of the applications of algorithms housed in `trials/` on the datasets housed in `data/`.
 
 The `data/`, `trials/` and `results/` directories are generated at runtime if they do not exist.
-
-\newpage
 
 ```
 Complete directory structure: 
@@ -419,8 +437,8 @@ Complete directory structure:
 |    |   1_query_source.R
 |    |   2_process_data.R
 |    |   3_run_trials.R
-|    |   4_cross_validate.R
-|    |   5_report.R
+|    |   4_report.R
+|    |   5_cross_validate.R
 |    |   data_processing/
 |    |   |   1_bloomberg_to_datalog.R
 |    |   |   1_simulated_to_datalog.R
@@ -433,6 +451,8 @@ Complete directory structure:
 |    |   |   load_slow_moving_data.R
 |    |   |   trade.R
 |    |   reporting/
+|    |   |   tearsheet.Rmd
+|    |   |   cross_validate.Rmd
 |    trials/
 |    results/
 ```
@@ -494,7 +514,7 @@ This file is sourced in various other scripts. It detemrined the structure of si
 
 1. Reporting Parameters: here we set the risk free rate, which is needed for computing the Sharpe Ratio
 2. Simulated Data Parameters: characteristics of simulated data such as universe size, index size, start and end of simulation, price and earnings growth.
-3. Trading parameters: mode (backtest or live), heartbeat duration, target index, start and end of backtest.
+3. Trading parameters: mode (backtest or live), heartbeat duration, rebalancing periodicity, target index, start and end of backtest.
 
 ## Data Acquisition - `1_query_source.R`
 
@@ -649,6 +669,8 @@ Finally, the *tall and narrow* format allows us to deal with NA values properly.
 
 R supports several timeseries data structures, including `ts`, `zoo` and `xts` formats. These formats come with methods that are very useful for the manipulation of time series. We have decided to use dataframes instead of these formats because they require that all attributes be the same data type. This is a consequence of the fact that the `zoo` package is actually an indexed matrix; matrices in R can only be one data type. Sticking with dataframes allows us to mix many types of data in our timeseries.
 
+One exception to this is the reporting done after the backtests have been completed. The packages `pbo` (for backtest overfitting detection) and `dygraphs` expect timeseries objects; for these we convert daily returns to time series.
+
 ### Script procedures
 
 The series of scripts sourced in `1_process_data.R` each perform the following procedures - 
@@ -705,6 +727,7 @@ The `parameters.R` file sets parameters that are global to the trading session. 
 1. Mode
     - `run_mode` - BACKTEST or LIVE. LIVE mode not yet implemented.
     - `heartbeat_duration` - time between trade loops, in seconds. Typically between 600 and 3600. 
+    = `rebalancing periodicity` - time between rebalancing recalculations, in seconds. Typically in the order of days or months.
 
 2. Universe
     - `constituent_index` - index to backtest against.
@@ -766,8 +789,8 @@ The `trade.R` script performs the following operations -
 3. Set `runtime_date` to start of backtest + `heartbeat_count`.
 4. Check if `ticker_data` has been loaded to memory and if it is less than 24 hours (in heartbeat time) old.
     - If not, reload `ticker_data` by sourcing `load_slow_moving_data.R`
-5. Check if `runtime_ticker_data` is less than 24 hours (in heartbeat time) old.
-    - If not, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function.
+5. Check if `runtime_ticker_data` is stale.
+    - If is is stale, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function.
 6. Get the `transaction_log` and `trade_history` data objects and compute our current portfolio and cash positions. 
 7. Query latest prices for the positons to obtain a portfolio valuation.
 8. Compute `trades` by calling `compute_trades`, using `target_weights` and `positions` as arguments.
@@ -807,7 +830,23 @@ In addition, the `parameters.R` file, which contains important information relat
 
 The `results` subdirectories contain all the necessary data to compute portfolio performance characteristics. 
 
-There exist several portfolio performance reporting packages on CRAN; it is beyond the scope of this exercise to replicate the functionality of those packages. The `4_report.R` script has three objectives - 
+```
+Relevant parts of the directory tree: 
+
+. equity_analysis/
+|    R/
+|    |   |   set_paths.R
+|    scripts/
+|    |   parameters.R
+|    |   4_report.R
+|    |   reporting/
+|    |   |   tearsheet.Rmd
+|    results/
+```
+
+There exist several portfolio performance reporting packages on CRAN; it is beyond the scope of this exercise to replicate the functionality of those packages. The data created by the backtest trading algorithm are designed to support general customisability of the results tearsheet.
+
+The `4_report.R` script has three objectives - 
 
 1. Create a matrix of daily returns for piping into a downstream portfolio analysis package.
 2. Generate a minimal performance tearsheet in order to demonstrate that portfolio analysis can, in principle, be conducted on the folder contents.
@@ -827,12 +866,43 @@ To achieve these aims, the script performs the following steps on each result su
 
 As the script works through each subdirectory it compiles cross-sectional dataframes that contain all the trials' daily and total returns. That is, dataframes with a row for every date, and a column for the daily returns or total returns for each trial result. These dataframes are saved to `results/daily_returns.feather` and `results/total_returns.feather`, where it can be consumed by the `5_cross_validate.R` cross-validation script.
 
+[insert screenshot of tearsheet here]
+
 It must be emphasised that the trial-specific `portfolio_stats.feather` tables and the tearsheets are minimal examples, and they should only be used for serious analysis after heavy augmentation. We decided not to flesh out complete statistical summaries because there are other R packages that can do that (see @Portfolioanalytics as an example). Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
+ 
+The parametrised template tearsheet resides at `scripts/reporting/tearsheet.Rmd`. It can be modified in exaclty the same manner as any other Rmarkdown script.
 
 \newpage
 
 ## Cross Validation - `5_cross_validate.R`
 
+```
+Relevant parts of the directory tree: 
+
+. equity_analysis/
+|    R/
+|    |   |   set_paths.R
+|    scripts/
+|    |   parameters.R
+|    |   5_cross_validate.R
+|    |   reporting/
+|    |   |   cross_validate.Rmd
+|    results/
+|    |   daily_returns.feather
+|    |   total_returns.feather
+
+```
+
+In order to investigate whether backtest overfitting has occurred, we make use of the `pbo` package, available in CRAN. The `pbo` package expects a matrix or `xts` object of daily returns for a range of trials; it uses this array to compute the various metrics in @Bailey2014. 
+
+The computaitons done in this section are the final part of the analysis; the output is intended to be read by humans. `5_cross_validate.R` is just a wrapper that knits an Rmarkdown notebook, `results/cross_validate.Rmd`. The end result is an html report that includes details on the probability of backtest overfitting as it relates to the array. 
+
+The template `Rmd` file can be modified at `scripts/reporting/cross_validate.Rmd`
+
+[insert screenshot of Rmd here]
+
+
+\newpage
 
 ## Limitations and Weaknesses
 
@@ -850,7 +920,7 @@ The crafting of portfolio weighting algorithms is challenging. We have included 
 
 Transaction costs and slippage are modelled naively - either as a percentage of the total trade value or a hard minimum. These two factors encompass entire fields of research in their own right. It would be useful to generalise how these factors are incorporated into the backtest so that more complex estimation methods can be dropped in easily.
 
-As present portoflio rebalancing occurs daily, and trading periodicity is set by the heartbeat duration. This causes problems for strategies that imply a lot of churn, such as a random rebalancing strategy. Because the weights are recalculated daily by default, the churn on these portfolios is significant, which overwhelms other characteristics that researchers may be interested in. Modifying the `trade.R` script to accept a parameter that varies rebalancing time would add significant flexibility to the researchers toolkit. This parameter could also be an input to the algorithm, as it effectively translates to a holding period specification and is amenable to hyperparameter tuning.
+As present portoflio rebalancing periodicity is a global parameter. However, since the periodicity affect the return (there should be an optimal rebalancing periodicity that balances accuracy with churn), it should be a local parameter to a trial. Modifying the parameter to accept vectors, and modifying `3_trade.R` to run each trial against each periodicity would add significant flexibility to the reseacher's toolkit.
 
 ### Desirable Additions
 
@@ -861,9 +931,6 @@ On the other end of the pipeline, the tearsheets could be augmented with more su
 The `trade.R` script has been built to load a different set of trading functions depending on what trading mode (`BACKTEST` or `LIVE`) is selected. The tooling exists for the `trade.R` script to operate on live data and real trades unmodified. What is required is the building out of the `live_trading_functions.R` script to cover the same functions as the `backtest_trading_functions.R` script. Several brokers (for example, Interactive Brokers) offer paper trading accounts, which opens up the possibility of checking the backtest engine calibration by running the code in `LIVE` mode and then, after the fact, running the same algorighms over the same input data in `BACKTEST` mode and comparing the results.
 
 Opening and reading each trial tearsheet is cumbersome, but allows a researcher to share the comprehensive results of a single trial in a human-readable format. Rapid comparison of each trial tearsheet would be made much less onerous by the building of a simple Shiny application that presents a drop-down list of all results in the results directory and allows a researcher to select one, immediately rendering the tearsheet.Rmd file inside that particular result subdirectory inside the Shiny app.
-
-The cross-validation results would also benefit from being packaged into a parametrised .Rmd file, similar to the individual results tearsheets. The results of the cross validation are primarily intended for human consumption and rendering these results into a more human-friendly format such as an html or PDF report would facilitate ease of interpretation.
-
 
 # Conclusion\label{conclusion}
 
