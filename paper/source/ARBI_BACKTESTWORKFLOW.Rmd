@@ -159,6 +159,32 @@ Regardless of the backtest approach, the following issues need to be taken into 
 
 4) Data mining and *backtest overfitting*. When a researcher iterates over many strategies while recycling the same dataset, is is easy to overfit a model. Overfitting a model is when one selects rules which perform well in sample but poorly out of sample. That is, they model the noise in the training set, not the signal (@Bailey2014). This possibility is especially acute in the age of hyperparameter tuning and feature selection, where a computer can modify large numbers of parameters at once to select ones that perform optimally. This can be dealt with by keeping track of the number of trials and adjusting the hurdle for statistical significance accordingly, or testing for path-dependency, which is an indicator that a model has been tuned for a particular path-dependent series, as opposed to an underlying signal (@LopezdePrado2013).
 
+### Backtest Overfitting
+
+Data mining, in particular, deserves some elaboration. It is standard practice to divide a dataset into a training and test set, and to train models on the training set (@Peterson2017). Once a profitable strategy has been found, it can be tested on the test set to determine how well it performs out of sample. Unfortunately, it is extemely easy to programatically tune backtest parameters to obtain a strategy that performs well in-sample. @Bailey2014 show how easy it is to derive high sharpe ratios over a random series by hyperparameter tuning. They claim that, with 5 years of data, only 45 trials can be tried before the expected in-sample sharpe ratio is 1, whereas the expected out of sample sharpe ratio is 0. A fundamental issue is that the likelihood of uncovering a spuriously high sharpe ratio increases with the number of trials. Using a hold-out test set naively guards against overfitting, but the limited amount of data (there is only one history) inevitably results in knowledge of the test set characteristics in in-smaple training. In the presence of memory effects in-sample performance is *negatively* correlated with out of sample performance.
+
+@LopezdePrado2013 present several mathematical tools to test for backtest overfitting. 
+
+All of the tools rely on a method that @LopezdePrado2013 coin Combinatorially Symmetric Cross Validation (CSCV). This method requires that the following steps be performed - 
+
+1. Divide a matrix $M$ of the returns of a cohort of trials into an even number $S$ row-wise partitions, and then form all possible combinations of the partitions.
+3. Select all those combinations that are of the size $S/2$. That is, use those combinations which contain half of the returns, divided into segments 
+2. Order each combination set of partitions $C$ chronologically and join them to form a training set $C_train$. The remaining partitions in the matrix $M$ are joined to form the testing set $C_test$, for this particular combination. $C_train$ and $C_test$ are the same dimensions, by design.
+3. For each $C$, performance statistics are computed for each trial on the training set $C_train$ and the testing set $C_test$. Rank the trials accordingly. At the conclusion of this step, for each combination, the tester has a set of performance statistics in sample and out of sample, and the corresponding in and out of sample trials rankings.
+4. For each of these combinations $C$, determine the best in-sample strategy. Determine the relative rank of these best in sample strategies out of sample. Relative rank is defined as $out of sample rank/number of trials + 1)$. The possible range of relative rank is therefore $[0-1]$.
+5. For each of these combinations, compute the logit, where logit is the natural log of the relative rank divided by 1-relative rank $ln relative rank / (1-relative rank). Rankings which persist across in sample and out of sample performance will have a high logit value.
+6. Collect all the logits from all the combinations, and detemrine the relative frequency of logit occurrence across the $C$ combinations. That is, determine a density function $F$ where $$integralF = 1$$.
+
+$F$ can be visualised as a histrogram of the logits along with a density function.
+
+The first of the tools presented is the *Probability of Backtest Overfitting* (PBO), which is the probability that a strategy with optimal performance in sample performs below the median out of sample. Simply put, the PBO is the proportion of $F$ along the domain $-infinity, 0$. The more of the density function that is below 0, the more likely it is that out of sample performance for the best in sample performer will be less than the median. 
+
+The second is the *Performance Degradation*, which determines the correlation between performance in sample and out of sample. This is useful for determining if memory effects are present. Is is simply the regression of out of sample performance against in sample performance, and is typically shown as a scatter plot with a regression line. A negative regression slope indicates the presence of memory effects.
+
+The third is the *Probability of loss*, which is the probability that the optimal in sample strategy will deliver an out of sample loss. It is the probability that the out of sample sharpe ratio will be less than zero.
+
+The final one is *Stochastic dominance*, which determines whether the algorithm selection procedure is preferable to random selection of a strategy from the cohort. This test determines whether the distribution of ranks out of sample stochastically dominates over the distribution of all out of sample returns. If it does not, then the selection criteria is no better than random.
+
 ## The Replication Crisis
 
 While total data fidelity and perfect model specification are good goals in theory, the reality is that compromises often need to be made. It is often simply impossible to model the exact market impact a trade will have; data may not be avaialable at sufficient detail; information on when fundamental data was released may simply not exist. 
@@ -868,7 +894,7 @@ As the script works through each subdirectory it compiles cross-sectional datafr
 
 [insert screenshot of tearsheet here]
 
-It must be emphasised that the trial-specific `portfolio_stats.feather` tables and the tearsheets are minimal examples, and they should only be used for serious analysis after heavy augmentation. We decided not to flesh out complete statistical summaries because there are other R packages that can do that (see @Portfolioanalytics as an example). Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
+It must be emphasised that the trial-specific `portfolio_stats.feather` tables and the tearsheets are minimal examples, and they should only be used for serious analysis after heavy augmentation. We decided not to flesh out complete statistical summaries because there are other R packages that can do that (see @Peterson2018 as an example). Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
  
 The parametrised template tearsheet resides at `scripts/reporting/tearsheet.Rmd`. It can be modified in exaclty the same manner as any other Rmarkdown script.
 
@@ -893,7 +919,7 @@ Relevant parts of the directory tree:
 
 ```
 
-In order to investigate whether backtest overfitting has occurred, we make use of the `pbo` package, available in CRAN. The `pbo` package expects a matrix or `xts` object of daily returns for a range of trials; it uses this array to compute the various metrics in @Bailey2014. 
+In order to investigate whether backtest overfitting has occurred, we make use of the `pbo` package, available in CRAN. The `pbo` package expects a matrix or `xts` object of daily returns for a range of trials; it uses this array to compute the various metrics in LopezdePrado2013. 
 
 The computaitons done in this section are the final part of the analysis; the output is intended to be read by humans. `5_cross_validate.R` is just a wrapper that knits an Rmarkdown notebook, `results/cross_validate.Rmd`. The end result is an html report that includes details on the probability of backtest overfitting as it relates to the array. 
 

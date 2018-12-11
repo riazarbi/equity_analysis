@@ -48,7 +48,7 @@ fundamental_metrics <- c()
 
 # Timeframe
 start_backtest <- "2008-01-01" # inclusive
-end_backtest <- "2008-06-01" # not inclusive
+end_backtest <- "2008-12-01" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
