@@ -1,62 +1,37 @@
 ---
-# IMPORTANT: Change settings here, but DO NOT change the spacing. 
-# Remove comments and add values where applicable. 
-# The descriptions below should be self-explanatory
-
 title: "A Data Scientific Approach to Equity Backtesting"
-#subtitle: "Emphasising Reproducibility and Transparency"
-
-documentclass: "elsarticle"
-
-# Comment: ----- Follow this pattern for up to 5 authors
-Author1: "Riaz Arbi"  # First Author
-Ref1: "University of Cape Town, South Africa" # First Author's Affiliation
-#Email1: "nfkatzke\\@gmail.com" # First Author's Email address
-
-#Author2: "John Smith"
-#Ref2: "Some other Institution, Cape Town, South Africa"
-#Email2: "John Smith\\@gmail.com"
-#CommonAffiliation_12: TRUE # If Author 1 and 2 have a common affiliation. Works with _13, _23, etc.
-
-keywords: "Equity Backtesting \\sep Reproducible Research \\sep Event-based Backtesting \\sep R \\sep RStudio" # Use \\sep to separate
-#JELCodes: "L250 \\sep L100"
-
-# Comment: ----- Manage headers and footers:
-#BottomLFooter: $Title$
-#BottomCFooter:
-#TopLHeader: \leftmark # Adds section name at topleft. Remove comment to add it.
-BottomRFooter: "\\footnotesize Page \\thepage\\" # Add a '#' before this line to remove footer.
-addtoprule: TRUE
-addfootrule: TRUE               # Use if footers added. Add '#' to remove line.
-
-# Setting page margins:
-margin: 2.3 # Sides
-bottom: 2 # bottom
-top: 2.5 # Top
-
-linenumbers: FALSE # Used when submitting to journal
-AddTitle: FALSE # Used when submitting to peer reviewed platform. This will remove author names. 
-
-HardSet_layout: TRUE # Hard-set the spacing of words in your document. This will stop LaTeX squashing text to fit on pages, e.g. This is done by hard-setting the spacing dimensions. Set to FALSE if you want LaTeX to optimize this for your paper. 
-bibliography: Tex/ref.bib       # Do not edit: Keep this naming convention and location.
-RemovePreprintSubmittedTo: TRUE  # Removes the 'preprint submitted to...' at bottom of titlepage
-Journal: "Journal of Finance"   # Journal that the paper will be submitting to, if RemovePreprintSubmittedTo is set to TRUE.
-toc: yes                         # Add a table of contents
-numbersections: yes             # Should sections (and thus figures and tables) be numbered?
-fontsize: 11pt                  # Set fontsize
-linestretch: 1.2                # Set distance between lines.
-link-citations: TRUE    # This creates dynamic links to the papers in reference list.
+Author1: Riaz Arbi
+BottomRFooter: \footnotesize Page \thepage\
 output:
   pdf_document:
-    keep_tex: TRUE
-    template: Tex/TexDefault.txt
-    fig_width: 3 # Adjust default figure sizes. This can also be done in the chunks of the text.
     fig_height: 3
+    fig_width: 3
     include:
-      in_header: Tex/packages.txt # Reference file with extra packages
+      in_header: Tex/packages.txt
+    keep_tex: yes
+    template: Tex/TexDefault.txt
+Journal: Journal of Finance
+Ref1: University of Cape Town, South Africa
+RemovePreprintSubmittedTo: yes
 abstract: |
   Abstract to be written here. The abstract should not be too long and should provide the reader with a good understanding what you are writing about. Academic papers are not like novels where you keep the reader in suspense. To be effective in getting others to read your paper, be as open and concise about your findings here as possible. Ideally, upon reading your abstract, the reader should feel he / she must read your paper in entirety.
-  
+addfootrule: yes
+addtoprule: yes
+bibliography: Tex/ref.bib
+bottom: 2
+documentclass: elsarticle
+fontsize: 11pt
+keywords: Equity Backtesting \sep Reproducible Research \sep Event-based Backtesting
+  \sep R \sep RStudio
+linenumbers: no
+linestretch: 1.2
+link-citations: yes
+margin: 2.3
+numbersections: yes
+HardSet_layout: yes
+AddTitle: no
+toc: yes
+top: 2.5
 ---
  
 ```{r setup, include=FALSE}
@@ -67,7 +42,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width 
 
 # Introduction \label{Introduction}
 
-Must address:
+Addresses:
 
 1. Survivorship bias
 2. Look ahead bias
@@ -79,7 +54,13 @@ Must address:
 7. Portfolio bankruptcy
 8. Backtest overfitting: pbo
 
-Must try to:
+Principles:
+
+1. Transparency
+2. Simplicity
+3. Verbosity
+
+Tries to:
 
 1. Be convertalbe to live with minimal effort
 2. Acommodate any sort of date
@@ -87,14 +68,15 @@ Must try to:
 4. Use tidy data structures
 
 
-Second-order challenges
-Compaction: dropping useless data
-Speed: training vs trading
-Speed: parallel processing
-Speed: read/write: feather
-Memory: filtering and subsetting
+Second-order challenges: 
 
-## Features
+1. Compaction: dropping useless data
+2. Speed: training vs trading
+3. Speed: parallel processing
+4. Speed: read/write: feather
+5. Memory: filtering and subsetting
+
+Features:
 
 - data versioning
 - multi-source
@@ -107,79 +89,98 @@ Memory: filtering and subsetting
 - host of metrics
 - bias avoidance
 
-This paper is organised as follows. Section \ref{Backtest section} briefly introduces the practice of backtesting of investment strategies in academia and industry, enumerates common methodological issues that compromise the validity of research and discusses the replication crisis that exists in both domains. Section \ref{Reproducible Research} describes the goals and philosophy of the reproducible research movement and its links to the open source software movement, with a special focus on the R statistical programming language, the Tidy approach to data organization and the use of scripting to facilitate reprducibility and transparency in scientific research. Section \ref{Backtester Documentation} introduces a backtesting template that is roughly compatible with the structure of a research compendium - that is, a template which constitutes a basic minimum viable unit of reproducible research.
+This paper is organised as follows. Section \ref{Backtest section} briefly introduces the practice of backtesting of investment strategies in academia and industry, enumerates common methodological issues that compromise the validity of research and discusses the replication crisis that exists in both domains. Section \ref{Reproducible Research} describes the goals and philosophy of the reproducible research movement and its links to the open source software movement. We focus especially on the R statistical programming language, the Tidy approach to data organization and the use of scripting to facilitate reprducibility and transparency in scientific research. Section \ref{Documentation Intro} introduces an opinionated backtesting template that is roughly compatible with the structure of a research compendium - that is, a template which constitutes a basic minimum viable unit of reproducible research. Section \ref{Detailed Documentation} provides detailed documentation of the codebase, along with design justifications.
 
 \pagebreak
 
 # Backtesting in Academia and Industry\label{Backtest section}
 
-Investigations into why some stocks outperform others have a long history. Professional bodies of knowledge, often captured in heuristics or rules of thumb, have existed since at least the early 20th century. For instance @Graham1934a released the first edition of their *Security Analysis* textbook in 1934. As time has progressed, professionals and academics have sought to test these rules in a rigorous manner, and to implement automated trading strategies based on those rules that stand up to scrutiny. 
+## History and distinction between academics and practitioners
 
-Academics often frame this challenge as attempting to identify whether a population subsetted by the presence or absence of an attribute exhibit statistically significant differences in returns. @Fama1992, for instance, split the US stock universe by market capitalization and market $\beta$, and then regress the cohorts against size, book to market, leverage and earnings yield to investigate whether any of these variables have explanatory power for outsize returns. 
+Investigations into why some stocks outperform others have a long history. Professional bodies of knowledge, often captured in heuristics or rules of thumb, have existed since at least the early 20th century. For instance @Graham1934a released the first edition of their *Security Analysis* textbook in 1934. As time has progressed, professionals and academics have sought to test these rules in a rigorous manner, and to implement automated trading strategies based on those rules. 
 
-Traders, in contrast, tend to frame the question in terms of raw performance - does a trading rule result in abnormal (risk adjusted) returns over and above some benchmark? There is a rich ecosystem of software packages, tutorials, online communities, books and blog posts that attmepts to tackle this question (see @Quantpedia2018 for a list of software packages). 
+Academics often frame these investigations as an attempt to identify whether a population of stocks subsetted along the lines of some attribute exhibit statistically significant differences in returns. @Fama1992, for instance, split the US stock universe by market capitalization and market beta ($\beta$), and then regress the cohorts against size, book to market, leverage and earnings yield to investigate whether any of these variables have explanatory power for outsize returns. 
 
-Confusingly, both of these broad approaches are encompassed by the generic term 'backtesting'. To avoid confusion, we adopt a broad definition from @Bailey2014 :
+Practitioners, in contrast, tend to frame the question in terms of raw performance. Common measures include annualized return, excess return over some benchmark, risk adjusted return, Sharpe Ratio or information ratio. There is a rich ecosystem of software packages, tutorials, online communities, books and blog posts that attempts to tackle this question (see @Quantpedia2018 for a list of software packages). 
 
-> A *backtest* is a historical simulation of an algorthmic investment strategy.
+## Differences in backtesting methods
 
-Because these two communities frame the problem differently, they have developed distinctive approaches. Academics tend to focus on using statistical techniques to explain abnormal returns in terms of independent variables. Traders tend to focus on prediction; trading rules range from being extremely simple, such as moving averages, to exceedingly complex implementations that use machine learning to automatically select features (@Peterson2017).
+These subtly different objectives result in different statistical approaches. Academics tend to focus on using statistical techniques to explain abnormal returns in terms of independent variables. @Fama1992 uses regression techniques to test a null hypothesis that one population is different from another. 
 
-## Common areas
+Traders tend to focus on prediction rather than inference; trading rules range from being extremely simple, such as moving averages, to exceedingly complex implementations that use machine learning to automatically select features (@Peterson2017). There are two main approaches to practitioner-led backtesting. Vectorized backtesting applies mathematical functions to $date x ticker$ arrays to quickly arrive at a solutions, and event driven backtesting 'steps through' time, presenting a trading engine with data in a spooling fashion. At every heartbeat the trading engine computes whether an action is required and acts accordingly. 
 
-A common area, however, is in interrogation. Both groups are concerned with whether their result is robust. For both groups, a well-designed backtest should yield results out of sample (OOS) which are similar to results derived in sample (IS). Unfortunately, backtesting is a very difficult operation to achieve correctly, and as a result it is quite easy to derive rules which perform well IS but poorly OOS (@Bailey2014).
+Vectorized backtesting tends to be much faster, because computations can be done in parallel. But it is easier to allow look-ahead bias into the backtest because the computation has access to all the data at once - a simple cell offset in a function can completely nullify the result. Migrating a vectorized backtest to real time trading is also very difficult, because new code needs to be written for the function to compute on streaming, rather than array, data. Because event driven backtesters are less likely to leak future information into computations because the engine is only presented with data that existed prior to the heartbeat period. It is also much easier to move into real trading, since all that needs to be done is the redirection of the data stream from a simulated source to a live source. The tradeoff is that these backtesters are much slower, and much more complex to build.
 
-Because of this common concern, there common opinion on how to appropriately construct datasets and to assess whether a result is robust. 
+Confusingly, all of the methods mentioned above fall under the term 'backtesting'. To avoid confusion, we adopt a broad definition from @Bailey2014 when discussing the term :
 
-### Data quality issues\label{Data Quality}
+> A *backtest* is a historical simulation of an algorithmic investment strategy.
+
+
+## Common areas between academics and practitioners
+
+Both groups of researchers are concerned with whether their result is robust. For both groups, a well-designed backtest should yield results *out of sample* (OOS) which are similar to results derived *in sample* (IS). Unfortunately, backtesting is a very difficult operation to achieve correctly, and as a result it is quite easy to design strategies which perform well IS but poorly OOS (@Bailey2014).
+
+Because of this common concern, there common opinion on how to appropriately construct datasets and to assess whether a result is statistically robust.
+
+### Data quality requirements\label{Data Quality}
 
 Every backtest needs a historical dataset upon which to simulate a trading strategy. This dataset needs, at a minimum, to contain a time series of every member of the stock universe with price returns and any other attributes that may serve as inputs to the trading rule. This minimal dataset is necessary, but not sufficient, for a realistic backtest. 
 
 A realistic backtest also needs to address the following data quality issues: 
 
-1) Does the dataset contain *survivorship bias*? At present, constituents of a stock universe are survivors. They are, by definition, the stocks which have not disappeared from the universe because of bankruptcy, delisting or mergers. To base our data only on this group will mean that we apply the rule only to a very particular subset of a stock universe: those destined to remain listed. Since this implicit filter cannot be applied going forward (i.e we cannot filter our existing unuverse to include only those that will be listed at some arbitrary point in the future), our IS result is likely to be different from our OOS result.
+1) Does the dataset contain *survivorship bias*? At any point in time, constituents of a stock universe are survivors. They are, by definition, the stocks which have not disappeared from the universe because of bankruptcy, delisting or mergers (@Peterson2017). To base our data only on the history of this select group will mean that we apply the rule only to a very particular subset of a stock universe: those destined to remain listed. Since this implicit filter cannot be applied going forward (i.e we cannot filter our existing universe to include only those that will be listed at some arbitrary point in the future), our IS result is likely to be different from our OOS result.
 
-2) Does the dataset contain *look-ahead bias*? There are many ways that we can implicitly 'peek' into the future with histrical datasets. A common pitfall is to use the 'close' price as representative of a day's average price. This, of course, uses future data because the close price cannot be known before the end of day. Another example is the inappropriate joining of fundamental and market data. Fundamental data is usually timestamped to the time at which the fact was true in the real world. However, these facts only become known at a (typically much later) future date. The Currenr Assets at 31 December 2003, for instance, is only known at release of the annual financial statements, which might have been on the 27th February 2004. Joining this data point to marke tdata on the date 31 December 2003 will introduce look-ahead bias to your dataset.
+2) Does the dataset contain *look-ahead bias*? There are many ways that we can implicitly 'peek' into the future with historical datasets. A common pitfall is to use the 'close' price as representative of a day's average price. This, of course, uses future data because the close price cannot be known before the end of day. Another example is the inappropriate joining of fundamental and market data. Fundamental data is usually timestamped to the time at which the fact was true in the real world. However, these facts only become known at a (typically much later) future date. The Current Assets of a company at 31 December 2003, for instance, are only known at release of the annual financial statements, which might have been on the 27th February 2004. Joining this data point to market data on the date 31 December 2003 will introduce look-ahead bias to dataset (@Peterson2017).
 
 3) Is the dataset *complete*? Some datasets contain more information than others. @Trice2017 compares data for the S&P 500 Index across the free data vendors Google.com and Yahoo.com and finds discrepancies between them - the salient chart is reproduced below. In this instance, the discrepancy derives from the fact that Google contains a significant number of N/A values, which skew the summary statistics. 
 
 ![Data Discrepancies between Google and Yahoo! (@Trice2017)\label{Table1}](/home/riaz/projects/equity_analysis/paper/source/data/data-quality-a-boxplot-1.png)
 
-4) Does the dataset contain *retroactive corrections*? It is common for companies to restate financial information after the fact. This can be because of changes in accountng rules, new information that comes to light, or to aid in comparison across major changes to the company structure. If these restatements are retroactively applied to a dataset, they can introduce look-ahead bias.
+4) Does the dataset contain *retroactive corrections*? It is common for companies to restate financial information after the fact. This can be because of changes in accounting rules, new information that comes to light, or to aid in comparison across major changes to the company structure. If these restatements are retroactively applied to a dataset, they can introduce look-ahead bias.
 
 ### Modeling issues
 
 Regardless of the backtest approach, the following issues need to be taken into account to assess the realism of the model:
 
-1) Has *market impact* been taken into account? Return anomalies may appear to exist be related to illiquidity. That is to say, the returns of a stock (or class of stocks) may appear to be abnormal, but the abnormal returns may be due to the market impact of a trade on the stock. A realistic model will adjust for this by assuming minimal impact for only a small fraction of daily volume traded, build in a price impact if the trade size exceeds this volume, and respect the bid/ask spread when desiding that a trade matches.
+1) Has *market impact* been taken into account? Return anomalies may be related to illiquidity. That is to say, the returns of a stock (or class of stocks) may appear to be abnormal, but there exists no liquidity in the market to make a trade at the modeled price. A realistic model will adjust for this by assuming minimal impact for only a small fraction of daily volume traded, increment the price if the trade size exceeds this volume, and respect the bid/ask spread when deciding that a trade matches.
 
-2) Have *transaction costs* been taken into account? Similar to market impact, transaction costs form varying percentages of a trade; this depends on the commission structure. A class of stocks may appear to exhibit abnormal returns but all suffer from high transaction costs because they are, for instance, penny stocks that all require an exhorbitant minimum commission for small lots.
+2) Have *transaction costs* been taken into account? Similar to market impact, transaction costs are associated with every real trade but often ignored in research. The transaction costs depend on the commission structure, which varies by broker and exchange. A class of stocks may appear to exhibit abnormal returns but all suffer from high transaction costs because they are, for instance, penny stocks that all require an exhorbitant minimum commission for small lots.
 
-3) Failing to account for *short positions or portfolio bankruptcy*. Portfolios can be long only or allow for short positions. Short positions involve interest charges that need to be taken into account. Long only portfolios cannot have negative positions. Similarly, portfolio cash balances cannot be negative of no leverage (which attract interest charges) is employed. Portfolio bankruptcy needs to be accounted for - if a strategy has an average excess return of 2%, but there are two periods in which the return is -100%, then the average return does not matter.
+3) Failing to account for *short positions or portfolio bankruptcy*. Portfolios can be long only or allow for short position. Long only portoflios can either hold stocks or cash. Portfolios that can be short can, in addition to long only portfolios, lend stocks that they do not own. This is done by borrowing a stock and selling it in the market, with an expectation that the share price will decline, at which point a trader can buy it back and return it to the lender. Short positions involve interest charges and margin requirements that need to be taken into account. Long only portfolios cannot have negative positions. Similarly, portfolio cash balances cannot be negative of no leverage (which attract interest charges) is employed. The psychologicla impact of portfolio behaviour needs to be accounted for as well - if a strategy has an average excess return of 2%, but there are several periods in which the return is -50%, then the researcher needs to interrogate whether a reasonable trader would maintain those positions.
 
-4) Data mining and *backtest overfitting*. When a researcher iterates over many strategies while recycling the same dataset, is is easy to overfit a model. Overfitting a model is when one selects rules which perform well in sample but poorly out of sample. That is, they model the noise in the training set, not the signal (@Bailey2014). This possibility is especially acute in the age of hyperparameter tuning and feature selection, where a computer can modify large numbers of parameters at once to select ones that perform optimally. This can be dealt with by keeping track of the number of trials and adjusting the hurdle for statistical significance accordingly, or testing for path-dependency, which is an indicator that a model has been tuned for a particular path-dependent series, as opposed to an underlying signal (@LopezdePrado2013).
+4) Data mining and *backtest overfitting*. When a researcher iterates over many strategies while recycling the same dataset, is is easy to overfit a model. Overfitting a model is when one selects rules which perform well IS but poorly OOS. That is, they model the noise in the training set, not the signal (@Bailey2014). This possibility is especially acute in the age of hyperparameter tuning and feature selection, where a computer can modify large numbers of parameters at once to select ones that perform optimally. This can be dealt with by keeping track of the number of trials and adjusting the hurdle for statistical significance accordingly, or testing for path-dependency, which is an indicator that a model has been tuned for a particular path-dependent series, as opposed to an underlying signal (@LopezdePrado2013).
 
-### Backtest Overfitting
+### Backtest overfitting\label{Backtest Overfitting}
 
-Data mining, in particular, deserves some elaboration. It is standard practice to divide a dataset into a training and test set, and to train models on the training set (@Peterson2017). Once a profitable strategy has been found, it can be tested on the test set to determine how well it performs out of sample. Unfortunately, it is extemely easy to programatically tune backtest parameters to obtain a strategy that performs well in-sample. @Bailey2014 show how easy it is to derive high sharpe ratios over a random series by hyperparameter tuning. They claim that, with 5 years of data, only 45 trials can be tried before the expected in-sample sharpe ratio is 1, whereas the expected out of sample sharpe ratio is 0. A fundamental issue is that the likelihood of uncovering a spuriously high sharpe ratio increases with the number of trials. Using a hold-out test set naively guards against overfitting, but the limited amount of data (there is only one history) inevitably results in knowledge of the test set characteristics in in-smaple training. In the presence of memory effects in-sample performance is *negatively* correlated with out of sample performance.
+Data mining, in particular, deserves some elaboration. It is standard practice to divide a dataset into a training and test set, and to train models on the training set (@Peterson2017). Once a profitable strategy has been found, it can be tested on the test set to determine how well it performs OOS. The rationale is that, since the test set was not used to train the model, good OOS performance implies that the strategy has legitimately detected some real signal in the data. Unfortunately, it is extremely easy to programatically tune backtest parameters to obtain a strategy that performs well IS. @Bailey2014 show how easy it is to derive high sharpe ratios over a random series by hyperparameter tuning. They claim that, with 5 years of data, only 45 trials can be tried before the expected IS sharpe ratio is 1, whereas the expected OOS sharpe ratio is 0. A fundamental issue is that the likelihood of uncovering a spuriously high sharpe ratio increases with the number of trials. The limited amount of data available (there is only one history) inevitably results in knowledge of the test set characteristics bleeding into IS training. In the presence of memory effects IS performance is *negatively* correlated with out of sample performance.
 
 @LopezdePrado2013 present several mathematical tools to test for backtest overfitting. 
 
 All of the tools rely on a method that @LopezdePrado2013 coin Combinatorially Symmetric Cross Validation (CSCV). This method requires that the following steps be performed - 
 
-1. Divide a matrix $M$ of the returns of a cohort of trials into an even number $S$ row-wise partitions, and then form all possible combinations of the partitions.
-3. Select all those combinations that are of the size $S/2$. That is, use those combinations which contain half of the returns, divided into segments 
-2. Order each combination set of partitions $C$ chronologically and join them to form a training set $C_train$. The remaining partitions in the matrix $M$ are joined to form the testing set $C_test$, for this particular combination. $C_train$ and $C_test$ are the same dimensions, by design.
-3. For each $C$, performance statistics are computed for each trial on the training set $C_train$ and the testing set $C_test$. Rank the trials accordingly. At the conclusion of this step, for each combination, the tester has a set of performance statistics in sample and out of sample, and the corresponding in and out of sample trials rankings.
-4. For each of these combinations $C$, determine the best in-sample strategy. Determine the relative rank of these best in sample strategies out of sample. Relative rank is defined as $out of sample rank/number of trials + 1)$. The possible range of relative rank is therefore $[0-1]$.
-5. For each of these combinations, compute the logit, where logit is the natural log of the relative rank divided by 1-relative rank $ln relative rank / (1-relative rank). Rankings which persist across in sample and out of sample performance will have a high logit value.
-6. Collect all the logits from all the combinations, and detemrine the relative frequency of logit occurrence across the $C$ combinations. That is, determine a density function $F$ where $$integralF = 1$$.
+1) Divide a matrix $M$ of the returns of a cohort of trials into an even number $S$ row-wise partitions, and then form all possible combinations of the partitions.
+3) Select all those combinations that contain $S/2$ partitions. That is, use those combinations which contain half of the returns, divided into segments. Call these combinations the set $C$. 
+2) Order each combination set of partitions $C$ chronologically and join them to form a training set $C_i{train}$. The remaining partitions in the matrix $M$ are joined to form the testing set $C_i{test}$, for this particular combination. $C_i{train}$ and $C_test$ are the same dimensions, by design.
+3) For each $C$, performance statistics are computed for each trial on the training set $C_i{train}$ and the testing set $C_i{test}$. Rank the trials accordingly. At the conclusion of this step, for each combination, the tester has a set of performance statistics in sample and out of sample, and the corresponding in and out of sample trials rankings.
+4) For each of these combinations $C$, determine the best in-sample strategy. Determine the relative rank of these best in sample strategies out of sample. Relative rank is defined as 
 
-$F$ can be visualised as a histrogram of the logits along with a density function.
+$$Relative\ Rank =\frac{OOS\ Rank\ of\ IS\ Winner}{(Number\ of\ Trials + 1)}$$ 
 
-The first of the tools presented is the *Probability of Backtest Overfitting* (PBO), which is the probability that a strategy with optimal performance in sample performs below the median out of sample. Simply put, the PBO is the proportion of $F$ along the domain $-infinity, 0$. The more of the density function that is below 0, the more likely it is that out of sample performance for the best in sample performer will be less than the median. 
+The possible range of relative rank is therefore $[0-1]$.
+5) For each of these combinations, compute the logit $\lambda_i$, where 
 
-The second is the *Performance Degradation*, which determines the correlation between performance in sample and out of sample. This is useful for determining if memory effects are present. Is is simply the regression of out of sample performance against in sample performance, and is typically shown as a scatter plot with a regression line. A negative regression slope indicates the presence of memory effects.
+$$\lambda = ln \frac{Relative\ Rank}{(1-Relative Rank)}$$
+
+Rankings which persist across in sample and out of sample performance will have a high logit value.
+6) Collect all the logits from all the combinations, and determine the relative frequency of logit occurrence across the $C$ combinations. That is, determine a density function $F$ where 
+
+$$\int_{a}^{b}F = 1$$.
+
+$F$ can be visualised as a histogram of the logits along with a density function.
+
+The first of the tools presented is the *Probability of Backtest Overfitting* (PBO), which is the probability that a strategy with optimal performance in sample performs below the median out of sample. Simply put, the PBO is the proportion of $F$ along the domain $[-\infty, 0]$. The more of the density function that is below $0$, the more likely it is that out of sample performance for the best in sample performer will be less than the median. 
+
+The second is the *Performance Degradation*, which determines the correlation between performance in sample and out of sample. This is useful for determining if memory effects are present, because it implies a relationship between the two ranks. Is is simply the regression of out of sample performance against in sample performance, and is typically shown as a scatter plot with a regression line. A negative regression slope indicates the presence of memory effects.
 
 The third is the *Probability of loss*, which is the probability that the optimal in sample strategy will deliver an out of sample loss. It is the probability that the out of sample sharpe ratio will be less than zero.
 
@@ -189,47 +190,45 @@ The final one is *Stochastic dominance*, which determines whether the algorithm 
 
 While total data fidelity and perfect model specification are good goals in theory, the reality is that compromises often need to be made. It is often simply impossible to model the exact market impact a trade will have; data may not be avaialable at sufficient detail; information on when fundamental data was released may simply not exist. 
 
-Inevitably, a researcher needs to make judgment calls. A typical backtest involves many judgment calls; these permeate the entire analysis chain from deciding what source data to use all the way through to deciding which metrics to use to evaluate strategy success.
+Inevitably, a researcher needs to make judgment calls. A typical backtest involves many judgment calls; these permeate the entire analysis chain from deciding what source data to use all the way through to deciding which metrics to use to evaluate strategy success and are difficult of impossible to document.
 
-### In academia
+### The crisis in academia
 
-It is a standard aspiration for researchers to disclose all the judgment calls made during the backtest process, but these disclosures are invariably incomplete. This makes validation by other researchers very difficult. At the extreme, independent validators may arrive at a completely different conclusion (@Hou2017); with ambiguity on both sides it is unclear whether the discrepancy is due to differences in underlying data, prepearation methodologies, mathematical errors or some other factor unrelated to the question at hand. 
+It is a standard aspiration for researchers to disclose all the judgment calls made during the backtest process, but these disclosures are invariably incomplete. This makes validation by other researchers very difficult. At the extreme, independent validators may arrive at a completely different conclusion (@Hou2017). With ambiguity on both sides it is unclear whether the discrepancy is due to differences in underlying data, preparation methodologies, mathematical errors or some other factor unrelated to the question at hand. 
 The academic discipline of anomalies research has grown into a substantial corpus of contradictory claims. These contradictions are mirrored in the business of investment management by competing investment philosopies, each with its own library of peer-reviewed papers (@Damodaran2012). While markets may very well accommodate contradictory drivers of returns it is often difficult to discern whether differing claims are the result of geniune facts or the result of methodological differences.
 
 @Hou2017 attempt to replicate the entire anomalies literature to identify with results can actually be confirmed. They attempt to replicate 447 anomalies and find that between 64% and 85% of them are insignificant. In other words, they suspect widespread misuse of statistical analysis to  make claims that are not, in fact, true. This is possible, in part, because practitioners have a large degree of discretion in determining every aspect of the backtesting analysis chain. @Hou2017 attempt to set out a common set of replication procedures to standardise research output, including (but not limited to):
 
-- Specifying datasets: Compustat Annual and Quarterly Fundamental Files; Center for Research and Security Prices (CRSP).
-- Specifying breakpoints: Use NYSE breakpoints
-- Use value-weighted, not equal-weighted portfolios
-- No sample screening (ie don't exclude stocks because of some arbitrary cutoff)
-- For annually-composed portfolios, resort at the end of June
-- Incorporate fundamental data four months after valid date
+1) Specifying datasets: Compustat Annual and Quarterly Fundamental Files; Center for Research and Security Prices (CRSP).
+2) Specifying breakpoints: Use NYSE breakpoints.
+3) Use value-weighted, not equal-weighted portfolios.
+4) No sample screening (ie don't exclude stocks because of some arbitrary cutoff).
+5) For annually-composed portfolios, re-sort at the end of June.
+6) Incorporate fundamental data four months after valid date to impose a lag and guard against look-ahead bias.
 
 Many of the above guidelines are designed to avoid outsize effects from micro capitalization shares, which form 3% of market value but comprise 60% of the total number of stocks. These stocks often suffer from high transaction costs and low liquidity, which muddy the waters when testing for a particular factor.
 
-### In industry
+### The crisis in industry
 
-Unfortunately, these guidelines are not directly applicable to backtesting for trading. Traders are primarily interested in real-world excess returns; the use of CRSP prices to compute returns, for instance, does not translate into real cash balances. 
+Unfortunately, these guidelines are not directly applicable to backtesting for trading. Traders are primarily interested in real-world excess returns; the use of CRSP prices to compute returns, for instance, does not translate into real cash balances because CRSP are not avaialble on a realtime basis.
 
-The approach taken by developers of trading backtesters has been to build engines which are capable of easily switching between simulated and real-life trading. The rationale is that, as long as the data is from the same source, signal generation, trade matching, transaction costs, account balances and portfolio composition can operate unmodified. This somewhat mitigates concerns around replicability - if it works on historical data, simply switch the data source to live data and don't ask too many questions.
+The approach taken by developers of backtesting software has been to build event based engines which are capable of easily switching between simulated and real-life trading. The rationale is that, as long as the data is from the same source, signal generation, trade matching, transaction costs, account balances and portfolio composition can operate unmodified. This somewhat mitigates concerns around replicability - if it works on historical data, simply switch the data source to live data and don't ask too many questions.
 
 The caveats are as follows. Firstly, many of these engines are proprietary (@Quantpedia2018) and the actual mathematics of what is going on is not available, which means that the researcher has to take it on faith that the implementation (and source data) is correct. If IS results differ from OOS results it is difficult to debug where the issue is: it could be data quality, poor implementation, or overfitting. One cannot be certain that one's returns are being driven by the reasons one thinks.
 
 There do exist many open source backtesting libraries, most notably the `zipline` python package (@Zipline2018), the Quantopian trading platform (@Quantopian2018), which is built on top of `zipline`, and the R package `quantstrat` (@Carl2018).
 
-Although these packages make it possible to inspect the entire analytical chain they do not provide historical data. Historical data is difficult (and expensive) to procure, and the same concerns raised in \ref{Data Quality} still exist. In many ways, these issues are worse because these packages default to free data sources such as Yahoo!, Google Finance or Quandl, which do not document index constituent membership changes, retroactive data modification or provide any guarantees of veracity. Bias-free data must be procured, cleaned and put in an appropriate format beforehand; documentation of how to conduct these operations is left as an exercise to the researcher. Even if a researcher can procure well-formed, comprehensive data, there exists no toolset to transform that data into an appropriate format for ingestion to any particular software package, and no tools to investigate the health of the data with reference to the biases mentioned in \ref{Data Quality}.
+Although these packages make it possible to inspect the entire analytical chain they do not provide historical data. Historical data is difficult (and expensive) to procure, and the same concerns raised in \ref{Data Quality} still exist. In many ways, these issues are worse because these packages default to free data sources such as Yahoo! and Google Finance, which do not document index constituent membership changes, retroactive data modification or provide any guarantees of veracity. Bias-free data must be procured, cleaned and put in an appropriate format beforehand; documentation of how to conduct these operations is left as an exercise to the researcher. Even if a researcher can procure well-formed, comprehensive data, there exists no toolset to transform that data into an appropriate format for ingestion to any particular software package, and no tools to investigate the health of the data with reference to the biases mentioned in \ref{Data Quality}.
 
-These shortcomings in free data sources drive areas of research: the documentation on `zipline`, Quantopian and `quantstrat` focus overwhelmingly on price signals (algorithms relying on non-market data such as fundamental, macroeconomic or alternative data are scarce) and single-stock or fixed-basket portolios. This makes them much less suitable for research into general strategies that can be applied across an entire universe or research which relies on more than just market data.
+These shortcomings in free data sources drive areas of research among enthustiasts: the documentation on `zipline`, Quantopian and `quantstrat` focus overwhelmingly on price signals (algorithms relying on non-market data such as fundamental, macroeconomic or alternative data are scarce) and single-stock or fixed-basket portolios. This makes them much less suitable for research into general strategies that can be applied across an entire universe or research which relies on more than just market data.
 
-These backtesting packages are able to easily switch between simulated and live trading because they implement event-based backtesting methods. Event-based backtesting allow a trader to step through time, either in fixed increments or through the consumption of a continuous information stream, and trigger actions according the the information made available to them. If implemented correctly, the event stream can be switched from a historical dataset to a real-time stream with minimal changes to the code. This eliminates a possible source of error: the algorithm does not need to be rewritten into a live implementation. 
+There is something of an uncanny valley here. It is difficult for industry practitioners to translate findings in anomalies research into actionable strategies because of incomplete documentation and it is difficult for academics to use production-level backtesters to search for new anomalies. Part of this is because they have differing objectives. But another hurdle is the steep learning curve required to understand what is going on 'under the hood' of a production trading engine. Both `zipline` and `quantstrat` implement the Object Oriented Programming (OOP) paradigm, which forces on objects rather than procedures (@VanRoy2009). This is in contrast to a procedural approach, which focuses on operations (i.e taking an input, performing an operation, and producing an output). OOP programs scale well, and enable encapsulation: knowledge of the implementation of an object is not necessary for its use. This provides convenience and lowers barriers to entry for new users, but comes at a cost: linear mapping of the sequence of procedures that constitute an operation can be difficult.
 
-There is something of an uncanny valley here. It is difficult for industry practitioners to translate findings in anomalies research into actionable strategies because of incomplete documentation and it is difficult for academics to use production-level backtesters to search for new anomalies. Part of this is because they have differing objectives. But another hurdle is the steep learning curve required to understand what is going on 'under the hood' of a production trading engine. Both `zipline` and `quantstrat` implement the Object Oriented Programming (OOP) paradigm, which forces on objects rather than procedures (@VanRoy2009). This is in contrast to a Procedural approach, which focuses on operations (i.e taking an input, performing an operation, and producing an output). OOP programs scale well, and enable encapsulation: knowledge of the implementation of an object is not necessary for its use. This provides convenience and lowers barriers to entry for new users, but comes at a cost: linear mapping of the sequence of procedures that constitute an operation can be difficult.
-
-Procedural programs, on the other hand, can typically be read from top to bottom, and the procedural flow is often quite easy to follow. Unfortunately, as the size of a program grows, the complexity and brittleness of a procedural program increase super-linearly, as the procedure has to incorporate more and more subroutines to manage the various inputs and outputs of a particular part of the program.
+Procedural programs, on the other hand, can typically be read from top to bottom, and the procedural flow is often quite easy to follow. Unfortunately, as the size of a program grows, the complexity and brittleness of a procedural program increase in a super linear manner, as the procedure has to incorporate more and more subroutines to manage the various inputs and outputs of a particular part of the program.
 
 \pagebreak
 
-#  Reproducible Research and The R Programming Language\label{Reproducible Research}
+#  Reproducible research and the R programming language\label{Reproducible Research}
 
 Problems with replication are not unique to backtesting. Science, as a whole, is experiencing a replication crisis.
 
@@ -237,15 +236,15 @@ Despite scientific research being an accretive process, involving verification a
 
 Gaps in documentation allow bad reasoning, calculation errors or spurious results to creep in to the corpus of knowledge of a discipline because peers are forced to take it on faith that a researcher has a proper understanding of underlying mathematical concepts, and that workings have been thouroughly cross-checked before release.
 
-Worse still, because follow-up replication is difficult to impossible with poor documentation or data availability, incorrect beliefs can persist for years, or even decades (@Munafo2017). *P-hacking*, or the selection of data and finessing of results to conform to significance tests of 5% or lower, has resulted in a situation where a research finding is as likely to to be false it is to be true (@Ioannidis2005). 
+Worse still, because replication is difficult with poor documentation or insufficient data, incorrect beliefs can persist for years, or even decades (@Munafo2017). *P-hacking*, or the selection of data and finessing of results to conform to significance tests of 5% or lower, has resulted in a situation where a research finding is as likely to to be false it is to be true (@Ioannidis2005). 
 
 Up until the late 20th century, practical constraints limited the amount of supporting material a researcher could distribute along with a research paper. Documentation of evey single mathematical operation conducted with pencil and paper would be extremely laborous; duplication and distribution of source data and computations would be extremely expensive. However, in recent years, as computational power and storage has become increasingly cheap and available, there have been persistent calls for a review of the way that scientific research is packaged and presented (@Stodden2013, @Koenker2009).
 
-## Reproducible Research Terminology
+## Reproducible research terminology
 
 In response to these calls, a taxonomy of reproducibility has emerged, allowing peers to effectively categorize research.
 
-This taxonomy allows us to dinstinguish reveiwability (which assumes mathematical competence and focuses on reasoning) from reproducibility (which allow the extension of the review into assessement of mathematical competence and quality of data).
+This taxonomy allows us to dinstinguish *reveiwability* (which assumes mathematical competence and focuses on reasoning) from *reproducibility* (which allow the extension of the review into assessement of mathematical competence and quality of data).
 
 | Term  | Description |
 | :------------ | :--------------------------------------------- | 
@@ -259,137 +258,137 @@ This taxonomy allows us to dinstinguish reveiwability (which assumes mathematica
 
 Table: Common Terminology in Reproducible Science (@Stodden2013)\label{Table1}
 
-This paper uses reproducibility in the sense defined in \ref{Table1}, which is to say, it refers to research output being bundled and distributed with well documented, fully transparent code and data that allows a peer to fully review, replicate, audit and thereby confirm results of a body of work (@Stodden2013).
+This paper adopts the definition of *reproducibility* as it has been done in \ref{Table1}, which is to say, it refers to research output being bundled and distributed with well documented, fully transparent code and data that allows a peer to fully review, replicate, audit and thereby confirm results of a body of work (@Stodden2013).
 
-## The Relationship between Reproducible Research and Open Source Software
+## The relationship between reproducible research and open source software
 
 Open source software development principles exhibit properties which are useful to practitioners of reproducible research. 
 
-In general, software is written in text files, by humans, in a particular programming language. This *source code* is *compiled* or *interpreted* by another program into binary machine code (which is not readable by humans) and distributed for execution. The software for the popular spreasheet program Microsoft Excel, for instance, would be written by a group of humans in a programming language. These text files would be compiled by a compiler program into a binary executable program, which is distributed to consumers who can execute the binary. When someone clicks the Excel icon on their computer to 'launch' the program, they are executing the binary. 
+In general, software is written in text files, by humans, in a particular programming language. This *source code*, which is made up of nouns, verbs, adjectives and operations, is *compiled* or *interpreted* by another program into binary *machine code* (which is a long sequence of $0$ and $1$ digits and is not readable by humans). Binary machine code is passed to a computer's central processing unit (CPU) for execution. The software for the popular spreadsheet program Microsoft Excel, for instance, would be written by a group of humans in a human-readable programming language. These text files would be compiled by a compiler program into a binary executable program, which is distributed to consumers who can execute the binary using the CPUs in their computers. When someone clicks the Excel icon on their computer to 'launch' the program, they are executing the binary. 
 
-Open source software is software for which the *source code* is made publically available. Microsoft Excel is closed source, and the source code is not made available. Source code can be read by humans, binary cannot. Changes to source code can be meaningfully interpreted by humans, because one can read the changes in plain text. Changes to binary code cannot be interpreted by humans, because the changes are simply alterations to a very long sequence of `0` and `1` digits. It is trivial to compile source code into binary code. It is extremely difficult to accurately decompile binary code into source code, and the tools are not readilty available (@Li2004).
+Open source software is software for which the source code is made publicly available. Microsoft Excel is closed source, and the source code is not made available. Source code can be read by humans, binary cannot. Changes to source code can be meaningfully interpreted by humans, because one can read the changes in plain text. Changes to binary code cannot be interpreted by humans, because the changes are simply alterations to a very long sequence of `0` and `1` digits. It is trivial to compile source code into binary code. It is extremely difficult to accurately decompile binary code into source code, and the tools are not readily available (@Li2004).
 
-By definition, the text-based nature of source code makes all source code reproducible (and, by corollary, auditable). The implications of this are twofold. Firstly, a researcher using open source software for computation can be assured that the full software stack will be open to scrutiny. That is, at the limit, an auditor could inspect every single line of code from some arbitrary 'open starting point' up to verify that the computations are correct. This 'open starting point' is as the operating systme level for Linux based machines, and from the application level up for Mac and Windows based machines.
+The text-based nature of source code makes all source code reproducible (and, by corollary, auditable), and code-verioning tools make the tracking of changed in source code very simple. The implications of this are twofold. Firstly, a researcher using open source software for computation can be assured that the full software stack will be open to scrutiny. That is, at the limit, an auditor could inspect every single line of code from some arbitrary 'open starting point' up to verify that the computations are correct. This 'open starting point' is at the operating system level for Linux based machines, and from the application level up for Mac and Windows based machines.
 
-Secondly, and perhaps more importantly, the open source software community has decades of experience in defining good practices for creating and maintaining large, open, verfiable and repeatable enviroments. These principles are often quoted in the folkloric 'Unix Way', which manifests in epithets such as "text is the universal interface" (@Baum2002), "each unit should do one thing and do it well",  and "build things to talk to other things" (@Raymond:2003:AUP:829549). Reproducible research practice is built on the same principles - simple, readable text-based data and code where possible; clear separation between data, code and results; complete transparency coverage; and portability by design (see @Baum2002, @Bache2014, @Wickham2014).
+Secondly, and perhaps more importantly, the open source software community has decades of experience in defining good practices for creating and maintaining large, open, verfiable and repeatable environments. These principles are often quoted in the folkloric 'Unix Way', which manifests in epithets such as "text is the universal interface" (@Baum2002), "each unit should do one thing and do it well",  and "build things to talk to other things" (@Raymond:2003:AUP:829549). Reproducible research practice is built on the same principles - simple, readable text-based data and code where possible; clear separation between data, code and results; complete transparency; and portability by design (see @Baum2002, @Bache2014, @Wickham2014).
 
-Historically, there has been close collaboration between the open source software and the free software communities. This means that, as a rule, most open source software is free or has a free analogue. The core tools of Data Science, for instance (such as the python and R programming languages, the Apache Foundation of big data processing packages and the Jupyter and RStudio interactive development environemnts), are all open source and free. This means that the *cost* of replication is not prohibitive: in general, reproducible research should be reproducible for free on commodity hardware.
+Historically, there has been close collaboration between the open source software and the free software communities. This means that, as a rule, most open source software is free or has a free analogue which promoted accessibility to sophisticated tools. The core tools of Data Science, for instance (such as the python and R programming languages, the Apache Foundation of big data processing packages and the Jupyter and RStudio interactive development environemnts), are all open source and free. This means that the *cost* of replication is not prohibitive: in general, reproducible research should be reproducible for free on commodity hardware.
 
-## The Suitability of R for Reproducible Research
+## The suitability of R for reproducible research
 
-The R programming language was originally conceived as a project to build out an open source statistical programming environment. In development since 1997, base R is now a mature ecosystem comprising a scriptable language, graphical rendering system and debugger (@RCoreTeam2018). A large community of third party developers (some commercial, most free) have extended base R with over 13000 packages, including a fully-fledged interactive development environmnent (Rstudio), interactive dashboarding web server (Shiny) and bindings to LaTex for simple rendering of publication-ready LaTex documents from markdown (knitr and rmarkdown) (@RStudioTeam2015). Because of its roots in open source, it adheres to many open source software conventions. For instance- 
+The R programming language was originally conceived as a project to build an open source statistical programming environment. In development since 1997, base R is now a mature ecosystem comprising a scriptable language, graphical rendering system and debugger (@RCoreTeam2018). A large community of third party developers (some commercial, most free) have extended base R with over 13000 packages, including a fully-fledged interactive development environmnent (Rstudio), interactive dashboarding web server (Shiny) and bindings to LaTex for rendering of publication-ready LaTex documents from markdown (knitr and rmarkdown) (@RStudioTeam2015). Because of its roots in open source, it adheres to many open source software conventions. For instance- 
 
-- All source code is freely available
+- All source code is freely available.
 - All development work in R is done in plain text files, which are transparently human and machine readable.
-- The R project has adopted the GNU General Public License verison 2, which "does not restrict anyone from making use of the program in a specific field of endeavor" (@RCoreTeam2018). This free avaialability means that anybody with a commodity computer and an internet connection can install and use R.
+- The R project has adopted the GNU General Public License verison 2, which "does not restrict anyone from making use of the program in a specific field of endeavor" (@RCoreTeam2018). This free availability means that anybody with a commodity computer and an internet connection can install and use R.
 
 Although the reproducible research community is principles-based and language-agnostic, the free, text-based nature of the R language have made it a good candidate for reproducible work (@Gentleman2004). @Marwick2018 review the concept of a *research compendium*, and explore how research done in R can be packaged into compendia. They argue that a compendium is defined by three principles - 
 
-1. Files should be organised according to a prevailing standard so that others can immediately understand the structure of the project, and pipe the compendium to environments that expect the standard structure with no structural modifications.
-2. Maintain a clear separation between data, method and output. Separation means that data is treated as read only, and that all steps in getting from source data to output is documented. Output should be treated as disposable, and rebuildable from the programmatic application of the method to the data.
-3. Specify the computational environment that was used to conduct the research. This provides critical information to a replicator on the undelrying tooling needed to support the analysis.
+> 1. Files should be organised according to a prevailing standard so that others can immediately understand the structure of the project, and pipe the compendium to environments that expect the standard structure with no structural modifications.
+> 2. Maintain a clear separation between data, method and output. Separation means that data is treated as read only, and that all steps in getting from source data to output is documented. Output should be treated as disposable, and rebuildable from the programmatic application of the method to the data.
+> 3. Specify the computational environment that was used to conduct the research. This provides critical information to a replicator on the undelrying tooling needed to support the analysis.
 
 These principles are intended to ensure that, given a certain input (the data) and a certain operation (the method), a deterministic output results (the analysis). With these details out of the way, an auditor can focus on verifying the correctness of the reasoning (i.e should we use this theory) and of the implementation (i.e are there any errors in the math).
 
-The richness of the R ecosystem means that one can complete the full research life cycle from data loading to publishing without leaving the R ecosystem (@Baumer2014). Data can be loaded, cleaned, transformed, modeled and aggregated in R. The results can be written up in RStudio - in fact, the code and write-up can be combined into a single text-only document using the RMarkdown format - and exported to a wide range of academically accepted typsets and formats (such as Tex, Microsoft Word, Markdown and HTML). Because R is scriptable, R scripts can also be used in production environments, where results can be periodically recomputed and handed on to some other production process.
+The richness of the R ecosystem means that one can complete the full research life cycle from data loading to publishing without leaving the R ecosystem (@Baumer2014). Data can be loaded, cleaned, transformed, modeled and aggregated in R. The results can be written up in RStudio - in fact, the code and write-up can be combined into a single text document using the RMarkdown format - and exported to a wide range of academically accepted typsets and formats (such as Tex, Microsoft Word, Markdown and HTML). Because R is scriptable, R scripts can also be used in production environments, where results can be periodically recomputed and handed on to some other production process.
 
-This property dramatically simplifies the complexity of building a compendium and the required skill-set of a replicator. For instance, a single-platform research compendium can be assessed by anyone with knowledge of that single environment. Multi-platform compendia need replicators well-versed in each platform, which dramatically reduces the pool of potential replicators. 
+This property dramatically simplifies the complexity of building a compendium and the required skill-set of a replicator. For instance, a single-platform research compendium can be assessed by anyone with knowledge of that single environment. Multi-platform compendia, on the other hand, need replicators well-versed in each platform, which dramatically reduces the pool of potential replicators. 
 
 Upon publication, code versioning tools such as Git allow the public to view all future changes to the code or data transparently, and, if code changes over time, to assess the impact of those changes on the result.
 
-## Tidy Extensions to Base R
+## Tidy extensions to base R
 
-The open source and reproducible science principles of interoperability, readibility, modular code and common standards have been extended into the prcatice of data manipulation by @Wickham2014. The collection of R packages which fall under this banner are collectively known as the 'Tidyverse'. These packages provide a common, idiosyncratic syntax for data ingestion, munging, manipulation and visualization that are opinionated in their expectations about data structure and focused on enabling readable code (@Wickham2017). According to Wickham, tidy data intuitively maps the meaning of a dataset to its structure - 
+The open source and reproducible science principles of interoperability, readibility, modular code and common standards have been extended into the practice of data manipulation by @Wickham2014. The collection of R packages which fall under this banner are collectively known as the 'Tidyverse'. These packages provide a common, idiosyncratic syntax for data ingestion, munging, manipulation and visualization that are opinionated in their expectations about data structure and focused on enabling readable code (@Wickham2017). Wickham defines Tidy data as data that intuitively maps the meaning of a dataset to its structure - 
 
-> 1. Each variable forms a column. 
-> 2. Each observation forms a row. 
-> 3. Each type of observational unit forms a table. 
+> 1. Each variable forms a column.
+> 2. Each observation forms a row.
+> 3. Each type of observational unit forms a table.
 
-Whether there is a single optimal data structure is up for debate. What is not up for debate is that that the adoption of a common standard for structures allows researchers to make assumptions about the meaning of data before engaging with the content, i.e simply knowing that data is 'tidy' means that a researcher knows that each column maps to a variable, and each row an observation, *prior to looking at the data*. Setting of standards enables the decoupling of processes - process (a) can produce some peice of analytical output *with no knowledge of what it will be used for*. As long as it is 'tidy', and process can consume that output on the understanding that is confirms to the 'tidy' standard and take the analysis further. In this way, the 'tidy data' concept push the Unix Way concept of 'build things that talk to other things' into the practice of structuring data for reproducible research.
+Whether there is a single optimal data structure is up for debate. What is not up for debate is that that the adoption of a common standard for structures allows researchers to make assumptions about the meaning of data before engaging with the content, i.e simply knowing that data is Tidy means that a researcher knows that each column maps to a variable, and each row an observation, *prior to looking at the data*. Setting of standards enables the decoupling of processes - process (a) can produce some piece of analytical output *with no knowledge of what it will be used for*. As long as it is Tidy, and process can consume that output on the understanding that is confirms to the Tidy standard and take the analysis further. In this way, the Tidy data concept push the Unix Way concept of 'build things that talk to other things' into the practice of structuring data for reproducible research.
 
-## The Potential for Reproducible Research to Address The Replication Crisis in Anomalies Research
+## The potential for reproducible research to address the replication crisis in anomalies research
 
-We have explored how the sheer number of judgment calls involved in building a rigorous backtest inhibit replicability, both in academia and in a prefessional setting. Obstacles differ between them; academics suffer from incomplete documentation, professional traders suffer from a dearth of simple, transparent toolkits to automate the entire analysis chain. Both communities have serious shortcomings when it comes to transparent data acquisition and preparation. 
+We have explored how the sheer number of judgment calls involved in building a rigorous backtest inhibit replicability, both in academia and in a professional setting. Obstacles differ between them; academics suffer from incomplete documentation, professional traders suffer from a dearth of simple, transparent toolkits to automate the entire analysis chain. Both communities have serious shortcomings when it comes to transparent data acquisition and preparation. 
 
-We have also shown how these obstacles are being addressed in the scientific community at large by the concepts of reproducible research, the research compendium and Tidy Data. These concepts are supported by certain technologies: cheap commodity computing, free and open source scientific computing software and text versioning tools in general, and the R programming language and ecosystem for acquisition-to-publication analysis in particular.
+We have also shown how these obstacles are being addressed in the scientific community at large by the concepts of reproducible research, the research compendium and Tidy Data. These concepts are supported by certain technologies: cheap commodity computing, free and open source scientific computing software and text versioning tools, the R programming language and ecosystem for acquisition-to-publication analysis .
 
 It stands to reason that the concepts and tools of reproducible research could be used to address the issues in backtesing at large. These tools would have to - 
 
-4. Be able to run on a typical researcher's computer
-5. Produce artifacts (models and data objects) that are portable across the academia / industry divide
-2. Encompass the full analysis chain from aquisition through to reporting, with a particular focus on raw data processing
-3. Accommodate deep customizability without requiring excessive complexity of code
-1. Expose underlying workings in a transparent, procedural manner to an auditor
+1) Be able to run on a typical researcher's computer.
+2) Produce artifacts (models and data objects) that are portable across the academia / industry divide.
+3) Encompass the full analysis chain from aquisition through to reporting, with a particular focus on raw data processing.
+4) Accommodate deep customizability without requiring excessive complexity of code.
+5) Expose underlying workings in a transparent, procedural manner to an auditor.
 
-It is crucial to bear in mind that the objective of such an implementation would not be to build a rigorous backtest. Rather, its immediate goal would be to build a totally transparent engine that places ease of audit first and foremost. Borrowing a concept from the open source community, it is assumed that stability and correctness of implementation are derivative properties of a rigorous, continuous review process.
+It is crucial to bear in mind that the objective of such an implementation would not be to build a rigorous backtest. Rather, its immediate goal would be to build a totally transparent engine that places ease of audit first and foremost. Borrowing a concept from the open source community, it is assumed that stability and correctness of implementation are derivative properties of a rigorous, continuous review process. If researchers use it, bugs will be found, and fixed, and it will become ever more useful.
 
 These objectives are possible within the current capabilities of the R ecosystem right now. 
 
-1. R and all R packages run on any x86 processor
-2. Research compendia are structured with portability in mind. The scripting capabilities of R allow an end-user to run the entire backtest non0-interactively if desired.
-3. R, RStudio and the Tidyverse are a mature toolkit for end-to-end research
-5. Like any programming language, R accommodates the creation of parameter variables which can be passed to user defined functions. These parameters can be altered in a transparent manner. Enhancements and additions to the engine code are completely trasparent and can be easily tracked with versioning tools such as git.
-4. Although R has some OOP concepts, it is primarily a procedural language, which lends itself to a linear, top-to-bottom logical code flow
+1) R and all R packages run on any x86 processor.
+2) Research compendia are structured with portability in mind. The scripting capabilities of R allow an end-user to run the entire backtest non0-interactively if desired.
+3) R, RStudio and the Tidyverse are a mature toolkit for end-to-end research.
+5) Like any programming language, R accommodates the creation of parameter variables which can be passed to user defined functions. These parameters can be altered in a transparent manner. Enhancements and additions to the engine code are completely trasparent and can be easily tracked with versioning tools such as git.
+4) Although R has some OOP concepts, it is primarily a procedural language, which lends itself to a linear, top-to-bottom logical code flow.
 
 In the following section we detail a rudimentary reference implementation of a reproducible backtester.
 
 \pagebreak
+ 
+# A Reference Implementation of a Data Scientific Equity Backtester in R\label{Documentation Intro}
 
-# A Reference Implementation of a Data Scientific Equity Backtester in R\label{Backtester Documentation}
+We provide a working example of a reproducable equity backtesting workflow that covers the full data processing chain from acquisition to reporting. 
 
-We provide an example of a reproducable equity backtesting workflow that covers the full data processing chain from acquisition to reporting. 
-
-All code is available at [Github - Equity Analysis](https://github.com/riazarbi/equity_analysis).
+All code is available at https://github.com/riazarbi/equity_analysis .
 
 The data processing scripts can consume multiple data sources, for multiple equity indexes, for any timeframe, for arbitrary data attributes. The implementation is index-based. That is, data acquisition begins with obtaining constituents for an equity index at a point in time, and then proceeds to obtaining metadata and timeseries attributes for the constituents.
 
-Data queries are scripted, and therefore fully reproducible, and repeatable. All queries are saved to a log directory. Reference datasets are generated from the log directory. We use rudimendary log compaction and data versioning to enable point-in-time analysis and check data quality. 
+Data queries are scripted, and therefore fully reproducible, and repeatable. All queries are saved to a log directory. Reference datasets are generated from the log directory. We use rudimendary log compaction and data versioning to enable point-in-time analysis and check data quality, but the tooling for this analysis has not been done.
 
-Datasets are read into memory for backtesting, which is done in a step-through fashion. That is, the backtester steps through time, is presented with data that would have been available to it at that date, and executes trading rules which are persisted to a trade log and trasnaction history.
+Datasets are read into memory for backtesting, which is done in a step-through fashion. That is, the backtester steps through time, is presented with data that would have been available to it at that date, and executes trading rules which are persisted to a trade log and transaction history.
 
-This backtester has been built for multi-trial, parametrised backtesting in mind. That is, certain global parameters are set (backtest start and end date, target index etc) and then multiple user-specified algorithms are tested at once. We adopt the multi-trial approach to facilitate control for backtest overfitting, as per @LopezdePrado2013. 
+This backtester has been built for multi-trial, parametrised backtesting in mind. That is, certain global parameters are set (backtest start and end date, target index etc) and then multiple user-specified algorithms are tested at once. We adopt the multi-trial approach to facilitate control for backtest overfitting, as discussed in Section \ref{Backtest Overfitting}. 
 
 We have built rudimentary support for transaction costs and slippage; these can be extended in a transparent manner.
 
-Input data has been segregated from results; it is anticipated that a researcher will delete the input data prior to distribution to avoid proprietary vendor licensing issues; this raw data should be regerated from source using supplied query scripts.
+Input data has been segregated from code and from results; it is anticipated that a researcher will delete the input data prior to distribution to avoid proprietary vendor licensing issues; this raw data should be regenerated from source using supplied query scripts.
 
-## Intended Audience
+## Intended audience
 
 This project should be useful to:
 
--  Finance students at all levels wanting to conduct statistically rigorous equity backtests
--  Post graduates and academics looking to conduct research on a common platform to facilitate replication and peer review
--  Research professionals looking to build out an in-house backtesting environment for proprietary equity investment strategies
+-  Finance students at all levels wanting to conduct statistically rigorous equity backtests.
+-  Post graduates and academics looking to conduct research on a common platform to facilitate replication and peer review.
+-  Research professionals looking to build out an in-house backtesting environment for proprietary equity investment strategies.
 -  Equity researchers looking for a bridge between Excel-based research and `R` or `python`.
 
-## Intended Use Case
+## Intended use case
 
-It is intended that a researcher will clone this repository to a local directory and then create an RStudio project in the project root directory. After querying data from an appropriate vendor and processing the data using `scripts/1_query_source.R` and `scripts/2_process_data.R`, a researcher will specify global parameters in the `scripts/parameters.R` file and place a batch of algorithms in the `trials/` directory. Running the `scripts/3_run_trials.R` script will backtest each algorithm and save the results in the `results/` directory. Running `scripts/4_report.R` will generate a report on the outcome of each backtest and running `scripts/5_cross_validate` will run the R package `pbo` against the overall results to test for the probability of backtest overfitting.
+It is intended that a researcher will clone this repository to a local directory and then create an RStudio project in the project root directory. After querying data from an appropriate vendor and processing the data using `scripts/1_query_source.R` and `scripts/2_process_data.R`, a researcher will specify global parameters in the `scripts/parameters.R` file and place a batch of algorithms in the `trials/` directory. Running the `scripts/3_run_trials.R` script will backtest each algorithm and save the results in the `results/` directory. Running `scripts/4_report.R` will generate a report on the outcome of each backtest and running `scripts/5_cross_validate.R` will run the R package `pbo` against the overall results to test for the probability of backtest overfitting.
 
-These results will be used to create a research paper, which can be saved to the project root. Prior to release, the researcher can delete the source data for licensing reasons (but retain the query scripts!) and publish the entire compendium to a code hosting site such as [GitHub](https://github.com).
+These results can be used to create a research paper, which can be saved to the project root. Prior to release, the researcher can delete the source data for licensing reasons (but retain the query scripts!) and publish the entire compendium to a code hosting site such as [GitHub](https://github.com).
 
-## Included Data
+## Included data
 
-This repository __does not include any equity data__, but it does include working scripts to automatically extract data from data vendors, and to save that data on a well-formed way. It is assumed that the user will acquire data using the scripts which have been included in this repository. This will only be possible if a user has access to the relevant data services - namely Bloomberg, DataStream or iNet.
+This repository does not include any equity data, but it does include working scripts to automatically extract data from data vendors, and to save that data on a well-formed way. It is assumed that the user will acquire data using the scripts which have been included in this repository. This will only be possible if a user has access to the relevant data services - namely Bloomberg, DataStream or iNet.
 
-We also include a script for generating a range of simulated index datasets, complete with constituent lists, metadata and market and fundamental ticker timeseries. These datasets can be used to explore the functioning of the code and test that it is working as expected.
+We also include a script for generating a range of simulated index datasets, complete with constituent lists, metadata and market and fundamental ticker timeseries. This script accepts parameters from the `parmaeters.R` file to control various characteristics of the stock universe. The resulting simulated datasets can be used to explore the functioning of the code and test that it is working as expected.
 
-## Future Development
+## Future development
 
 This project is ongoing, and many rudimentary features will be refined as time unfolds. For this reason, we recommend that users fork the project prior to use, in order to lock their research to a particular version of the compendium. Users are encouraged to submit pull requests on [GitHub](https://github.com) for bug fixes and to add features. 
 
-## Intellectual Property Statement
+## Intellectual property statement
 This paper is distributed under the terms of the Creative Commons Attribution License, which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.
 
-The source code referenced in this section is released under the GNU General Public License v3.0. A full copy of the license is avaialable in the code repository at [Github - Equity Analysis](https://github.com/riazarbi/equity_analysis).
+The source code referenced in this section is released under the GNU General Public License v3.0. A full copy of the license is avaialable in the code repository at https://github.com/riazarbi/equity_analysis .
 
 \newpage
 
-# Detailed Documentation, With Design Justifications
+# Detailed Documentation, With Design Justifications\label{Detailed Documentation}
 
-Because the workflow is linear and procedural in design, this documentation will proceed in a linear, procedural fashion. After familiarising the reader with the directory structure, we will work through the code in a stepwise fashion from data acquisition through to final reporting.
+Because the workflow is linear and procedural in design, this documentation will proceed in a linear, procedural fashion. This design facilitates ease of understanding of the process flow, but means that code can be brittle and repeat in places. After familiarising the reader with the directory structure, we will work through the code in a stepwise fashion from data acquisition through to final reporting.
 
-## Design Considerations
+## Design considerations
 
 Because this compendium is designed to be run by researchers on commodity consumer hardware, our design choices sacrifice speed in order to keep memory usage low. We have split the backtesting procedure into four stages - querying, data processing, backtesting, cross-validation and reporting. Each stage expects to read in files from a pre-specified location and writes files to a prespecified location. Often the first script in a stage will clear the environment in order to release memory. 
 
@@ -401,25 +400,25 @@ All the actions required to conduct a complete backtest are captured in plain te
 
 \newpage
 
-## Launching a Docker Image
+## Launching a Docker image
 
 In order to ensure reproducability the repository includes a `Dockerfile`. The codebase has been written with broad compatability to the `rocker/tidyverse` docker image. Because of this our `Dockerfile` uses `rocker/tidyverse` as a base image and merely adds a few specific packages. Rocker is the most popular docker image download on docker hub. Any machine that has docker installed can build a Docker image from this `Dockerfile` which will run the entire codebase with no additional configuration required. 
 
 For a Linux-based computer with docker installed, the following steps should suffice to begin interacting with the codebase - 
 
-1. Open a terminal
-2. Enter the following command: `docker run -p 8787:8787 -e PASSWORD=complicatedpassword riazarbi/equity_analysis`
-3. Open a web browser
-4. Navigate to `localhost:8787`
-5. You should be prompted for a username and password
-6. Enter the username `rstudio` and password `complicatedpassword`
-7. Once inside Rstudio, launch a terminal `Tools -> Terminal -> Launch New Terminal`
-8. Clone the `equity_analysis` repository `git clone https://github.com/riazarbi/equity_analysis`
+1) Open a terminal
+2) Enter the following command: `docker run -p 8787:8787 -e PASSWORD=complicatedpassword riazarbi/equity_analysis`
+3) Open a web browser
+4) Navigate to `localhost:8787`
+5) You should be prompted for a username and password
+6) Enter the username `rstudio` and password `complicatedpassword`
+7) Once inside Rstudio, launch a terminal `Tools -> Terminal -> Launch New Terminal`
+8) Clone the `equity_analysis` repository `git clone https://github.com/riazarbi/equity_analysis`
 
 \newpage
 
 
-## Directory Structure
+## Directory structure
 
 The directory structure loosely conforms to @Marwick2018's definition of a valid R packages structure, and most closely resembles the author's example of an intermediate-level compendium. The root directory contains the following files and directories: 
 
@@ -487,23 +486,79 @@ Complete directory structure:
 
 In short, scripts in the `scripts/` directory pull data into the `data/` directory and process that source data into Tidy datasets. They then run the algorithms in the `trials/s` directory on `data/datasets` in order to generate results, which goes into the `results/` directory. A detailed data flow diagram is rendered below.
 
-```{r, evaluate = FALSE, echo = FALSE}
+```{r dataflow_diagram, evaluate = FALSE, echo = FALSE}
 library(magrittr)
 library(DiagrammeR)
-nodes <- c("DATA",
-           "SCRIPTS",
-           "TRIALS",
-           "RESULTS") 
+library(tidyverse)
+nodes <- c("Source 1",
+           "Source 2",
+           "Source 3",
+           "Source 4",
+           "datalog",
+           "Constituent List",
+           "Ticker Metadata",
+           "Fundamental Data",
+           "Market Data",
+           "Master Dataset",
+           "Runtime Dataset",
+           "Trading Rule",
+           "Ideal Weights",
+           "Cash Account",
+           "Trade History",
+           "Portfolio Balance",
+           "Desired Trades",
+           "Market Stream",
+           "Successful Trades",
+           "Runtime Log",
+           "Tearsheet",
+           "Returns Matrix",
+           "Cross Validation",
+           "Heartbeat Date") 
 nodes <-  data.frame(id = seq(1:length(nodes)), 
                      label = nodes, 
                      stringsAsFactors = FALSE)
 
-edges <- as.data.frame(rbind(c(1,2),
-              c(3,2),
-              c(2,4)))
-colnames(edges) <- c("from", "to")
+edges <- as_data_frame(rbind(
+  c(1,5, "query"),
+  c(2,5, "query"),
+  c(3,5, "query"),
+  c(4,5, "query"),
+  c(5,6, "compact"),
+  c(5,7, "compact"),
+  c(5,8, "compact"),
+  c(5,9, "compact"),
+  c(8,10, "load"),
+  c(9,10, "load"),
+  c(6,11, "filter"),
+  c(7,11, "filter"),
+  c(24,11, "load"),
+  c(10,11, "filter"),
+  c(11,13,"calculate"),
+  c(12,13, "load"),
+  c(14,16, "calculate"),
+  c(15,16,"calculate"),
+  c(16,17, "calculate"),
+  c(13,17,"calculate"),
+  c(17,19,"calculate"),
+  c(18,19,"calculate"),
+  c(19,15, "record"),
+  c(15,14,"record"),
+  c(14,22,"calculate"),
+  c(15,22, "calculate"),
+  c(18,22, "calculate"),
+  c(22,21, "render"),
+  c(22,23, "render"),
+  c(9,18, "load"),
+  c(19,20, "save"))) %>%
+  rename(from = V1,
+         to = V2,
+         label = V3) %>%
+  mutate(from = as.integer(from),
+         to = as.integer(to),
+         label = as.character(label),
+         arrowsize = as.character(2))
 
-graph <- create_graph() %>%
+graph <- create_graph(directed=TRUE) %>%
   add_nodes_from_table(
     table = nodes,
     label_col = label) %>%
@@ -511,10 +566,24 @@ graph <- create_graph() %>%
     table = edges,
     from_col = from,
     to_col = to,
-    from_to_map = id_external) 
-#graph %>%
-#  render_graph()
+    from_to_map = id_external)
+graph2 <- graph %>%
+  select_nodes(nodes = 1:24) %>%
+  set_node_attrs_ws(
+    node_attr = fillcolor,
+    value = "white")
+
+graph2 %>%
+  render_graph()
+
 graph %>%  export_graph(file_name = "data/coarse_workflow.pdf")
+
+graph_attrs <- c("layout = circo",
+                 "overlap = false",
+                 "fixedsize = true",
+                 "ranksep = 3",
+                 "outputorder = edgesfirst")
+
 
 ```
 
@@ -523,7 +592,7 @@ graph %>%  export_graph(file_name = "data/coarse_workflow.pdf")
 
 \newpage
 
-## Parameter Setting - `parameters.R`
+## Parameter setting - `parameters.R`
 
 The `scripts/parameters.R` script contains all the parameters for the backtest session. This file, along with the `trials/algorithm_X.R` scripts, are the only ones that a user changes to run unique backtests. They are R files, rather than markdown or yaml, because it enables us to compute some parameters based on the values of other parameters. 
 
@@ -538,11 +607,11 @@ Relevant parts of the directory tree:
 
 This file is sourced in various other scripts. It detemrined the structure of simulated datasets, the characteristics of the trading environment and the behaviour of the trading engine. It has the following sections - 
 
-1. Reporting Parameters: here we set the risk free rate, which is needed for computing the Sharpe Ratio
-2. Simulated Data Parameters: characteristics of simulated data such as universe size, index size, start and end of simulation, price and earnings growth.
-3. Trading parameters: mode (backtest or live), heartbeat duration, rebalancing periodicity, target index, start and end of backtest.
+1) Reporting Parameters: here we set the risk free rate, which is needed for computing the Sharpe Ratio
+2) Simulated Data Parameters: characteristics of simulated data such as universe size, index size, start and end of simulation, price and earnings growth.
+3) Trading parameters: mode (backtest or live), heartbeat duration, rebalancing periodicity, target index, start and end of backtest.
 
-## Data Acquisition - `1_query_source.R`
+## Data acquisition - `1_query_source.R`
 
 The objective of the scripts called in `scripts/0_query_source.R` is to query a data source (such as Bloomberg, Datastream or iNet) and save the results in an appropriate format in the `data/datalog` directory. This directory can grow without limit. It can be deleted and regenerated from the query scripts. It will be mined by downstream scripts to create datasets for backtesting.
 
@@ -564,15 +633,15 @@ We include two sample scripts. One for querying Bloomberg, the other for generat
 
 `1_Bloomberg_to_datalog.R` follows the broad procedure of collecting all the data required to build a dataset. The query script performs the following steps in a non-interactive manner -
 
-1. Connect to the vendor via an API (in the case of Bloomberg, this is via @Armstrong2018's R package Rblpapi).
-2. Define a target index. For instance, we extract JALSH, which is the Johannesburg Securities Exchange (JSE) All Share Index.
-4. Define how far back to extract constituent lists.
-5. Extract monthly constituent lists for the index and save to the `datalog`.
-5. Read in all constituent lists and compile a unique list of tickers. These will include delisted shares as well as survivors .
-6. Define required ticker metadata. At a minimum, the ticker code and the ISIN is required. Market data is extracted with the ticker code; fundamental data is extracted with the ISIN.
-7. Extract and save  metadata for all tickers.
-3. Extract and save market data for each tickers based on ticker code.
-6. Extract and save fundamental data for each tickers based on ISIN.
+1) Connect to the vendor via an API (in the case of Bloomberg, this is via @Armstrong2018's R package Rblpapi).
+2) Define a target index. For instance, we extract JALSH, which is the Johannesburg Securities Exchange (JSE) All Share Index.
+4) Define how far back to extract constituent lists.
+5) Extract monthly constituent lists for the index and save to the `datalog`.
+5) Read in all constituent lists and compile a unique list of tickers. These will include delisted shares as well as survivors .
+6) Define required ticker metadata. At a minimum, the ticker code and the ISIN is required. Market data is extracted with the ticker code; fundamental data is extracted with the ISIN.
+7) Extract and save  metadata for all tickers.
+3) Extract and save market data for each tickers based on ticker code.
+60 Extract and save fundamental data for each tickers based on ISIN.
 
 ### File naming conventions
 
@@ -701,23 +770,23 @@ One exception to this is the reporting done after the backtests have been comple
 
 The series of scripts sourced in `1_process_data.R` each perform the following procedures - 
 
-1. Read all files in the `datalog` into a dataframe, splitting each fieldname into an appropriate column.
-2. From the file names, determine the set of datasets that can be generated from the logfiles.
-3. For each dataset:
-    - Read in logfiles relevant to the dataset
-    - Convert to *tall and narrow* format
-    - Check if a dataset already exists and, if it does, read it in to memory
-    - Join the datasets
-    - Filter out and NA values
-    - Remove any duplicates
-    - Filter out any records that have not changed since the last timestamp, but update the timestamp field
+1) Read all files in the `datalog` into a dataframe, splitting each fieldname into an appropriate column.
+2) From the file names, determine the set of datasets that can be generated from the logfiles.
+3) For each dataset:
+    1) Read in logfiles relevant to the dataset
+    2) Convert to *tall and narrow* format
+    3) Check if a dataset already exists and, if it does, read it in to memory
+    4) Join the datasets
+    5) Filter out and NA values
+    6) Remove any duplicates
+    7) Filter out any records that have not changed since the last timestamp, but update the timestamp field
 
 The end result is a set of directories in `data/datasets`. Because the scripts merge, rather than overwrite datset files it is possible (but not necessary) to periodically empty or delete the datalog wothout loss of information. 
 
 The files in the the `datasets` directories are **not** Tidy. In particular - 
 
-1. Each file does not correspond real thing. The constituent and metadata files contain all data for all indexes and tickers in a single file.
-2. Each attribute is not a column.
+1) Each file does not correspond real thing. The constituent and metadata files contain all data for all indexes and tickers in a single file.
+2) Each attribute is not a column.
 
 The datsets are converted to Tidy format in-memory at backtest runtime.
 
@@ -750,27 +819,27 @@ Rather, these scripts follow a parent - child relationship. The parent script is
 
 The `parameters.R` file sets parameters that are global to the trading session. The parameters in the trading section are -
 
-1. Mode
+1) Mode
     - `run_mode` - BACKTEST or LIVE. LIVE mode not yet implemented.
     - `heartbeat_duration` - time between trade loops, in seconds. Typically between 600 and 3600. 
     = `rebalancing periodicity` - time between rebalancing recalculations, in seconds. Typically in the order of days or months.
 
-2. Universe
+2) Universe
     - `constituent_index` - index to backtest against.
     - `data_source` - data source to use.
     - `market_metrics` - market metrics to filter (defaults to all).
     - `fundamental_metrics`  - fundamental metrics to filter (defaults to all).
 
-3. Timeframe
+3) Timeframe
     - `start_backtest` - YYYYMMDD start of backtest.
     - `end_backtest` - YYYYMMDD end of backtest.
 
-4. Portfolio Characteristics
+4) Portfolio Characteristics
     - `portfolio_starting_config` - CASH or STOCK. CASH initialises the portfolio with 100% cash. STOCK initialises the portfolio with perfect portfolio weights at start. STOCK not implemented yet.
     - `portfolio_starting_value` - starting cash value of portfolio.
     - `cash_buffer_percentage` - desired cash percentage of portfolio to target.
   
-5. Trading characteristics
+5) Trading characteristics
     - `commission_rate` - percentage of trade value charged as commission.
     - `minimum_commission` - minimum value of commission. 
     - `standard_spread` - simple assumed spread between bid and ask, expressed as a percentage of stock price.
@@ -788,13 +857,13 @@ That is, an algorthm named `market_weighted.R`, run against the index `JALSH` wi
 
 The trading engine reuses several dataframes during the course of operation. Two of these are critical to understanding how it avoids look-ahead bias and generates trades.
 
-1. The `ticker_data` data object is a list of dataframes containing tickers relevant to the backtest. It is **not** free of survivorship bias or look ahead bias. It is constructed by sourcing `load_slow_moving_data.R`, which expects to find `3_run_trials.R` parameters in the global environment. 
-    1. It reads in the `constituent.feather` and `metadata.feather` datasets, and filters these datasets to include only `source` and `index` parameters included in the global environment. 
-    2. It then constructs a list of dataframes, where each dataframe contains the market and fundamental data of a ticker in the filtered constituent list, joined on the metadata market and fundamental identifier fields.
-    3. It filters all dataframes to take only the most recent timestamp version of data points with multiple timestamped versions.
-    4. It spreads the dataframes into *short and wide*, Tidty form.
+1) The `ticker_data` data object is a list of dataframes containing tickers relevant to the backtest. It is **not** free of survivorship bias or look ahead bias. It is constructed by sourcing `load_slow_moving_data.R`, which expects to find `3_run_trials.R` parameters in the global environment. 
+    1) It reads in the `constituent.feather` and `metadata.feather` datasets, and filters these datasets to include only `source` and `index` parameters included in the global environment. 
+    2) It then constructs a list of dataframes, where each dataframe contains the market and fundamental data of a ticker in the filtered constituent list, joined on the metadata market and fundamental identifier fields.
+    3) It filters all dataframes to take only the most recent timestamp version of data points with multiple timestamped versions.
+    4) It spreads the dataframes into *short and wide*, Tidty form.
 
-2. The `runtime_ticker_data` data object is derived from `ticker_data` and **is** free of survivorship and look-ahead bias. It is recomputed every time the `runtime_date` (i.e the date that the trading engine *thinks* it is) changes, and is computed by calling the `get_runtime_dataset` function. This function takes `execution_date`, `constituent_list` and `ticker_data` objects as arguments, and returns a subset of `ticker_data` that contains only those constituents that were in the constituent list at the execution date, and only those data points that were available prior to the execution date. It also backfills any `NA` values with the last known value. This converts low-periodicity data, such as balance sheet line items, into daily data for easy row-wise operations.
+2) The `runtime_ticker_data` data object is derived from `ticker_data` and **is** free of survivorship and look-ahead bias. It is recomputed every time the `runtime_date` (i.e the date that the trading engine *thinks* it is) changes, and is computed by calling the `get_runtime_dataset` function. This function takes `execution_date`, `constituent_list` and `ticker_data` objects as arguments, and returns a subset of `ticker_data` that contains only those constituents that were in the constituent list at the execution date, and only those data points that were available prior to the execution date. It also backfills any `NA` values with the last known value. This converts low-periodicity data, such as balance sheet line items, into daily data for easy row-wise operations.
 
 ### The `compute_weights` function
 
@@ -810,32 +879,32 @@ Since these weights only need to be recomputed daily, this training can take qui
 
 The `trade.R` script performs the following operations -
 
-1. Source the `algorithm.R` script. 
-2. Set `heartbeat_count` to 0.
-3. Set `runtime_date` to start of backtest + `heartbeat_count`.
-4. Check if `ticker_data` has been loaded to memory and if it is less than 24 hours (in heartbeat time) old.
+1) Source the `algorithm.R` script. 
+2) Set `heartbeat_count` to 0.
+3) Set `runtime_date` to start of backtest + `heartbeat_count`.
+4) Check if `ticker_data` has been loaded to memory and if it is less than 24 hours (in heartbeat time) old.
     - If not, reload `ticker_data` by sourcing `load_slow_moving_data.R`
-5. Check if `runtime_ticker_data` is stale.
+5) Check if `runtime_ticker_data` is stale.
     - If is is stale, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function.
-6. Get the `transaction_log` and `trade_history` data objects and compute our current portfolio and cash positions. 
-7. Query latest prices for the positons to obtain a portfolio valuation.
-8. Compute `trades` by calling `compute_trades`, using `target_weights` and `positions` as arguments.
-9. Submit `trades` by calling the `submit_orders` function, using `trades` as an argument. 
-10. Increment the `heartbeat_count` value by the global `hearbeat_duration` value.
-11. Repeat steps 3 - 10 until `runtime_date` is equal to or greater than `end_backtest`.
+6) Get the `transaction_log` and `trade_history` data objects and compute our current portfolio and cash positions. 
+7) Query latest prices for the positons to obtain a portfolio valuation.
+8) Compute `trades` by calling `compute_trades`, using `target_weights` and `positions` as arguments.
+9) Submit `trades` by calling the `submit_orders` function, using `trades` as an argument. 
+10) Increment the `heartbeat_count` value by the global `hearbeat_duration` value.
+11) Repeat steps 3 - 10 until `runtime_date` is equal to or greater than `end_backtest`.
 
 In a live environment, the `submit_trades()` function would submit the trades to a broker via the broker-supplied API. Submitted trades would be matched (or partially matched) by an external broker and our broker-side trade history and transaction logs would be updated. In this setup, getting `transaction_log` and `trade_history` objects would amount to querying the broker API and saving the result to the `results/INDEX__algorithmX` subdirectory. These logs are avaiable to the trade loop and perform the function of updating the portfolio weights, allowing a new `trades` object to be computed.
 
 In a backtest environment, this trade matching needs to be simulated. In this context, the `submit_orders()` function simulates the actions of an extenral broker. This function accepts a `trades` dataframe as an argument, and then -
 
-1. Obtains price quotes for each ticker in the `trades` dataframe. The `get_stock_quote` function queries ticker_data for the highest price, lowest price and volume on the execution date, and then selects a random sample of size 1 for the price range. This random sample is the `midpoint`. The `bid` and `offer` are computed as the difference of `midpoint` and the `spread`, as defined in the global parameters. It then computes the `size` of available units as daily volume divided by (trading day / heartbeat duration). That is, it assigns trading lots uniformly thoughout the day. In this manner, liquidity is constrained to a reasonable approximation of the volume that would have been available throughout the day. Finally, it returns a vector with the `bid`, `ask` and `size`.
-2. Computes successful trades as those where the correct side (i.e bid for a sell order, ask for a buy order) is within the limit order price specified in the `trades` dataframe.
-3. Assigns a trade size (the minimum of units avaialble and units asked for) to each trade.
-4. Generates a session trade log and transaction history
-5. Reads in the `trade_history` and `transaction_log` objects.
-6. Appends the session values
-7. Saves the `trade_history` and `transaction_log` objects to file
-8. Returns a short summary of successful trades.
+1) Obtains price quotes for each ticker in the `trades` dataframe. The `get_stock_quote` function queries ticker_data for the highest price, lowest price and volume on the execution date, and then selects a random sample of size 1 for the price range. This random sample is the `midpoint`. The `bid` and `offer` are computed as the difference of `midpoint` and the `spread`, as defined in the global parameters. It then computes the `size` of available units as daily volume divided by (trading day / heartbeat duration). That is, it assigns trading lots uniformly thoughout the day. In this manner, liquidity is constrained to a reasonable approximation of the volume that would have been available throughout the day. Finally, it returns a vector with the `bid`, `ask` and `size`.
+2) Computes successful trades as those where the correct side (i.e bid for a sell order, ask for a buy order) is within the limit order price specified in the `trades` dataframe.
+3) Assigns a trade size (the minimum of units avaialble and units asked for) to each trade.
+4) Generates a session trade log and transaction history
+5) Reads in the `trade_history` and `transaction_log` objects.
+6) Appends the session values
+7) Saves the `trade_history` and `transaction_log` objects to file
+8) Returns a short summary of successful trades.
 
 ### Backtest results
 
@@ -843,10 +912,10 @@ A well specified `compute_weights` function will result in a successful backtest
 
 On completion of `3_run_trials.R`, the `results` subdirectories contain four files -
 
-1. The original `algorithm_X.R` script from the `trials` directory.
-2. A `runtime_log` file, which contains relevant runtime information. Each line of this file represents another heartbeat.
-3. A `trade_history.feather` file, which contains a full trade history, similar to what would be obtained from an external broker.
-4. A `transaction_log.feather` file, which contains a full transaction log, similar to what would be obtained fro an external broker. This log is analogous to a bank account, and keeps track of account cash balances as trades, deposits, withdrawals and account charges are levied.
+1) The original `algorithm_X.R` script from the `trials` directory.
+2) A `runtime_log` file, which contains relevant runtime information. Each line of this file represents another heartbeat.
+3) A `trade_history.feather` file, which contains a full trade history, similar to what would be obtained from an external broker.
+4) A `transaction_log.feather` file, which contains a full transaction log, similar to what would be obtained fro an external broker. This log is analogous to a bank account, and keeps track of account cash balances as trades, deposits, withdrawals and account charges are levied.
 
 In addition, the `parameters.R` file, which contains important information related to the environment, is copied into the root of the `results` directory.
 
@@ -874,21 +943,21 @@ There exist several portfolio performance reporting packages on CRAN; it is beyo
 
 The `4_report.R` script has three objectives - 
 
-1. Create a matrix of daily returns for piping into a downstream portfolio analysis package.
-2. Generate a minimal performance tearsheet in order to demonstrate that portfolio analysis can, in principle, be conducted on the folder contents.
-3. Collect the daily returns of all of the trials into a single matrix for downstream analysis for overfitting.
+1) Create a matrix of daily returns for piping into a downstream portfolio analysis package.
+2) Generate a minimal performance tearsheet in order to demonstrate that portfolio analysis can, in principle, be conducted on the folder contents.
+3) Collect the daily returns of all of the trials into a single matrix for downstream analysis for overfitting.
 
 To achieve these aims, the script performs the following steps on each result subdirectory - 
 
-1. Load the transaction log, trade history and runtime log.
-2. Determine the start and end date of the backtest from the runtime log.
-3. Compute cash balances, portfolio positions, and stock prices for each date in the backtest.
-4. Compute the total portfolio value for each date in the backtest.
-5. Combine the cash balance, total stock value, and total portfolio value into a Tidy dataframe.
-6. Compute miscellanous rolling performance statistics, such as daily return, excess return and rolling average return and add them as columns to the dataframe.
-7. Save the dataframe to a `portfolio_stats.feather` file in the subdirectory.
-8. Copy in the `tearsheet.Rmd` tmeplate from `scripts/reporting/`.
-9. Parametrically render the `tearsheet.Rmd` into a `tearsheet.html` web page that can be read and distributed.
+1) Load the transaction log, trade history and runtime log.
+2) Determine the start and end date of the backtest from the runtime log.
+3) Compute cash balances, portfolio positions, and stock prices for each date in the backtest.
+4) Compute the total portfolio value for each date in the backtest.
+5) Combine the cash balance, total stock value, and total portfolio value into a Tidy dataframe.
+6) Compute miscellanous rolling performance statistics, such as daily return, excess return and rolling average return and add them as columns to the dataframe.
+7) Save the dataframe to a `portfolio_stats.feather` file in the subdirectory.
+8) Copy in the `tearsheet.Rmd` tmeplate from `scripts/reporting/`.
+9) Parametrically render the `tearsheet.Rmd` into a `tearsheet.html` web page that can be read and distributed.
 
 As the script works through each subdirectory it compiles cross-sectional dataframes that contain all the trials' daily and total returns. That is, dataframes with a row for every date, and a column for the daily returns or total returns for each trial result. These dataframes are saved to `results/daily_returns.feather` and `results/total_returns.feather`, where it can be consumed by the `5_cross_validate.R` cross-validation script.
 
@@ -900,7 +969,7 @@ The parametrised template tearsheet resides at `scripts/reporting/tearsheet.Rmd`
 
 \newpage
 
-## Cross Validation - `5_cross_validate.R`
+## Cross validation - `5_cross_validate.R`
 
 ```
 Relevant parts of the directory tree: 
@@ -930,7 +999,7 @@ The template `Rmd` file can be modified at `scripts/reporting/cross_validate.Rmd
 
 \newpage
 
-## Limitations and Weaknesses
+## Limitations and enhancements
 
 In order to keep the scope of this project manageable, we have had to allow the codebase to exist with certain limitations. These limitations are not inherent; their existence is a function of time limitations. 
 
@@ -948,7 +1017,7 @@ Transaction costs and slippage are modelled naively - either as a percentage of 
 
 As present portoflio rebalancing periodicity is a global parameter. However, since the periodicity affect the return (there should be an optimal rebalancing periodicity that balances accuracy with churn), it should be a local parameter to a trial. Modifying the parameter to accept vectors, and modifying `3_trade.R` to run each trial against each periodicity would add significant flexibility to the reseacher's toolkit.
 
-### Desirable Additions
+### Enhancements
 
 In line with our goal of enabling high-quality, reproducible research, it would be desirable to include automated report generation of dataset characteristics and quality. The data processing pipeline accommodates multiple sources and versions of data, so a reporting suite built around the comparative quality of various data sources would be useful. Such a suite could contain metrics such as breadth (number of tickers) and depth (number of metrics) of coverage, accuracy and frequency of retroactive updates. 
 
