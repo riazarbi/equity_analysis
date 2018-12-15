@@ -42,52 +42,13 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width 
 
 # Introduction \label{Introduction}
 
-Addresses:
+The question of how to identify stocks with abnormal returns is a large area of research, both in academia and in industry. This is understandable, given the profit potential of a good answer. A central tool in this area is backtesting, which is the testing of a stock selection strategy on historical data. The construction of a backtest is difficult, and there are many design considerations that impact the final result. 
 
-1. Survivorship bias
-2. Look ahead bias
-3. Completeness: multi source
-4. Retroactive corrections: dataset monitoring
+Researchers must obtain data that is free of any biases and as close to the actual data that would have been available to an investor at the time of a trade. They must also make decisions around how closely they want to model real world trading, and how their trading behaviour might impact the market. They need to guard against overfitting the historical dataset. Finally, they need to ensure that their implementation is free of errors. The complexity of the undertaking makes replication very difficult, which often casts serious doubt on reported results.
 
-5. Market impact
-6. Transaction Costs
-7. Portfolio bankruptcy
-8. Backtest overfitting: pbo
+We introduce a simple event-based backtester that is structured along the lines of a research compendium. Borrowing concepts and practices from the reproducible science movement, it aims to be totally transparent in its operation and fully amenable to customization. Our objective is to provide an open backtesting environment that can be distributed along with results to facilitate audit and enhance credibility. In order to be fully auditable the entire backtest process from data acquisition to report generation is scripted using the R programming language. These scripts can be run again to replicate the result, and they can be inspected to verify the method.
 
-Principles:
-
-1. Transparency
-2. Simplicity
-3. Verbosity
-
-Tries to:
-
-1. Be convertalbe to live with minimal effort
-2. Acommodate any sort of date
-3. Be interoperable with other packages (xes...)
-4. Use tidy data structures
-
-
-Second-order challenges: 
-
-1. Compaction: dropping useless data
-2. Speed: training vs trading
-3. Speed: parallel processing
-4. Speed: read/write: feather
-5. Memory: filtering and subsetting
-
-Features:
-
-- data versioning
-- multi-source
-- multi-index
-- code version control
-- clear procedural workflow
-- event-driven
-- tidy data
-- pbo
-- host of metrics
-- bias avoidance
+In terms of functionality, it allows a researcher to address survivorship bias and look ahead bias, models market liquidity and transaction costs and provides tools for detecting backtest overfitting. It keeps data structures in simple tabular formats that can be readily consumed by other packages to facilitate extension.
 
 This paper is organised as follows. Section \ref{Backtest section} briefly introduces the practice of backtesting of investment strategies in academia and industry, enumerates common methodological issues that compromise the validity of research and discusses the replication crisis that exists in both domains. Section \ref{Reproducible Research} describes the goals and philosophy of the reproducible research movement and its links to the open source software movement. We focus especially on the R statistical programming language, the Tidy approach to data organization and the use of scripting to facilitate reprducibility and transparency in scientific research. Section \ref{Documentation Intro} introduces an opinionated backtesting template that is roughly compatible with the structure of a research compendium - that is, a template which constitutes a basic minimum viable unit of reproducible research. Section \ref{Detailed Documentation} provides detailed documentation of the codebase, along with design justifications.
 
@@ -97,7 +58,7 @@ This paper is organised as follows. Section \ref{Backtest section} briefly intro
 
 ## History and distinction between academics and practitioners
 
-Investigations into why some stocks outperform others have a long history. Professional bodies of knowledge, often captured in heuristics or rules of thumb, have existed since at least the early 20th century. For instance @Graham1934a released the first edition of their *Security Analysis* textbook in 1934. As time has progressed, professionals and academics have sought to test these rules in a rigorous manner, and to implement automated trading strategies based on those rules. 
+Stock selection strategies have a long history. Professional bodies of knowledge, often captured in heuristics or rules of thumb, have existed since at least the early 20th century. For instance @Graham1934a released the first edition of their *Security Analysis* textbook in 1934. As time has progressed, professionals and academics have sought to test these rules in a rigorous manner, and to implement automated trading strategies based on those rules. 
 
 Academics often frame these investigations as an attempt to identify whether a population of stocks subsetted along the lines of some attribute exhibit statistically significant differences in returns. @Fama1992, for instance, split the US stock universe by market capitalization and market beta ($\beta$), and then regress the cohorts against size, book to market, leverage and earnings yield to investigate whether any of these variables have explanatory power for outsize returns. 
 
@@ -486,110 +447,12 @@ Complete directory structure:
 
 In short, scripts in the `scripts/` directory pull data into the `data/` directory and process that source data into Tidy datasets. They then run the algorithms in the `trials/s` directory on `data/datasets` in order to generate results, which goes into the `results/` directory. A detailed data flow diagram is rendered below.
 
-```{r dataflow_diagram, evaluate = FALSE, echo = FALSE}
-library(magrittr)
-library(DiagrammeR)
-library(tidyverse)
-nodes <- c("Source 1",
-           "Source 2",
-           "Source 3",
-           "Source 4",
-           "datalog",
-           "Constituent List",
-           "Ticker Metadata",
-           "Fundamental Data",
-           "Market Data",
-           "Master Dataset",
-           "Runtime Dataset",
-           "Trading Rule",
-           "Ideal Weights",
-           "Cash Account",
-           "Trade History",
-           "Portfolio Balance",
-           "Desired Trades",
-           "Market Stream",
-           "Successful Trades",
-           "Runtime Log",
-           "Tearsheet",
-           "Returns Matrix",
-           "Cross Validation",
-           "Heartbeat Date") 
-nodes <-  data.frame(id = seq(1:length(nodes)), 
-                     label = nodes, 
-                     stringsAsFactors = FALSE)
-
-edges <- as_data_frame(rbind(
-  c(1,5, "query"),
-  c(2,5, "query"),
-  c(3,5, "query"),
-  c(4,5, "query"),
-  c(5,6, "compact"),
-  c(5,7, "compact"),
-  c(5,8, "compact"),
-  c(5,9, "compact"),
-  c(8,10, "load"),
-  c(9,10, "load"),
-  c(6,11, "filter"),
-  c(7,11, "filter"),
-  c(24,11, "load"),
-  c(10,11, "filter"),
-  c(11,13,"calculate"),
-  c(12,13, "load"),
-  c(14,16, "calculate"),
-  c(15,16,"calculate"),
-  c(16,17, "calculate"),
-  c(13,17,"calculate"),
-  c(17,19,"calculate"),
-  c(18,19,"calculate"),
-  c(19,15, "record"),
-  c(15,14,"record"),
-  c(14,22,"calculate"),
-  c(15,22, "calculate"),
-  c(18,22, "calculate"),
-  c(22,21, "render"),
-  c(22,23, "render"),
-  c(9,18, "load"),
-  c(19,20, "save"))) %>%
-  rename(from = V1,
-         to = V2,
-         label = V3) %>%
-  mutate(from = as.integer(from),
-         to = as.integer(to),
-         label = as.character(label),
-         arrowsize = as.character(2))
-
-graph <- create_graph(directed=TRUE) %>%
-  add_nodes_from_table(
-    table = nodes,
-    label_col = label) %>%
-  add_edges_from_table(
-    table = edges,
-    from_col = from,
-    to_col = to,
-    from_to_map = id_external)
-graph2 <- graph %>%
-  select_nodes(nodes = 1:24) %>%
-  set_node_attrs_ws(
-    node_attr = fillcolor,
-    value = "white")
-
-graph2 %>%
-  render_graph()
-
-graph %>%  export_graph(file_name = "data/coarse_workflow.pdf")
-
-graph_attrs <- c("layout = circo",
-                 "overlap = false",
-                 "fixedsize = true",
-                 "ranksep = 3",
-                 "outputorder = edgesfirst")
-
-
+```{r, fig.width = 4, out.width = "100%", fig.cap="Data Flow Diagram"}
+library(png)
+library(grid)
+img <- readPNG("data/workflow.png")
+grid.raster(img)
 ```
-
-
-![Coarse Analytical Workflow\label{Coarse Flow}](data/coarse_workflow.pdf)
-
 \newpage
 
 ## Parameter setting - `parameters.R`
@@ -851,7 +714,13 @@ The script runs `trade.R` against each `algorithm_X.R` file in the `trials/` dir
 
 That is, an algorthm named `market_weighted.R`, run against the index `JALSH` will result in a results subdirectory `JALSH__market_weighted`. This subdirectory will contain the original `market_weighted.R` file as well as several reporting and runtime history files. It is therefore possible to take a `results` subdirectory contents, rerun the algorithm, and compare with the original results.
 
-[FLOW CHART OF OPERATIONS INSIDE THE TRADE SECTION]
+```{r, fig.width = 4, out.width = "90%", fig.cap="Trading Workflow Diagram"}
+library(png)
+library(grid)
+img <- readPNG("data/trading_workflow.png")
+grid.raster(img)
+```
+
 
 ### The `ticker_data` and `runtime_ticker_data` objects
 
