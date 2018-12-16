@@ -91,7 +91,9 @@ dygraph(total_returns,
 
 # Probability of Backtest Overfitting
 
-To compute the probability of backtest overfitting, we need to define the Sharpe Ratio. We use the same Sharpe Ratio function defined in the `pbo` package vignette - 
+We use the methods described in the (Probability of Backtest Overfitting) [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253] to detect overfitting.
+
+To compute the probability of backtest overfitting, we need to define a performance metric. We can use any performance metric we want. We use the same performance metric here as was used in the orignal paper - the Sharpe Ration. This ratio is defined in the `pbo` package vignette as - 
 
 ```{r, echo = T}
 sharpe <- function(x,rf=daily_risk_free_rate) {
@@ -104,32 +106,59 @@ sharpe <- function(x,rf=daily_risk_free_rate) {
 
 ```
 
-## Summary
 
-Closer to 1 is more overfit
+## Results
+
 ```{r}
 my_pbo <- pbo(daily_returns,s=8,f=sharpe,threshold=0)
 pbo_summary <- summary(my_pbo)
-knitr::kable(pbo_summary, col.names = "Value") #closer to 1 pbo is more overfit
-
+summary <- as.data.frame(pbo_summary)
+rownames(summary) <- c("PBO", "Slope", "Adjusted R-squared", "Probability of Loss")
+colnames(summary) <- "Value"
+summary$Range <- c("0->1", "-inf->inf", "0->1", "0->1")
+summary$Desirable  <- c("1", "NA", "1", "0")
+knitr::kable(summary)
 ```
 
+
+
 ## Histogram
+
+This is a histogram of the logits. A negative value indicate a best in-sample trial that performed below the median trial out of sample; a positive value indicates a best in-sample trial that performed better than the median trial out of sample.
+
 ```{r}
 histogram(my_pbo, type='density')
 ```
 
 # Degradation
+
+The performance degradation is a regression of out of sample performance to in-sample performance. A negative slope indicates that greater in-sample performance is related to weaker out of sample performance.
+
 ```{r}
 xyplot(my_pbo,plotType="degradation")
 ```
 
 # Stochastic Dominance
+
+This plot checks whether the the algorithm selection procedure (in this case, ranking by Sharpe Ratio) is preferable to random selection of trials from the cohort.
+
 ```{r}
 xyplot(my_pbo,plotType="dominance",increment=0.001)
 ```
 
+# Dotplot
+
+This is a sorted plot of how often each study is selected. We would expect a signal-finding algorithm to be selected more often.
+
+```{r}
+dotplot(my_pbo)
+```
+
+
 # Pairs
+
+This shows how well in sample selection does out of sample. We would like to see some sort of relationship between them.
+
 ```{r}
 xyplot(my_pbo,plotType="pairs")
 ```
@@ -140,8 +169,4 @@ xyplot(my_pbo,plotType="pairs")
 xyplot(my_pbo,plotType="ranks",ylim=c(0,20))
 ```
 
-# Dotplot
-```{r}
-dotplot(my_pbo)
-```
 
