@@ -1,7 +1,8 @@
 ---
 title: "A Data Scientific Approach to Equity Backtesting"
 Author1: Riaz Arbi
-BottomRFooter: \footnotesize Page \thepage\
+Author2: Tim Gebbie
+BottomRFooter: \footnotesize Page \thepage
 output:
   pdf_document:
     fig_height: 3
@@ -29,7 +30,7 @@ link-citations: yes
 margin: 2.3
 numbersections: yes
 HardSet_layout: yes
-AddTitle: no
+AddTitle: yes
 toc: yes
 top: 2.5
 ---
