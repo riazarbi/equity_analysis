@@ -909,6 +909,8 @@ This collection of scripts make it possible to test an investment algorithm agai
 
 Using this code-base as a starting point should save a researcher a great deal of time in preparing stock data for backtesting, and the open source nature of the project ensures that any researcher can comb the operations for bugs or implement features that are not present. While it is not expected that this code base is necessary or sufficient for end-to-end backtesting, it represents a solid base for ongoing development. 
 
+It is hoped that researchers will treat this project as a reproducible project in and of itself. That is, they will inspect the code, ensure that it is working as intended (or suggest fixes) and thereby verify it as a legitmate base for engaging in the real meat of backtesting - discovering anomalies.
+
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->
 
