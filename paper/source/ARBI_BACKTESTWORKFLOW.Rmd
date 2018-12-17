@@ -832,7 +832,12 @@ To achieve these aims, the script performs the following steps on each result su
 
 As the script works through each subdirectory, it compiles cross-sectional dataframes that contain all the trials' daily and total returns. That is, dataframes with a row for every date, and a column for the daily returns or total returns for each trial result. These dataframes are saved to `results/daily_returns.feather` and `results/total_returns.feather`, where it can be consumed by the `5_cross_validate.R` cross-validation script.
 
-[insert screenshot of tearsheet here]
+```{r, fig.width = 4, out.width = "100%", fig.cap="Tearsheet Excerpt"}
+library(png)
+library(grid)
+img <- readPNG("/home/riaz/projects/equity_analysis/paper/source/data/tearsheet_excerpt.png")
+grid.raster(img)
+```
 
 It must be emphasised that the trial-specific `portfolio_stats.feather` tables and the tearsheets are minimal examples, and they should only be used for serious analysis after heavy augmentation. We decided not to flesh out complete statistical summaries because there are other R packages that can do that (see @Peterson2018 as an example). Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
  
@@ -865,7 +870,13 @@ The computations done in this section are the final part of the analysis; the ou
 
 The template `Rmd` file can be modified at `scripts/reporting/cross_validate.Rmd`
 
-[insert screenshot of Rmd here]
+```{r, fig.width = 4, out.width = "100%", fig.cap="Cross Validation Report Excerpt"}
+library(png)
+library(grid)
+img <- readPNG("/home/riaz/projects/equity_analysis/paper/source/data/cross_validation_excerpt.png")
+grid.raster(img)
+```
+
 
 
 \newpage
