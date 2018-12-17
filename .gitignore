@@ -6,11 +6,10 @@ temp/*
 scripts/temp/*
 
 # PAPER FILES
-paper/source/ARBI_BACKTESTWORKFLOW.pdf
-paper/source/ARBI_BACKTESTWORKFLOW.spl
-paper/source/ARBI_BACKTESTWORKFLOW.tex
-paper/source/data/coarse_workflow.pdf
-
+paper/ARBI_BACKTESTWORKFLOW.pdf
+paper/ARBI_BACKTESTWORKFLOW.spl
+paper/ARBI_BACKTESTWORKFLOW.tex
+paper/ARBI_BACKTESTWORKFLOW_files/*
 # R TEMPLATE
 # History files
 .Rhistory

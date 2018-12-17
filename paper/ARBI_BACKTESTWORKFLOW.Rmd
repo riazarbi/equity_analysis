@@ -96,7 +96,7 @@ A realistic backtest also needs to address the following data quality issues:
 
 3) Is the dataset *complete*? Some datasets contain more information than others. @Trice2017 compares data for the S&P 500 Index across the free data vendors Google.com and Yahoo.com and finds discrepancies between them - the salient chart is reproduced below. In this instance, the discrepancy derives from the fact that Google contains a significant number of N/A values, which skew the summary statistics. 
 
-![Data Discrepancies between Google and Yahoo! (@Trice2017)\label{Table1}](/home/riaz/projects/equity_analysis/paper/source/data/data-quality-a-boxplot-1.png)
+![Data Discrepancies between Google and Yahoo! (@Trice2017)\label{Table1}](/home/riaz/projects/equity_analysis/paper/data/data-quality-a-boxplot-1.png)
 
 4) Does the dataset contain *retroactive corrections*? It is common for companies to restate financial information after the fact. This can be because of changes in accounting rules, new information that comes to light, or to aid in comparison across major changes to the company structure. If these restatements are retroactively applied to a dataset, they can introduce look-ahead bias.
 
@@ -835,7 +835,7 @@ As the script works through each subdirectory, it compiles cross-sectional dataf
 ```{r, fig.width = 4, out.width = "100%", fig.cap="Tearsheet Excerpt"}
 library(png)
 library(grid)
-img <- readPNG("/home/riaz/projects/equity_analysis/paper/source/data/tearsheet_excerpt.png")
+img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/tearsheet_excerpt.png")
 grid.raster(img)
 ```
 
@@ -873,7 +873,7 @@ The template `Rmd` file can be modified at `scripts/reporting/cross_validate.Rmd
 ```{r, fig.width = 4, out.width = "100%", fig.cap="Cross Validation Report Excerpt"}
 library(png)
 library(grid)
-img <- readPNG("/home/riaz/projects/equity_analysis/paper/source/data/cross_validation_excerpt.png")
+img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/cross_validation_excerpt.png")
 grid.raster(img)
 ```
 
