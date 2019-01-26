@@ -1,0 +1,124 @@
+---
+title: "Bloomberg Example"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      message = F)
+
+## Set options
+options(scipen = 999, # prevent scientific notation on large numbers
+        stringsAsFactors = F) # prevent R from turning everything to factors
+
+library(magrittr)
+library(tidyverse)
+library(lubridate)
+library(feather)
+working_directory <- here::here()
+source(file.path(working_directory,"R/set_paths.R"))
+source(file.path(working_directory,"R/data_pipeline_functions.R"))
+
+index_of_interest <- "JALSH"
+source_of_interest <- "bloomberg"
+
+```
+
+# Setting up the environment
+1. Spin up docker container - supply sample code
+1. create project from version control - supply ui directions
+
+# QUERYING DATA
+
+## software prep
+5. rstudio - off a flash maybe if no auth. Specify requirements - tidyverse and RBlpapi
+1. copy repo to flash - export
+3. open bloomberg
+4. open bbcomm
+## Actual query
+1. Open bloomberg_to_datalog.R and make sure parameters are right. We set JALSH / TOP40, 120 months.
+2. Close. 
+3. source("scripts/1_query_source.R")
+4. Select bloomberg to datalog, let it run
+ - note: chunking: implicit 25 field limit. 
+ - large ticker query limit: limit to 100
+ - split fundamnetal and market data - ISIN vs ticker
+9. we ran JALSH and TOP40 for 120 months - show screenshot. 
+Time: 30 min
+
+# PROCESSING DATA
+1. source("scripts/2_process_data.R")
+non-interactive to speed things up. Why not part of above? Well you can by calling 0_all.R but maybe you don
+'t want to because you don't have enought time on that PC.
+Time: 12s + 1.8s + .17s + 3.7min
+
+# EDA ON DATA
+1. Count files of each category in datalog and make sure they all made it to dataset.
+```{r}
+# load datalog
+datalog <- convert_datalog_to_dataframe() 
+# number of files per extension
+datalog %>% group_by(ext) %>% summarise(n())
+# select just feather
+datalog <- datalog %>% filter(ext == "feather")
+# get a list of all data types
+unique(datalog$data_type)
+
+# DATASET COUNTS
+# number of constituent files
+datalog_constituent_files <- datalog %>% filter(data_type=="constituent_list")
+nrow(datalog_constituent_files)
+# number of metadata files
+datalog_metadata_files <- datalog %>% filter(data_type=="metadata_array")
+nrow(datalog_metadata_files)
+# number of tickers in marketdata logs
+datalog_unique_market_tickers <- datalog %>% filter(data_type == "ticker_market_data") %>% select(data_label) %>% unique()
+nrow(datalog_unique_market_tickers)
+dataset_market_tickers <- list.files(file.path(dataset_directory, "ticker_market_data"))
+length(dataset_market_tickers)
+
+# number of tickers in fundamental data logs
+# note - not necessarily equal; if ISIN covers two tickers.
+datalog_unique_fundamental_tickers <- datalog %>% filter(data_type == "ticker_fundamental_data") %>% select(data_label) %>% unique()
+nrow(datalog_unique_fundamental_tickers)
+dataset_fundamental_tickers <- list.files(file.path(dataset_directory, "ticker_fundamental_data"))
+length(dataset_fundamental_tickers)
+
+# TICKER COUNTS
+# Strategy - use datasets.
+constituent_tickers <-read_feather(file.path(dataset_directory, "constituent_list", "constituent_list.feather")) %>% 
+  filter(source == source_of_interest) %>%  
+  filter(index == index_of_interest) %>%
+  select(ticker) %>%
+  unique()
+nrow(constituent_tickers)
+
+metadata_tickers <- read_feather(file.path(dataset_directory, "metadata_array", "metadata_array.feather")) %>% 
+  select(market_identifier) %>%
+  unique()
+nrow(metadata_tickers)
+
+setdiff(constituent_tickers, metadata_tickers)
+setdiff(metadata_tickers, constituent_tickers)
+
+
+
+market_datasets <- tools::file_path_sans_ext(dataset_market_tickers)
+setdiff(metadata_tickers, market_datasets)
+
+fundamental_datasets <- tools::file_path_sans_ext(dataset_fundamental_tickers)
+#metadata_ISINs <- 
+
+
+```
+
+2. Dimensionality checks. Count - 
+  - number of unique tickers in constituent lists / market data / fundamental / meta - and setdiff
+  - per ticker, check data 
+
+10. count how many files are downloaded - maybe head(datalog_df)?
+
+
+
+Need to do EDA to see if everythong downloaded. Manual checks - see if it's my code or BB for missing fields. Also cross-check manually.

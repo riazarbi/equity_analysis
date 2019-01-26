@@ -493,7 +493,50 @@ print("Time Elapsed for this section:")
 print(end - smallbegin)
 print("")
 
+}
+####################################################################################
+# CONVERT BLOOMBERG FIELDS TO INTERNALLY RECOGNISABLE FIELDS
+print("")
+print("NEXT: Converting Bloomberg fieldnames to consistent fieldnames...")
+# Clear environment
+rm(list=ls())
+# Read in data_pipeline functions
+source("R/set_paths.R")
+source("R/data_pipeline_functions.R")
+# Time the script
+begin <- Sys.time()
+
+# Create a dataframe of data log files
+print("Scanning datalog...")
+data_log <- convert_datalog_to_dataframe()
+
+# METADATA
+print("NEXT: Converting metadata fieldnames...")
+dataset <- "metadata_array"
+
+print("Reading datalog files...")
+# Read in log data
+# Filter the log to show just filtered data files
+filtered_data_log <- data_log %>% 
+  dplyr::filter(ext == "csv") %>% 
+  dplyr::filter(grepl(dataset, data_type))
+nrow(filtered_data_log)
+
+print("Adding necessary fieldnames...")
+if(nrow(filtered_data_log >= 1)) {
+  for (i in 1:nrow(filtered_data_log)) {
+    metadata <- read_csv(paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"))
+    if (nrow(metadata) >= 1) {
+      # Add necessary fieldnames
+      metadata <- metadata %>% mutate(market_identifier = paste(TICKER_AND_EXCH_CODE, "Equity"),
+                                      fundamental_identifier = paste(ID_ISIN, "Equity"))
+      write.table(metadata, 
+                  paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"), 
+                  row.names = FALSE, sep = ",")
+    }
+  }}
 #######################################################################################
+
 print("################################")
 print("")
 end <- Sys.time()
@@ -502,4 +545,4 @@ print("Total Script Run Time")
 print(end - begin)
 print("############################")
 print("Script completed") 
-}
+
