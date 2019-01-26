@@ -1,9 +1,11 @@
-# DATA FILES
+# FILES GENERATED FROM RUNNING
 data/*
 results/*
 trials/*
 temp/*
 scripts/temp/*
+console_log
+scripts/trash/*
 
 # PAPER FILES
 paper/ARBI_BACKTESTWORKFLOW.pdf

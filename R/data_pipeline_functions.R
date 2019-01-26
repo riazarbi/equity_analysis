@@ -24,8 +24,8 @@ remove_empty_csvs <- function(data_log) {
     if(tools::file_ext(datalog) == "csv") {
       filepath <- file.path("data/datalog",datalog)
       loglength <- length(readLines(filepath))
-      message <- paste("Checking", filepath, "                 ")
-      cat("\r",message)
+      #message <- paste("Checking", filepath, "                 ")
+      #cat("\r",message)
       if (loglength == 1) {
         message = paste("Empty file. Removing", datalog)
         cat("\n",message, "\n")

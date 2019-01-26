@@ -24,7 +24,7 @@ compute_weights <- function(algo_data, metrics) {
   algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
   # 2. COMPUTE AGGREGATE MEASURE
   number_tickers <- length(algo_data)
-  raw_weights <- sample(runif(50))
+  raw_weights <- sample(runif(number_tickers))
   target_weight <- raw_weights/sum(raw_weights)
   # CREATE LIST OF TICKER NAMES
   portfolio_members <- names(algo_data)

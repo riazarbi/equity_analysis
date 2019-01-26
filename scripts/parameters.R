@@ -8,7 +8,7 @@ annual_risk_free_rate <- 0.04
 daily_risk_free_rate <- (1+annual_risk_free_rate)**(1/365.25)-1
 
 ##############################################################
-# SIMULATED DATA PARAMETERS
+# SIMULATED DATA PARAMETERS - ONLY IMPORTANT IF CREATING SIMULATED DATASET
 # Index name
 index <- "RISK_FREE_GROWERS"
 # Universe size
@@ -41,14 +41,21 @@ heartbeat_duration <- 60*60*12
 rebalancing_periodicity <- 60*60*24*30
 
 # Universe
-constituent_index <- index
-data_source <- "simulated"
+constituent_index <- "JALSH"
+data_source <- "bloomberg"
+# Specify price and volume fields
+# Bloomberg
+price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_OFFICIAL_CLOSE", "PX_LAST")
+volume_data <- c("date", "VOLUME")
+# Simulated
+#price_related_data <- c("date", "open", "high", "low", "close", "last")
+# volume_data <- c("date", "volume")
 market_metrics <- c()
 fundamental_metrics <- c() 
 
 # Timeframe
-start_backtest <- "2008-01-01" # inclusive
-end_backtest <- "2008-12-01" # not inclusive
+start_backtest <- "2010-01-01" # inclusive
+end_backtest <- "2010-12-01" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")

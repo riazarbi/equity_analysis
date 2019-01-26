@@ -15,7 +15,16 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
   index_members <- (constituent_list %>%
                       filter(date <= execution_date) %>%
                       filter(date == max(date)))
-  
+  if (nrow(index_members) == 0) {
+    stop(paste("FATAL: Constituent list is empty for date ", 
+               execution_date, 
+               ". Perhaps you don't have enough date for a backtest of range ", 
+               start_backtest,
+               "->",
+               end_backtest,
+               "?",
+               sep=""))
+  }
   # SURVIVORSHIP BIAS
   print("ACTION: Filtering for SURVIVORSHIP BIAS...") 
   # FILTER: to only include time-appropriate index members

@@ -342,7 +342,7 @@ print("")
 
 #######################################################################################
 print("################################")
-print("Querying market data for unique tickers")
+print("Querying ticker market data...")
 smallbegin <- Sys.time()
 
 # This section queries fundamental fields for a list of
@@ -388,7 +388,7 @@ while (ticker_iter <= length(tickers)) {
       name <- names(marketdata[marketdata_iter])
       data_type <- "ticker_market_data" 
       #data_identifier <- paste(the_date, name, sep = "__")
-      data_identifier <- name
+      data_identifier <- gsub("\\s*\\w*$", "", name)
       file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
       file_string <- paste(file_string, ".csv", sep = "")
       save_file <- file.path(data_directory, file_string)
@@ -476,7 +476,7 @@ while (ISIN_iter <= length(ISINs)) {
       name <- names(fundamentaldata[fundamentaldata_iter])
       data_type <- "ticker_fundamental_data" 
       #data_identifier <- paste(the_date, name, sep = "__")
-      data_identifier <- name
+      data_identifier <- gsub("\\s*\\w*$", "", name)
       file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
       file_string <- paste(file_string, ".csv", sep = "")
       save_file <- file.path(data_directory, file_string)
@@ -528,13 +528,15 @@ if(nrow(filtered_data_log >= 1)) {
     metadata <- read_csv(paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"))
     if (nrow(metadata) >= 1) {
       # Add necessary fieldnames
-      metadata <- metadata %>% mutate(market_identifier = paste(TICKER_AND_EXCH_CODE, "Equity"),
-                                      fundamental_identifier = paste(ID_ISIN, "Equity"))
+      metadata <- metadata %>% mutate(market_identifier = TICKER_AND_EXCH_CODE,
+                                      fundamental_identifier = ID_ISIN)
       write.table(metadata, 
                   paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"), 
                   row.names = FALSE, sep = ",")
     }
   }}
+
+
 #######################################################################################
 
 print("################################")

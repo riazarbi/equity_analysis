@@ -12,5 +12,5 @@ for (i in seq_along((1:length(scripts)))) {
   print(paste(i, scripts[i], sep=" : "))
 }
 
-script_to_run <- readline(prompt=paste("Select script to run [1-",length(scripts),"]", sep=" "))
+script_to_run <- readline(prompt=paste("Select script to run [1-",length(scripts),"]: ", sep=""))
 source(scripts[as.integer(script_to_run)])

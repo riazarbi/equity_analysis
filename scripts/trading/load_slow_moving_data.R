@@ -142,15 +142,12 @@ print(paste("Slow Moving Data object size:",
 #############################################################################################
 # Create a market dataset
 print("NEXT: Loading price and volume data into memory...")
-price_related_data <- c("date", 
-                        "open",
-                        "high",
-                        "low",
-                        "close",
-                        "last")
-
-volume_data <- c("date",
-                 "volume")
+print("NOTE: Will fail if you haven't specified price_related_data and volume_related_data vectors in parameters.R")
+print("Performing the following operations:")
+print("Taking relevant fields from ticker_data")
+print("Renaming source-specific fields to standard field names")
+print("Imputing missing 'max_price', 'min_price' and 'volume' values")
+print("Price imputation is just backfilled from last know value. Volume is average over last 3 months")
 
 price_data <- lapply(ticker_data, 
        function(x) {
@@ -166,11 +163,15 @@ price_data <- lapply(ticker_data,
            #mutate(spread = standard_spread*max_price) %>%
            add_column(date=date_stash)
          z <- x %>% 
-           dplyr::select(one_of(volume_data))
+           dplyr::select(one_of(volume_data)) %>% 
+           rename(volume = !!names(.[2]))
          # NOTE: Spread is arbitrary!
          # https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf
          # Try create a more realistic estimate of spread
          x <- full_join(z, y, by = "date")
+         x <- x %>% fill(max_price, min_price) %>%
+           mutate(volume = replace_na(volume, 0)) # replace NA volume with zero
+         # the alternative is some sort of rolling mean, but this may add more volume than is realistically available.
 })
 
 # Save the time this script completed so that we know it has run. 
