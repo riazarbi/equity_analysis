@@ -1,4 +1,4 @@
-sink("console_log")
+sink("console_log", split=TRUE)
 # Install required packages
 list.of.packages <- c("Rblpapi", 
                       "here", 
