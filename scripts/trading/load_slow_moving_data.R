@@ -169,15 +169,17 @@ price_data <- lapply(ticker_data,
          # https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf
          # Try create a more realistic estimate of spread
          x <- full_join(z, y, by = "date")
-         x <- x %>% fill(max_price, min_price) %>%
-           mutate(volume = replace_na(volume, 0)) # replace NA volume with zero
          # the alternative is some sort of rolling mean, but this may add more volume than is realistically available.
          # next - define the last price field and join back to price data
          w <- x %>% 
            dplyr::select(one_of(last_price_field)) %>% 
            rename(last = !!names(.[2]))
          x <- full_join(w, x, by = "date")
-})
+         # impute: replace NA in max_price, min_price and last with last known value
+         # impute: replace NA in volume with zero
+         x <- x %>% fill(max_price, min_price, last) %>% 
+           mutate(volume = replace_na(volume, 0)) 
+         })
 
 # Save the time this script completed so that we know it has run. 
 ticker_data_load_date <- Sys.time()
