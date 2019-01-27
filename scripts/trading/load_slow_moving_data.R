@@ -147,10 +147,10 @@ print("Performing the following operations:")
 print("Taking relevant fields from ticker_data")
 print("Renaming source-specific fields to standard field names")
 print("Imputing missing 'max_price', 'min_price' and 'volume' values")
-print("Price imputation is just backfilled from last know value. Volume is average over last 3 months")
+print("Price imputation is just backfilled from last known value. Volume is average over last 3 months")
 
 price_data <- lapply(ticker_data, 
-       function(x) {
+        function(x) {
          my.max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
          my.min <- function(x) ifelse( !all(is.na(x)), min(x, na.rm=T), NA)
          y <- x %>% 
@@ -172,6 +172,11 @@ price_data <- lapply(ticker_data,
          x <- x %>% fill(max_price, min_price) %>%
            mutate(volume = replace_na(volume, 0)) # replace NA volume with zero
          # the alternative is some sort of rolling mean, but this may add more volume than is realistically available.
+         # next - define the last price field and join back to price data
+         w <- x %>% 
+           dplyr::select(one_of(last_price_field)) %>% 
+           rename(last = !!names(.[2]))
+         x <- full_join(w, x, by = "date")
 })
 
 # Save the time this script completed so that we know it has run. 
