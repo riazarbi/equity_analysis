@@ -46,9 +46,11 @@ data_source <- "bloomberg"
 # Specify price and volume fields
 # Bloomberg
 price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_OFFICIAL_CLOSE", "PX_LAST")
+last_price_field <- c('date', 'PX_LAST') 
 volume_data <- c("date", "VOLUME")
 # Simulated
 #price_related_data <- c("date", "open", "high", "low", "close", "last")
+#last_price_field <- c('date', 'last')
 # volume_data <- c("date", "volume")
 market_metrics <- c()
 fundamental_metrics <- c() 
@@ -60,7 +62,7 @@ end_backtest <- "2010-12-01" # not inclusive
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
 portfolio_starting_config <- "CASH"
-portfolio_starting_value <- 10000
+portfolio_starting_value <- 1000000
 cash_buffer_percentage <- 0.02 # decimal form
 #cash_yearly_compounding_rate <- 0.05 # decimal form not implemented yet
 

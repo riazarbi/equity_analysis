@@ -1,4 +1,7 @@
+# Start logging to a file
+unlink("console_log")
 sink("console_log", split=TRUE)
+
 # Install required packages
 list.of.packages <- c("Rblpapi", 
                       "here", 
@@ -57,5 +60,8 @@ source("scripts/4_report.R")
 print("Running 5_cross_validate.R")
 source("scripts/5_cross_validate.R")
 
+# Stop logging to a file
 sink(type="message")
 sink()
+# Move the logfile to results
+file.rename("console_log", "results/console_log")
