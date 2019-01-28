@@ -52,7 +52,9 @@ volume_data <- c("date", "VOLUME")
 #price_related_data <- c("date", "open", "high", "low", "close", "last")
 #last_price_field <- c('date', 'last')
 # volume_data <- c("date", "volume")
-market_metrics <- c()
+
+# Specify algorithm fields
+market_metrics <- c("CUR_MKT_CAP")
 fundamental_metrics <- c() 
 
 # Timeframe
@@ -87,3 +89,5 @@ if(!(run_mode %in% allowed_modes)) {
 } 
 print(paste("Parameters file specifies", run_mode, "mode."))
 
+# Build a vector of the necessary metrics
+metrics <- c(market_metrics, fundamental_metrics)
