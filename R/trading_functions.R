@@ -33,13 +33,12 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
   print(paste("CHECKING FOR ISSUES:", (setdiff((index_members$ticker), names(runtime_ticker_data)))))
   print(paste("CHECKING FOR ISSUES:", (setdiff(names(runtime_ticker_data), (index_members$ticker)))))
   # CHECK: what has been dropped from master dataset?
-  print(paste("DROPPED:", 
-              length((setdiff(names(ticker_data), names(runtime_ticker_data)))),
-              "/",
-              length(ticker_data),
-              "tickers from ticker_data because they are not in the",
+  print(paste("FILTERING:", 
+              "Index has",
+              length(ticker_data) - length((setdiff(names(ticker_data), names(runtime_ticker_data)))),
+              "members for at",
               execution_date,
-              "constituent list."))
+              "."))
   # LOOKAHEAD BIAS
   print("ACTION: Filtering for LOOKAHEAD BIAS...") 
   # FILTER: any row entries after execution date 
@@ -51,7 +50,7 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
                                                     function(x) (dim(x)[1]) > 0)]
   # CHECK: verify no look-ahead data
   print(paste("CHECK: execution date is:", execution_date))
-  print(paste("CHECK: latest date in runtime_ticker_data is:", 
+  print(paste("CHECK: latest date in runtime_ticker_data set is:", 
               zoo::as.Date(max(unlist(lapply(runtime_ticker_data, function(x) max(x$date)))))))
   # CLEANUP: drop any missing columns
   print("ACTION: Dropping ticker columns with no data...")

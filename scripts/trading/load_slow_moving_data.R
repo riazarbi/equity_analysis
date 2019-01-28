@@ -145,10 +145,10 @@ print(paste("Slow Moving Data object size:",
 print("NEXT: Loading price and volume data into memory...")
 print("NOTE: Will fail if you haven't specified price_related_data and volume_related_data vectors in parameters.R")
 print("Performing the following operations:")
-print("Taking relevant fields from ticker_data")
-print("Renaming source-specific fields to standard field names")
-print("Imputing missing 'max_price', 'min_price' and 'volume' values")
-print("Price imputation is just backfilled from last known value. Volume is average over last 3 months")
+print("Taking relevant fields from ticker_data...")
+print("Renaming source-specific fields to standard field names...")
+print("Imputing missing 'max_price', 'min_price', 'last' and 'volume' values...")
+print("Price imputation is just backfilled from last known value. Volume is average over last 3 months...")
 
 price_data <- lapply(ticker_data, 
         function(x) {

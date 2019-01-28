@@ -15,17 +15,22 @@
 # And weights the ticker according to its proportion of total index market cap
 
 compute_weights <- function(algo_data, metrics) {
+  # specify the market_cap field for weighting purposes
+  algo_data <- lapply(algo_data, function(x) x <- x %>%
+                        mutate(market_cap = CUR_MKT_CAP))
+  # Start timer. Good to see if you'll need to refactor this.
   algo_start <- Sys.time()
-  # 1. CUT THE DATASET DOWN TO SIZE
+  # 1. SELECT DESIRABLE STOCKS
   # Keep only the necessary fields
-  #algo_data <- algo_data %>% select(metrics)
-  #print(colnames(algo_data))
+  algo_data <- algo_data %>% select(metrics)
+  # Create some rank measure
+  # Eliminate stocks that don't make the rank
+  
+  # 2. WEIGHT THE SURVIVORS 
   # Drop all entries except the latest one
   algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
-  # 2. COMPUTE AGGREGATE MEASURE
   # Compute the index market cap
   index_mkt_cap <- algo_data %>% map(function(x) sum(x$market_cap)) %>% reduce(`+`)
-  
   # ASSIGN WEIGHTS AS % OF AGGREGATE
   target_weight <- sapply(algo_data, function(x) sum(x$market_cap)/index_mkt_cap )  
   # CREATE LIST OF TICKER NAMES

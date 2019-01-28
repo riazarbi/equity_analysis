@@ -8,4 +8,4 @@ file.copy(from="scripts/reporting/cross_validate.Rmd", to="results/cross_validat
           copy.mode = TRUE)
 
 # Knit Rmd
-rmarkdown::render("results/cross_validate.Rmd")
+rmarkdown::render("results/cross_validate.Rmd", quiet=TRUE)

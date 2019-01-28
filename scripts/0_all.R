@@ -54,8 +54,8 @@ source("scripts/2_process_data.R")
 print("Running 3_run_trials.R")
 source("scripts/3_run_trials.R")
 
-print("Running 4_report.R")
-source("scripts/4_report.R")
+print("Running 4_report_parallel.R")
+source("scripts/4_report_parallel.R")
 
 print("Running 5_cross_validate.R")
 source("scripts/5_cross_validate.R")

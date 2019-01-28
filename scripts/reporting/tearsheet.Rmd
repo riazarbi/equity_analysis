@@ -54,8 +54,8 @@ data_source <- dirname_data[1]
 constituent_index <- dirname_data[2]
 trial <- dirname_data[3]
 num_stocks_traded <- length(unique(trade_history$symbol))
-start_backtest <- max(portfolio_stats$date)
-end_backtest <- min(portfolio_stats$date)
+start_backtest <- min(portfolio_stats$date)
+end_backtest <- max(portfolio_stats$date)
 backtest_duration <- interval(ymd(end_backtest),ymd(start_backtest)) %/% months(1)
 ```
 

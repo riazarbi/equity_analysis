@@ -68,7 +68,7 @@ for (results_subdirectory in results_directories[-1]) {
   end_backtest <- as.Date(max(runtime_log$timestamp))
   backtest_date_sequence <- seq(start_backtest, end_backtest, by = "day")
   
-  portfolio_valuation <- as_data_frame(backtest_date_sequence) %>% 
+  portfolio_valuation <- as_tibble(backtest_date_sequence) %>% 
     rename(date = value) %>%
     mutate(cash_balance = NA, 
            stock_value = NA,
