@@ -26,7 +26,6 @@ library(doParallel)
 
 # Register a parallel processing cluster
 n_cores <- detectCores() - 1
-n_cores <- 6
 cl <- makeCluster(n_cores, outfile="")
 registerDoParallel(cl)
 
@@ -171,7 +170,8 @@ stopCluster(cl)
 daily_returns <- list()
 total_returns <- list()
 for (i in 1:length(results_directories)) {
-  results_subdirectory <- results_directories[i] 
+  results_subdirectory <- results_directories[i]
+  trial <- results_subdirectory
   # load portfolio stats
   portfolio_stats <- read_feather(file.path(results_directory, results_subdirectory, "portfolio_stats.feather"))
   print(paste("Adding", results_subdirectory, "results to cross-sectional results tables..."))

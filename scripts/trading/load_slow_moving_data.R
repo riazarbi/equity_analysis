@@ -135,7 +135,10 @@ print("Casting ticker_data into flatfile form.")
 ticker_data <- lapply(ticker_data, 
                     function(x)
                       x %>% spread(metric, value))
-
+# FILTER: keep only necessary metrics
+print("Dropping unnecessary fields.")
+ticker_data <- lapply(ticker_data, function(x) x <- x %>%
+                      select(one_of(metrics)))
 # Get object size of test data
 print(paste("Slow Moving Data object size:", 
             format(object.size(ticker_data), units="auto", standard = "IEC")))

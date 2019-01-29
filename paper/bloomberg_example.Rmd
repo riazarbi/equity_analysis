@@ -1,6 +1,8 @@
 ---
 title: "Bloomberg Example"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -25,7 +27,7 @@ source_of_interest <- "bloomberg"
 
 ```
 
-# NOTES:
+# NOTES FOR PAPER
 How the dataset joins work.
 
 The source defines how to refer to each constituent. Each constituents file has rows of constituent names
@@ -34,11 +36,179 @@ The source defines how to refer to each constituent. Each constituents file has 
 2. *metadata -> markedata* : Each metadata file defines how to refer to each constituent's marketdata file. The market data datalog file must be the same string as the metadata market_identifier entry
 3. *metadata ->  fundamental data* : Each metadata file defines how to refer to each constituent's fundamnetaldata file. The fundamental data datalog file must be the same string as the metadata fundamnetal_identifier entry
 
+# Introduction
+
+In this section we walk through two end-to-end examples of backtesting using this environment. This section should be fully replicable by anybody with access to an x86 computer and the relevant data sources. 
+
+## Enabling replication
+
+This example is fully reproducible. The code to replicate this backtest can be downloaded and run, without modification, from [the Github repository.](https://github.com/riazarbi/euity_analysis_example1)
+
+##  Setting up the environment
+
+Our examples are run on a second generation Intel i-series laptop with 16gb of RAM. The operating system is `Ubuntu 18.04`, but these examples can run on any laptop with `RStudio` or `RStudio Server`. We use `docker` to set up the `RStudio` environment - 
+
+> `docker run -p 8787:8787 -e PASSWORD=complicatedpassword riazarbi/equity_analysis`
+
+This command exposes an RStudio server accessible via web browser at `localhost:8787`. The username is `rstudio` and the password is `complicatedpassword`. After logging in, we click `Project: (None) > New Project > Version Control > Git` in the top right corner of the interface and then enter the repository url before clicking `Create Project` - 
+
+> `https://github.com/riazarbi/euity_analysis_example1`
+
+This will download the files and intialize the project. The project files can be seen in the bottom right panel.
+
+## Example 1: Random portfolios of synthetic data
+
+### Thesis
+
+The investment thesis behind this backtest is that there is an optimal static set of portfolio weights that will result in the maximum possible return. To test this thesis, we create an algorithm that assigns random portfolio weights that it never rebalances. We run this algirothm 150 times, with the intention of selecting the one with the best return.
+
+This thesis is obviously false, but provides a good way to demonstrate the functionality of these scripts.
+
+### Execution
+
+Provided a researcher does not need to make any modifications to the backtester code (which does not diminsh reproducability because changes show up in the git commit logs), there are only two files which need to be configured.
 
 
-# Setting up the environment
-1. Spin up docker container - supply sample code
-1. create project from version control - supply ui directions
+#### `parameters.R` file
+
+The `parameter.R` file looks as follows:
+
+```{r, eval=FALSE, echo=TRUE}
+# Define parameters
+# Set seed for reproducibility
+set.seed(42)
+
+###############################################################
+# REPORTING PARAMETERS
+annual_risk_free_rate <- 0.04
+daily_risk_free_rate <- (1+annual_risk_free_rate)**(1/365.25)-1
+
+##############################################################
+# SIMULATED DATA PARAMETERS - ONLY IMPORTANT IF CREATING SIMULATED DATASET
+# Index name
+index <- "RISK_FREE_GROWERS"
+# Universe size
+universe_size <- 200
+# Average Daily Stock Growth Rate
+annual_stock_growth_rate <- annual_risk_free_rate + 0.04
+stock_growth_rate <- (1 + annual_stock_growth_rate)**(1/365.25)-1
+# Index Coverage of Universe (eg index of 10 stocks on universe of 100 stocks is 1/10)
+index_coverage <- 1 # this is how much of the universe is in the index. So 1/4 would have an index of 50 from a universe of 200.
+# Timeframe
+end_simulation <- Sys.Date() # end dataset creation today
+# start backtest
+start_simulation <- end_simulation - 365*50 # first data 50 years ago
+# standard deviation of daily price jumps (percentage)
+price_jump_stddev <- 0.02
+# standard deviation of quarterly variation in earnings yield from long run mean (percentage)
+earnings_yield_stddev <- 0.2
+# standard deviation of quarterly variation in payout ratio from long run mean (percentage)
+payout_ratio_stddev <- 0.1
+
+#################################################################
+# TRADING PARAMETERS
+
+# Mode - either LIVE or BACKTEST
+run_mode <- "BACKTEST"
+# Heartbeat duration: how long between heartbeats (seconds)
+# I chose 12 hours - twice a day
+heartbeat_duration <- 60*60*12
+# rebalancing period: how long between portfolio rebalancing (seconds)
+rebalancing_periodicity <- 60*60*24*30*10^6 # the extra 10^6 ensures never rebalance
+
+# Universe
+constituent_index <- "RISK_FREE_GROWERS"
+data_source <- "simulated"
+
+# Specify price and volume fields
+# Simulated
+price_related_data <- c("date", "open", "high", "low", "close", "last")
+volume_data <- c("date", "volume")
+market_metrics <- c()
+fundamental_metrics <- c() 
+
+# Timeframe
+start_backtest <- "2010-01-01" # inclusive
+end_backtest <- "2015-12-01" # not inclusive
+
+# Portfolio characteristics
+portfolio_starting_configs <- c("CASH", "STOCK")
+portfolio_starting_config <- "CASH"
+portfolio_starting_value <- 1000000
+cash_buffer_percentage <- 0.02 # decimal form
+#cash_yearly_compounding_rate <- 0.05 # decimal form not implemented yet
+
+# Trading characteristics
+commission_rate <- 0.001
+minimum_commission <- 0
+standard_spread <- 0.002
+soft_rebalancing_constraint <- 0.01 # don't trade if this close to perfect balance
+
+##############################################################
+# Process parameters
+# * DON'T MODIFY * #
+allowed_modes <- c("LIVE", "BACKTEST")
+# Convert to date format
+library(lubridate)
+start_backtest <- ymd(start_backtest)
+end_backtest <- ymd(end_backtest)
+
+# Check parameter health
+if(!(run_mode %in% allowed_modes)) {
+  stop("Set a correct mode in parameters.R: Either LIVE or BACKTEST.")
+} 
+print(paste("Parameters file specifies", run_mode, "mode."))
+```
+
+
+#### `trials` scripts
+
+There is a sample of a random-weighting algorithm at `scripts/trading/sample_trials/random_trial_1.R`. The exact algorithm is - 
+
+```{r, eval=FALSE, echo=TRUE}
+# Expects: a runtime ticker dataset. Metrics optional.
+compute_weights <- function(algo_data, metrics) {
+  algo_start <- Sys.time()
+  # 1. CUT THE DATASET DOWN TO SIZE
+  # Drop all entries except the latest one
+  algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
+  # 2. COMPUTE AGGREGATE MEASURE
+  number_tickers <- length(algo_data)
+  raw_weights <- sample(runif(number_tickers))
+  target_weight <- raw_weights/sum(raw_weights)
+  # CREATE LIST OF TICKER NAMES
+  portfolio_members <- names(algo_data)
+  # PAIR EACH TICKER TO ITS WEIGHT
+  target_weights <- data.frame(portfolio_members, target_weight)
+  target_weights$portfolio_members <- as.character(target_weights$portfolio_members)
+  algo_end <- Sys.time()
+  print(paste("INFO: Algorithm runtime:", algo_end - algo_start, "seconds."))
+  # RETURN TARGET WIEGHTS DATA FRAME
+  return(target_weights)
+}
+```
+
+In order to run many of these we write 150 copies of the algorithm into the `trials/` directory. Because `seed()` is only set once in a backtest run, each of these trials will have different results even though the code is identical.
+
+```{r, eval=FALSE}
+dir.create("trials")
+
+sample <- "scripts/trading/sample_trials/random_trial_1.R"
+
+for (i in seq_along(1:100)) {
+  file.copy(sample, paste("trials/random_trial_",
+                          i+1,
+                          ".R", 
+                          sep=""))
+}
+```
+
+
+### Results
+
+
+
+## Bloomberg Example
 
 # QUERYING DATA
 
@@ -175,7 +345,7 @@ Things we are concerned with -
 
 
 
-```{r}
+```{r, eval=FALSE}
 marketdata_tickers_of_interest <- constituent_tickers$ticker %>% gsub(" ", "_", ., fixed = TRUE) %>% paste(.,"feather", sep=".")
 
 read_feather(marketdata_tickers_of_interest[i] %>% file.path(dataset_directory, "ticker_market_data",.))

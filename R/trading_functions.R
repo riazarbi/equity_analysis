@@ -58,8 +58,9 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
   runtime_ticker_data <- lapply(runtime_ticker_data, 
                                 function(x) x %>% select_if(not_all_na))
   # CLEANUP: Drop dataframes that don't have necessary fields
+  # This only drops those tickers that don't have market metrics and fundamentalS metrics
   print("ACTION: Dropping tickers that don't have enough data for algorithm to run")
-  for (metric in metrics) {
+  for (metric in c(market_metrics, fundamental_metrics)) {
     for (tick in names(runtime_ticker_data)){
       if(!(metric  %in% colnames(runtime_ticker_data[[tick]]))) {
         print(paste("Dropping", tick, "because it is missing metric", metric))

@@ -9,30 +9,42 @@
 # EACH ELEMENT OF LIST HAS -
 # Date Column
 # Arbitrary number of other columns, each of which is an attribute of the list element
+# algo_data <- runtime_ticker_data
+# sum(target_weights$target_weight)
 
 # STRATEGY DESCRIPTION
-# This function will assign random weights to constituents that sum to 1. 
-
-
 compute_weights <- function(algo_data, metrics) {
   algo_start <- Sys.time()
-  # 1. CUT THE DATASET DOWN TO SIZE
-  # Keep only the necessary fields
-  #algo_data <- algo_data %>% select(metrics)
-  #print(colnames(algo_data))
+  # 1. SELECT A RANDOM SUBSET
+  threshold <- runif(1)
+  p <- rep(threshold, length(algo_data))
+  drop_stock <- runif(length(p)) < p
+  print(paste("Dropping", sum(drop_stock),"/", length(algo_data), "stocks..."))
+  algo_data[which(drop_stock)] <- NULL
   # Drop all entries except the latest one
   algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
-  # 2. COMPUTE AGGREGATE MEASURE
-  number_tickers <- length(algo_data)
-  raw_weights <- sample(runif(number_tickers))
-  target_weight <- raw_weights/sum(raw_weights)
-  # CREATE LIST OF TICKER NAMES
+  
+  # 2. RANDOMLY WEIGHT TICKERS
+  # 2. WEIGHT THE SURVIVORS 
+  # specify the market_cap field for weighting purposes
+  algo_data <- lapply(algo_data, function(x) x <- x %>%
+                        mutate(market_cap = CUR_MKT_CAP))
+  # Drop all entries except the latest one
+  algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
+  # Compute the index market cap
+  index_mkt_cap <- algo_data %>% map(function(x) sum(x$market_cap)) %>% reduce(`+`)
+  # ASSIGN WEIGHTS AS % OF AGGREGATE
+  target_weight <- sapply(algo_data, function(x) sum(x$market_cap)/index_mkt_cap )  
+  
+  # 3. CREATE LIST OF TICKER NAMES
   portfolio_members <- names(algo_data)
-  # PAIR EACH TICKER TO ITS WEIGHT
+  
+  # 4. PAIR EACH TICKER TO ITS WEIGHT
   target_weights <- data.frame(portfolio_members, target_weight)
   target_weights$portfolio_members <- as.character(target_weights$portfolio_members)
   algo_end <- Sys.time()
   print(paste("INFO: Algorithm runtime:", algo_end - algo_start, "seconds."))
-  # RETURN TARGET WIEGHTS DATA FRAME
+  
+  # 5. RETURN TARGET WIEGHTS DATA FRAME
   return(target_weights)
 }

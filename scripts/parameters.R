@@ -36,7 +36,7 @@ payout_ratio_stddev <- 0.1
 run_mode <- "BACKTEST"
 # Heartbeat duration: how long between heartbeats (seconds)
 # I chose 12 hours - twice a day
-heartbeat_duration <- 60*60*12
+heartbeat_duration <- 60*60*24*5
 # rebalancing period: how long between portfolio rebalancing (seconds)
 rebalancing_periodicity <- 60*60*24*30
 
@@ -58,8 +58,8 @@ market_metrics <- c("CUR_MKT_CAP")
 fundamental_metrics <- c() 
 
 # Timeframe
-start_backtest <- "2010-01-01" # inclusive
-end_backtest <- "2010-12-01" # not inclusive
+start_backtest <- "2014-01-01" # inclusive
+end_backtest <- "2019-01-01" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
@@ -90,4 +90,9 @@ if(!(run_mode %in% allowed_modes)) {
 print(paste("Parameters file specifies", run_mode, "mode."))
 
 # Build a vector of the necessary metrics
-metrics <- c(market_metrics, fundamental_metrics)
+metrics <- c(market_metrics, 
+             fundamental_metrics, 
+             price_related_data, 
+             last_price_field, 
+             volume_data) %>% 
+                          unique(.)
