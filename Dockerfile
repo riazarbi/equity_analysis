@@ -1,4 +1,5 @@
-FROM rocker/tidyverse:3.5.1
+FROM cityofcapetown/datascience:rstudio_shiny
+#FROM rocker/tidyverse:3.5.1
 
 # Installing R packages
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
