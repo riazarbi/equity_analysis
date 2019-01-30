@@ -19,5 +19,4 @@ RUN useradd rstudio
 RUN mkdir /home/rstudio/ && \
     cd /home/rstudio/ && \
     git clone --single-branch --branch bloomberg https://github.com/riazarbi/equity_analysis.git && \
-    cd .. && \
     chmod -R 777 equity_analysis
