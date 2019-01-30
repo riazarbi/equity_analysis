@@ -16,7 +16,7 @@
 compute_weights <- function(algo_data, metrics) {
   algo_start <- Sys.time()
   # 1. SELECT A RANDOM SUBSET
-  threshold <- runif(1)
+  threshold <- runif(1) * 0.8
   p <- rep(threshold, length(algo_data))
   drop_stock <- runif(length(p)) < p
   print(paste("Dropping", sum(drop_stock),"/", length(algo_data), "stocks..."))
