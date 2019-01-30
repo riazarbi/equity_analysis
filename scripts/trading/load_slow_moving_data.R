@@ -139,6 +139,22 @@ ticker_data <- lapply(ticker_data,
 print("Dropping unnecessary fields.")
 ticker_data <- lapply(ticker_data, function(x) x <- x %>%
                       select(one_of(metrics)))
+
+# CLEANUP: drop dataframes that don't have volume or last_price data
+for (tick in names(ticker_data)){
+  if(length(volume_data) != sum(volume_data  %in% colnames(ticker_data[[tick]]))) {
+    print(paste("Dropping", tick, "because it is missing volume data"))
+    ticker_data[[tick]] <- NULL
+  }
+}
+
+for (tick in names(ticker_data)){
+  if(length(last_price_field) != sum(last_price_field  %in% colnames(ticker_data[[tick]]))) {
+    print(paste("Dropping", tick, "because it is missing last_price data"))
+    ticker_data[[tick]] <- NULL
+  }
+}
+
 # Get object size of test data
 print(paste("Slow Moving Data object size:", 
             format(object.size(ticker_data), units="auto", standard = "IEC")))
