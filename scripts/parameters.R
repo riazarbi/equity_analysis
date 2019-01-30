@@ -32,22 +32,22 @@ payout_ratio_stddev <- 0.1
 ################################################################
 # INDEX SPECIFIC TRADING PARAMETERS
 # Bloomberg
-constituent_index <- "JALSH"
-data_source <- "bloomberg"
-price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_OFFICIAL_CLOSE", "PX_LAST")
-last_price_field <- c('date', 'PX_LAST') 
-volume_data <- c("date", "VOLUME")
-market_metrics <- c("CUR_MKT_CAP")
-fundamental_metrics <- c() 
+#constituent_index <- "JALSH"
+#data_source <- "bloomberg"
+#price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_OFFICIAL_CLOSE", "PX_LAST")
+#last_price_field <- c('date', 'PX_LAST') 
+#volume_data <- c("date", "VOLUME")
+#market_metrics <- c("CUR_MKT_CAP")
+#fundamental_metrics <- c() 
 
 # Simulated
-#constituent_index <- "RISK_FREE_RANDOMS"
-#data_source <- "simulated"
-#price_related_data <- c("date", "open", "high", "low", "close", "last")
-#last_price_field <- c('date', 'last')
-#volume_data <- c("date", "volume")
-#market_metrics <- c("market_cap")
-#fundamental_metrics <- c()
+constituent_index <- "RISK_FREE_RANDOMS"
+data_source <- "simulated"
+price_related_data <- c("date", "open", "high", "low", "close", "last")
+last_price_field <- c('date', 'last')
+volume_data <- c("date", "volume")
+market_metrics <- c("market_cap")
+fundamental_metrics <- c()
 
 #################################################################
 # GENERAL TRADING PARAMETERS
