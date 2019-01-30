@@ -178,7 +178,8 @@ price_data <- lapply(ticker_data,
          w <- x %>% 
            dplyr::select(one_of(last_price_field)) %>% 
            rename(last = !!names(.[2]))
-         x <- full_join(w, x, by = "date")
+         x <- full_join(w, x, by = "date") %>%
+           rename(last = !!names(.[2])) # in the event that last exists in both dataframes this fixes it.
          # impute: replace NA in max_price, min_price and last with last known value
          # impute: replace NA in volume with zero
          x <- x %>% fill(max_price, min_price, last) %>% 

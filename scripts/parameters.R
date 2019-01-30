@@ -10,7 +10,7 @@ daily_risk_free_rate <- (1+annual_risk_free_rate)**(1/365.25)-1
 ##############################################################
 # SIMULATED DATA PARAMETERS - ONLY IMPORTANT IF CREATING SIMULATED DATASET
 # Index name
-index <- "RISK_FREE_GROWERS"
+index <- "RISK_FREE_RANDOMS"
 # Universe size
 universe_size <- 200
 # Average Daily Stock Growth Rate
@@ -35,14 +35,15 @@ payout_ratio_stddev <- 0.1
 # Mode - either LIVE or BACKTEST
 run_mode <- "BACKTEST"
 # Heartbeat duration: how long between heartbeats (seconds)
-# I chose 12 hours - twice a day
-heartbeat_duration <- 60*60*24*5
+heartbeat_duration <- 60*60*24*5 # every 5 days
 # rebalancing period: how long between portfolio rebalancing (seconds)
-rebalancing_periodicity <- 60*60*24*30
+rebalancing_periodicity <- 60*60*24*30 # every 30 days
 
 # Universe
 constituent_index <- "JALSH"
 data_source <- "bloomberg"
+# constituent_index <- "RISK_FREE_RANDOMS"
+# data_source <- "simulated"
 # Specify price and volume fields
 # Bloomberg
 price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_OFFICIAL_CLOSE", "PX_LAST")
@@ -54,8 +55,12 @@ volume_data <- c("date", "VOLUME")
 # volume_data <- c("date", "volume")
 
 # Specify algorithm fields
+# Bloomberg
 market_metrics <- c("CUR_MKT_CAP")
 fundamental_metrics <- c() 
+# Simulated
+#market_metrics <- c("market_cap")
+#fundamental_metrics <- c()
 
 # Timeframe
 start_backtest <- "2014-01-01" # inclusive
