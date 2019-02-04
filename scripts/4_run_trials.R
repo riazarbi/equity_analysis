@@ -20,7 +20,6 @@ source("R/live_trading_functions.R")}
 all_trials_begin <- Sys.time()
 # Create temp directory
 temp_path <- file.path(working_directory, "temp")
-dir.create(temp_path, showWarnings = FALSE)
 # Get a list of trials
 trials <- list.files(trial_directory)
 # length_of_trials

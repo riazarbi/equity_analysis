@@ -1,32 +1,36 @@
 # Start logging to a file
-unlink("console_log")
-sink("console_log", split=TRUE)
+#unlink("console_log")
+#sink("console_log", split=TRUE)
 
 # Install required packages
-list.of.packages <- c("Rblpapi", 
+list_of_packages <- c("Rblpapi", 
                       "here", 
                       "doParallel", 
                       "xts",
                       "dygraphs",
-                      "pbo")
+                      "pbo",
+                      "gridExtra",
+                      "viridis")
 
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages)
+new_packages <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+rm(list_of_packages, new_packages)
 
 # Reset all directories
-delete_data <- readline(prompt=paste("Delete all datasets and datalog? [N/y]: ", sep=" "))
+delete_data <- readline(prompt=paste("Delete all datasets? Datalogs will not be removed. [N/y]: ", sep=" "))
 if(delete_data == "y") {
   print("Deleting all datasets...")
-  unlink("data", recursive=T )
+  unlink("data/datasets", recursive=T )
+  rm(delete_data)
 } else {
-  print("Not deleting all datasets and datalog...")
+  print("Not deleting all datasets...")
 }
-
 # Delete trials
 delete_trials <- readline(prompt=paste("Delete all files in the trials directory? [N/y]: ", sep=" "))
 if(delete_trials == "y") {
   print("Deleting all files in the trials directory...")
   unlink("trials", recursive=T)
+  rm(delete_trials)
   # Copy in the sample trials
   dir.create("trials")
   print("Copying in samples to the trials directory...")
@@ -51,17 +55,20 @@ source("scripts/1_query_source.R")
 print("Running 2_process_data.R")
 source("scripts/2_process_data.R")
 
-print("Running 3_run_trials.R")
-source("scripts/3_run_trials.R")
+print("Running 3_load_data.R")
+source("scripts/3_load_data.R")
 
-print("Running 4_report_parallel.R")
-source("scripts/4_report_parallel.R")
+print("Running 4_run_trials.R")
+source("scripts/4_run_trials.R")
 
-print("Running 5_cross_validate.R")
-source("scripts/5_cross_validate.R")
+print("Running 5_report_parallel.R")
+source("scripts/5_report_parallel.R")
+
+print("Running 6_cross_validate.R")
+source("scripts/6_cross_validate.R")
 
 # Stop logging to a file
-sink(type="message")
-sink()
+#sink(type="message")
+#sink()
 # Move the logfile to results
-file.rename("console_log", "results/console_log")
+#file.rename("console_log", "results/console_log")

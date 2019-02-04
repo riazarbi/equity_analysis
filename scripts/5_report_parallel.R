@@ -18,7 +18,11 @@ results_directories <- results_directories[-1]
 print(paste("Directory Found:" , results_directories))
 
 # Load slow moving data
-source("scripts/trading/load_slow_moving_data.R")
+print("Loading slow moving data...")
+ticker_data <- readRDS("temp/ticker_data.Rds")
+price_data <- readRDS("temp/price_data.Rds")
+metadata <- readRDS("temp/metadata.Rds")
+constituent_list <- readRDS("temp/constituent_list.Rds")
 
 ####################################################################################################
 library(foreach)

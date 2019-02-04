@@ -1,0 +1,287 @@
+---
+title: "Data Quality Report"
+date: '`r strftime(Sys.time(), format = "%B %d, %Y")`'
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+    toc_depth: '2'
+    fig_width: 8
+    fig_height: 4
+
+---
+```{r, include = F}
+knitr::opts_chunk$set(echo = F,
+                      warning = F,
+                      message = F)
+
+## Set options
+options(scipen = 999, # prevent scientific notation on large numbers
+        stringsAsFactors = F) # prevent R from turning everything to factors
+```
+
+
+```{r load_data, echo=F, warnings=F, message=F}
+working_directory <- here::here()
+load(file.path(working_directory,"temp/data_report.RData"))
+library(tidyverse)
+library(lubridate)
+library(xts)
+library(factoextra)
+library(cluster)
+library(dygraphs)
+library(ggExtra)
+```
+
+## Source:    `r data_source` 
+## Index:     `r constituent_index`
+## Window:    `r start_backtest` to `r end_backtest`
+
+```{r, eval=F}
+knitr::kable(metrics_of_interest <- unique(unlist(lapply(ticker_data, function(x) colnames(x)))), 
+             caption = "Metrics that Appear in Ticker Data",
+             col.names = c("Metrics"))
+```
+
+```{r, eval=F}
+knitr::kable(unique(c(volume_data, price_related_data, last_price_field)), 
+             caption = "Required for Scoring",
+             col.names = c("Metrics"))
+```
+
+
+
+# Datalog to Dataset Validation
+
+```{r}
+# get a list of all data types
+knitr::kable(unique(datalog$data_type), caption = "Data Types in Datalog", col.names = c("Data Type"))
+```
+
+By design, all data that enters this environment lands in the `datalog` directory. From there, it is deduplicated and placed in a directory struture under the `datasets` directory.
+
+At present, the datalog contains `r number_datalog_files` files, of which `r number_feather_files` and `feather` files and `r number_csv_files` are `csv` files. these numbers shouldbe equal if the `csv` to `feather` conversion is working as intended.
+
+The following table provides tocker counts from both the `datalog` and `dataset` directories. These numbers should be identical in each directory. Note that there may be differing numbers of market and funamental tickers, since some market tickers share an ISIN and, therefore, fundamental data.
+
+|Metric               |Datalog   |Dataset   |
+|---------------------|----------|---|
+|Market tickers       |`r nrow(datalog_unique_market_tickers)`   |  `r length(dataset_market_tickers)` |
+|Fundamental tickers  |`r nrow(datalog_unique_fundamental_tickers)` | `r length(dataset_fundamental_tickers)`   |
+
+
+# Raw Dataset health
+
+We now explore the dataset directory. In order to keep this relevant to the current backtest, we look only at `r constituent_index` results from the `r data_source` data source. The loaded dataset is limited to the fields specified by the `metrics` computed parameter at the bottom of the `parameters` file. If no `fundamental_metrics` of `market_metrics` are specified, all metrics found in the dataset are retained by default.
+
+## Market Data Field Completeness
+
+The following plot shows the percentage of entries in the loaded dataset that are `NA`, broken down by field and month. This gives us a high-level view of the completeness of the dataset and helps us determine a good start and end date for our backtests. We want to include as much blue in our backtest window as possible. 
+
+Note that this plot excludes fundamental data. Fundamental data has much lower periodicity, so most of the entries will be `NA`. In practice, these values are backfilled with the last known value after imposing a lag. Backfilling for the purposes of this analysis does not provide us with any useful information because a ticker can have a single entry at the beginning of the dataset that fills all subsequent dates. That entry will be stale and affect the backtest. Therefore dataset quality cannot be assessed by looking at `NA` values each month. 
+
+```{r}
+monthly_nas_plot
+
+dygraph(monthly_nas_averages*100, 
+                          main = "Market Data Monthly NA Averages", 
+                          ylab = "% NA") %>%
+                              dyLegend(width = 600, show = "follow") %>%
+                              dyOptions(maxNumberWidth = 20, stackedGraph = FALSE) %>%
+                              dyRangeSelector %>%
+                              dyHighlight(highlightSeriesOpts = list(strokeWidth = 3))
+
+
+```
+
+As mentioned above, `NA` values are backfilled at runtime, so it is possible to run a backtest free of look ahead bias with spotty data. But the accuracy of the results may suffer. If the `NA` proportion is unacceptably high, a tester has two options. 
+
+1. Go and collect more data
+2. Devise a test that does not require the worst offending fields and run the data quality test again.
+
+## Ticker Completeness
+
+There are `r nrow(constituent_tickers)` unique tickers in the index, and `r nrow(metadata_tickers)` metadata tickers in the index. A mismatch between these two figures indicates that some tickers may be dropped during the course of the backtest because of insufficient metadata. In order to run a quality backtest, we need to have metadata, market data and fundamental data available for as many constituents as possible. Each rebalancing round, constituents without enough data will be dropped.
+
+A ticker without any metadata will be dropped from the backtest. A ticker with incomplete metadata may be dropped if the metadata fields are relevant (eg a sector-specific algorithm). A ticker without fundamental data may be dropped from the backtest if fundamental data is used in the backtest. 
+
+```{r}
+
+knitr::kable(constituents_without_metadata, 
+             caption = "Constituents without Metadata", 
+             col.names = c("Ticker")) # elements in constituent tickers but not in metadata
+# note - metadata doesn't have awareness of indexes
+knitr::kable(constituents_without_marketdata, 
+             caption = "Constituents without Market Data", 
+             col.names = c("Ticker"))
+knitr::kable(constituents_without_fundamentals, 
+             caption = "Constituents without Fundamental Data", 
+             col.names = c("Ticker"))
+```
+
+## Fundamental Data Population Subsetting
+
+Some data sources adjust fundamental data for look ahead bias, others do not. Sometimes adjustment is a parameter that is set in the user's account, which can change over time on a shared terminal. We therefore try to identify whether fundamental data has been adjusted for look-ahead bias or not. 
+
+This situation is complicated by the fact that some data sources will lag some data but not others. Ideally all daily data that does not need lag adustment should reside in the `marketdata` datasets. But sometimes this is not possible. For example, Bloomberg market data is tied to exchange which a ticker is trading on, but fundamental data is tied to the ticker's fundamental ticker, which could be on another exchange. Querying daily fundamental data on the market data ticker may result in an `NA`, even if the data is not lagged. Querying these metrics on the fundamental ticker will yield meaningful data, but at the cost that the data will be mixed up with slow-moving financial statement data that requires adjustment. 
+
+Plotting the number of occurrences of each metric can tell us if there is a mixed dataset. A mixed dataset will have two obviously different populations. 
+
+The below plot shows the silhouette of a k-means clustering algorithm run on a range of assumed cluster counts. The x-axis number corresponding to the maximum y-axis value is the probable number of clusters.
+
+```{r}
+fundamental_metrics_silhouette_plot
+```
+
+The different populations of metrics are auto-labeled by using k-means clustering on observation counts for a recent sample. This backtester assumes there is either one or two clusters. If there is one cluster, the lag operation specified in the `parameters` file is applied to the entire dataset. If there are two clusters, the lag operation is applied only to those metrics that are part of the cluster with the lowest number of counts. 
+
+```{r}
+
+fundamental_metric_clusters_plot + ylab("Cumulative Number of Occurrences") + xlab("Metric") + removeGrid()
+```
+
+## Fundamental Data Lag Adjustment
+
+The lag adjustment specified in the `parameters` file is applied to the metrics identified as being part of the cluster of least-occurring metrics above. This lag parameter is reckoned in days. 
+
+Financial years tend to follow a strong pattern of official releases at the end of the quarter, half-year, or year. We can plot counts of releases of financial information to see if they cluster around these dates. If so, a lag should be imposed. The duration of the lag requires a judgment call from the tester; this lag is set in the `parameters` file. 
+
+The most frequently occurring dates in the lag metrics dataset is shown below. These figures are derived from the raw data and will not adjust to the lag parameters in the parameters file.  
+
+```{r}
+knitr::kable(most_frequent_lag_dates, 
+             caption = "Top 7 Frequency Counts per Date Among Lag Metrics",
+             col.names = c("Date", "Occurrences"))
+```
+
+If there are any lag adjusted metrics in the metric-filtered dataset, the most frequently occurring dates in the **lag-adjusted** metrics will be shown below. There should be a direct relationship between these dates and the dates above (ie each date above should be `r fundamental_data_lag_adjustment`) days ahead of the dates below.
+
+```{r}
+if(exists("lag_adjusted_date_counts")) {
+knitr::kable(lag_adjusted_date_counts, 
+             caption = "Top 7 Frequency Counts per Date Among Lag-Adjusted Metrics, 10% Sample",
+             col.names = c("Date", "Occurrences")) 
+}
+```
+
+
+# Data Quality in the Backtest Window
+
+## Per ticker quality check
+
+Overall completeness checks are a good first pass, but they do not tell us how healthy teach ticker's data is. Tickers can exist in the dataset but have such poor information that they are excluded at runtime because an appropriate weight (or price) cannot be assigned to them.
+
+In order to assess dataset quality, we investigate what percentage of the entries in a dataset are missing. That is, in a dataset of dimensions `m x n`, we compute what percentage of the `m x n` entries return `NA`.
+
+### Metadata health check
+
+Approximately `r percent_missing_metadata`% of the metadata dataset are missing. Tickers missing from the metadata dataset are detailed above. The fields which contain `NA` values are as follows.
+
+```{r}
+knitr::kable(colnames(incomplete_metadata), col.names = c("Fields containing NA"))
+```
+
+Missing metadata is not necessarily a problem, as it is sometimes not needed for a backtest. However, if it is a critical field, such as the `fundamental_identifier`, then tickers missing that data will be dropped from the backtest.
+
+## Marketdata health check
+
+We need to check the health of each ticker's dataset and create a score. Then we can compare across stocks to get a view of our total dataset health.
+
+Things we are concerned with - 
+
+1. Field coverage: is there market data for each date for each field? For price-related data, this can be addressed by imputation. At present, the market price of a trade is a simulate random number between the highest and lowest known price for that date. A ticker therefore needs at least two prices for each day (although those fields could be different day to day). The backtest needs at least *some* volume data, and a lasdt price each day. If this is missing, the ticker will be dropped.
+1. Temporal coverage: is there market data for each date the ticker appears in constituent list? If a ticker has some data in all fields, then it will generally be part of the overall dataset and considered for inclusion at each rebalancing. Each rebalancing period each ticker is checked to verify that volume and price data can be inferred. If not, it will be dropped for that period only.
+1. Distribution: are there any weird outlier values? How many? Discontinuous shifts may occur in the data. Ths could be a data error from the vendor, or the result of a share split or other corporate action. These discontinuous shifts need to be checked for and addressed on a case-by-case basis.
+
+### Completeness Scores
+
+
+```{r}
+knitr::kable(round(all_quantiles,3), 
+             caption = "NA Quantiles for all Market Related Metrics",
+             col.names = "Proportion")
+```
+
+75% of the tickers in the dataset have about 1 NA per `r 1/as.numeric(all_quantiles[4])` entries in each field group. The worst ticker has `r as.numeric(all_quantiles[5])*100`% of the entries missing for a field group.
+
+
+```{r}
+knitr::kable(na_scores %>% select(-ticker) %>% colMeans() %>% round(.,3), 
+             caption = "Proportion of Metrics that are NA",
+             col.names = "Proportion")
+```
+
+We plot the histograms of NA occurrences per ticker per group. To aid in readability, we clip this to the lower 90% of the ticker population.
+
+```{r}
+library(gridExtra)
+library(grid)
+
+na_clip <- quantile(as.matrix(na_scores %>% select(-ticker)), c(0.90))
+
+hist_scale <- round(na_clip,3)
+
+score_metric <- colnames(na_scores)[-length(colnames(na_scores))]
+
+h1 <- na_scores %>% ggplot() + aes(`Overall Market Fields`) + 
+  geom_histogram(breaks=seq(0, hist_scale, by=hist_scale/20))
+
+h2 <- na_scores %>% ggplot() + aes(`Algo Market Fields`) + 
+  geom_histogram(breaks=seq(0, hist_scale, by=hist_scale/20))
+
+h3 <- na_scores %>% ggplot() + aes(`Price Related Fields`) + 
+  geom_histogram(breaks=seq(0, hist_scale, by=hist_scale/20))
+
+h4 <- na_scores %>% ggplot() + aes(`Overall Market Fields`) + 
+  geom_histogram(breaks=seq(0, hist_scale, by=hist_scale/20))
+
+h5 <- na_scores %>% ggplot() + aes(`Volume`) + 
+  geom_histogram(breaks=seq(0, hist_scale, by=hist_scale/20))
+
+h6 <- na_scores %>% ggplot() + aes(`Last Price`) + 
+  geom_histogram(breaks=seq(0, hist_scale, by=hist_scale/20))
+
+grid.arrange(h1, h2, 
+             ncol=2, 
+             top=textGrob("Histogram of NA proportion per ticker, clipped to 90th Percentile", gp=gpar(fontsize=14)))
+
+grid.arrange(h3, h4, 
+             ncol=2, 
+             top=textGrob("Histogram of NA proportion per ticker, clipped to 90th Percentile", gp=gpar(fontsize=14)))
+
+grid.arrange(h5, h6, 
+             ncol=2, 
+             top=textGrob("Histogram of NA proportion per ticker, clipped to 90th Percentile", gp=gpar(fontsize=14)))
+
+
+knitr::kable(bottom_10_stats %>% round(.,3), 
+             caption = "Proportion of Metrics that are NA (Worst 10%)",
+             col.names = "Proportion")
+
+```
+
+Note that these statistics do not correct for the fact that ticker may be delisted. If a ticker delists, its entries will return `NA`. Computing `NA` scores adjusting for period-on-period exclusion requires looping these computations over each date in the constituent lists.
+
+The price related, volume and last price fields can be imputed so some extent. But the algo market fields cannot, and this will result in tickers being dropped from the portfolio computations.
+
+### Split and adjustment detection
+
+Raw data may not be adjusted for splits and other corporate actions.
+
+
+## Fundamental data health check
+
+Fundamental data is only released on a periodic basis, so we cannot expect to have data entries every day. Fundamental data that is put into a daily `dataframe` structure will have many `NA` entries. Our dataset creation algorithm backfills these `NA` values with the last known value when the data is being loaded into memory.
+
+# Complete Market Data Field List
+
+```{r}
+complete_market_field_list
+```
+
+# Complete Fundamental Data Field List
+
+```{r}
+complete_fundamental_field_list
+```

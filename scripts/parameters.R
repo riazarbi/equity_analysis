@@ -29,8 +29,37 @@ earnings_yield_stddev <- 0.2
 # standard deviation of quarterly variation in payout ratio from long run mean (percentage)
 payout_ratio_stddev <- 0.1
 
-#################################################################
-# TRADING PARAMETERS
+##################################################################
+# INDEX SPECIFIC TRADING PARAMETERS
+# Bloomberg
+constituent_index <- "JALSH"
+data_source <- "bloomberg"
+price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")
+last_price_field <- c('date', 'PX_LAST') 
+volume_data <- c("date", "VOLUME")
+#market_metrics <- c("CUR_MKT_CAP", 
+#                    "TOT_RETURN_INDEX_GROSS_DVDS", 
+#                    "TOT_RETURN_INDEX_GROSS_DVDS",
+#                    "DAY_TO_DAY_TOT_RETURN_GROSS_DVDS")
+fundamental_metrics <- c() 
+market_metrics <- c()
+# Simulated
+# constituent_index <- "RISK_FREE_RANDOMS"
+# data_source <- "simulated"
+#price_related_data <- c("date", "open", "high", "low", "close", "last")
+#last_price_field <- c('date', 'last')
+# volume_data <- c("date", "volume")
+# market_metrics <- c("market_cap")
+#fundamental_metrics <- c()
+
+# Specify if fundamental data needs lag adjustment
+# we use k-means clustering to tag the metrics for adjustment or not.
+# if only 1 cluster, all will be lagged. If more then 1 cluster, only the slowest-updated metrics will be lagged.
+fundamental_data_metric_types <- "auto" # auto will auto-detect number of clusters. Override with a number if you want.
+fundamental_data_lag_adjustment <- 120 # days. How many do you want to shift your fundamental data back? 
+
+##################################################################
+# GENERAL TRADING PARAMETERS
 
 # Mode - either LIVE or BACKTEST
 run_mode <- "BACKTEST"
@@ -38,29 +67,6 @@ run_mode <- "BACKTEST"
 heartbeat_duration <- 60*60*24*5 # every 5 days
 # rebalancing period: how long between portfolio rebalancing (seconds)
 rebalancing_periodicity <- 60*60*24*30 # every 30 days
-
-# Universe
-constituent_index <- "JALSH"
-data_source <- "bloomberg"
-# constituent_index <- "RISK_FREE_RANDOMS"
-# data_source <- "simulated"
-# Specify price and volume fields
-# Bloomberg
-price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_OFFICIAL_CLOSE", "PX_LAST")
-last_price_field <- c('date', 'PX_LAST') 
-volume_data <- c("date", "VOLUME")
-# Simulated
-#price_related_data <- c("date", "open", "high", "low", "close", "last")
-#last_price_field <- c('date', 'last')
-# volume_data <- c("date", "volume")
-
-# Specify algorithm fields
-# Bloomberg
-market_metrics <- c("CUR_MKT_CAP")
-fundamental_metrics <- c() 
-# Simulated
-#market_metrics <- c("market_cap")
-#fundamental_metrics <- c()
 
 # Timeframe
 start_backtest <- "2014-01-01" # inclusive

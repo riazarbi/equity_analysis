@@ -54,12 +54,18 @@ repeat{
   print("CHECK: Has slow-moving data been loaded into memory?")
   # Load it if it hasn't already been
   if(!exists("ticker_data_load_date")){
-    print("WARNING: Slow moving data has not been loaded.")
-    source("scripts/trading/load_slow_moving_data.R")
+    print("WARNING: Slow moving data has not been loaded. Loading now...")
+    ticker_data <- readRDS("temp/ticker_data.Rds")
+    price_data <- readRDS("temp/price_data.Rds")
+    metadata <- readRDS("temp/metadata.Rds")
+    constituent_list <- readRDS("temp/constituent_list.Rds")
   # or load it if it was last loaded more than a day ago
   } else if (difftime(begin, ticker_data_load_date,  units="days") >= 1) {
-    print("WARNING: Slow moving data was loaded more than 24 hours ago, and might be stale.")
-    source("scripts/trading/load_slow_moving_data.R")
+    print("WARNING: Slow moving data was loaded more than 24 hours ago, and might be stale. Reloading...")
+    ticker_data <- readRDS("temp/ticker_data.Rds")
+    price_data <- readRDS("temp/price_data.Rds")
+    metadata <- readRDS("temp/metadata.Rds")
+    constituent_list <- readRDS("temp/constituent_list.Rds")
   } else { 
     print("OK: Slow moving data is loaded and not stale.")}
   
