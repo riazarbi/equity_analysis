@@ -35,14 +35,11 @@ payout_ratio_stddev <- 0.1
 constituent_index <- "JALSH"
 data_source <- "bloomberg"
 price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")
-last_price_field <- c('date', 'PX_LAST') 
+last_price_field <- c('date', "TOT_RETURN_INDEX_GROSS_DVDS") 
 volume_data <- c("date", "VOLUME")
-#market_metrics <- c("CUR_MKT_CAP", 
-#                    "TOT_RETURN_INDEX_GROSS_DVDS", 
-#                    "TOT_RETURN_INDEX_GROSS_DVDS",
-#                    "DAY_TO_DAY_TOT_RETURN_GROSS_DVDS")
+market_metrics <- c("CUR_MKT_CAP")
 fundamental_metrics <- c() 
-market_metrics <- c()
+
 # Simulated
 # constituent_index <- "RISK_FREE_RANDOMS"
 # data_source <- "simulated"

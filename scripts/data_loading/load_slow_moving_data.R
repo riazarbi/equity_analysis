@@ -157,6 +157,16 @@ print("NOTE: If market_metrics and fundamental_metrics have not been specified n
 if((length(market_metrics) + length(fundamental_metrics))!=0) {
   ticker_data <- lapply(ticker_data, function(x) x <- x %>%
                         select(one_of(metrics)))
+  for (tick in names(ticker_data)){
+    if (length(market_metrics) != sum(market_metrics  %in% colnames(ticker_data[[tick]]))) {
+      print(paste("Dropping", tick, "because it is missing market data required for algorithm computation"))
+      ticker_data[[tick]] <- NULL
+    }
+    if (length(fundamental_metrics) != sum(fundamental_metrics  %in% colnames(ticker_data[[tick]]))) {
+      print(paste("Dropping", tick, "because it is missing fundamental data required for algorithm computation"))
+      ticker_data[[tick]] <- NULL
+    }
+  }
 }
 
 print("Looking for tickers that must be excluded because they have no data...")
@@ -304,26 +314,26 @@ price_data <- lapply(ticker_data,
            mutate(min_price = apply(., 1, my.min)) %>%
            #mutate(spread = standard_spread*max_price) %>%
            add_column(date=date_stash)
-         z <- x %>% 
-           dplyr::select(one_of(volume_data)) %>% 
-           rename(volume = !!names(.[2]))
          # NOTE: Spread is arbitrary!
          # https://www.bauer.uh.edu/rsusmel/phd/roll1984.pdf
          # Try create a more realistic estimate of spread
-         x <- full_join(z, y, by = "date")
-         # the alternative is some sort of rolling mean, but this may add more volume than is realistically available.
+         # rename volume to standard name
+         z <- x %>% 
+           dplyr::select(one_of(volume_data)) %>% 
+           rename(volume = !!names(.[2]))
          # next - define the last price field and join back to price data
          w <- x %>% 
            dplyr::select(one_of(last_price_field)) %>% 
            rename(last = !!names(.[2]))
+         x <- full_join(z, y, by = "date")
          x <- full_join(w, x, by = "date") %>%
            rename(last = !!names(.[2])) # in the event that last exists in both dataframes this fixes it.
          # impute: replace NA in max_price, min_price and last with last known value
          # impute: replace NA in volume with zero
+         # the alternative is some sort of rolling mean, but this may add more volume than is realistically available.
          x <- x %>% fill(max_price, min_price, last) %>% 
            mutate(volume = replace_na(volume, 0)) 
          })
-
 
 # Save image to data/datasets/slow_moving_data.Rdata
 if(!dir.exists("temp")) {

@@ -178,7 +178,7 @@ ticker_data_sample <- sample(ticker_data, length(ticker_data)/5)
 ticker_data_sample_df <- bind_rows(ticker_data_sample, .id = "ticker") %>%   
   select(one_of(lag_metrics), date)
 
-if (length(ticker_data_sample) != 1) {
+if (length(ticker_data_sample_df) != 1) {
   lag_adjusted_date_counts <- ticker_data_sample_df %>% 
     gather(key="metric", value = "value", -date) %>%
     drop_na(value) %>%
@@ -274,3 +274,4 @@ source("R/set_paths.R")
 gc(full=TRUE)
 # knit the report
 rmarkdown::render(file.path(results_directory, "data_quality.Rmd"))
+print("Done!")
