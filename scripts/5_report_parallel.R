@@ -29,7 +29,7 @@ library(foreach)
 library(doParallel)
 
 # Register a parallel processing cluster
-n_cores <- detectCores() - 1
+n_cores <- min(detectCores() - 1, length(results_directories))
 cl <- makeCluster(n_cores, outfile="")
 registerDoParallel(cl)
 
