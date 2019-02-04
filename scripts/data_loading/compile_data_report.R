@@ -167,19 +167,21 @@ monthly_nas_averages <- xts(monthly_nas_averages, order.by=(ymd(names(monthly_na
 # As long as you load that .Rdata object you should be fine.
 
 # FUNDAMENTAL DATA LAG DETECTION
-fundamental_date_counts_df %>% select(lag_metrics, date)
 lag_metrics_date_counts <- fundamental_date_counts_df %>% select(lag_metrics, date) 
 lag_metrics_date_counts$sums <- lag_metrics_date_counts %>% select(-date) %>% rowSums(na.rm = T)
 most_frequent_lag_dates <- lag_metrics_date_counts %>% select(date, sums) %>% arrange(desc(sums)) %>% head(7)
 
 # Computing 
-ticker_data_sample <- sample(ticker_data, length(ticker_data)/10)
-ticker_data_sample <- bind_rows(ticker_data_sample, .id = "ticker") %>% 
+
+ticker_data_sample <- sample(ticker_data, length(ticker_data)/5)
+
+ticker_data_sample_df <- bind_rows(ticker_data_sample, .id = "ticker") %>%   
   select(one_of(lag_metrics), date)
 
 if (length(ticker_data_sample) != 1) {
-  lag_adjusted_date_counts <- ticker_data_sample %>% 
-    gather(key="metric", value = "value", -date) %>% 
+  lag_adjusted_date_counts <- ticker_data_sample_df %>% 
+    gather(key="metric", value = "value", -date) %>%
+    drop_na(value) %>%
     select(date, metric) %>%
     group_by(date) %>%
     summarize(sums = n()) %>%
