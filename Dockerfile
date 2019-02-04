@@ -18,5 +18,5 @@ ENV PASSWD=complicatedpassword
 RUN useradd rstudio
 RUN mkdir /home/rstudio/ && \
     cd /home/rstudio/ && \
-    git clone --single-branch --branch examples https://github.com/riazarbi/equity_analysis.git && \
+    git clone --single-branch --branch lag-correction https://github.com/riazarbi/equity_analysis.git && \
     chmod -R 777 equity_analysis
