@@ -35,7 +35,7 @@ if(run_data_report=="y" | run_data_report == "Y") {
 if(run_data_report=="y" | run_data_report=="Y") {
   write_report <- file("write_report")
   writeLines(c("YES"), write_report)
-  close(fileConn)
+  close(write_report)
 }
   
 # Delete trials

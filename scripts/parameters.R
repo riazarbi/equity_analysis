@@ -80,7 +80,7 @@ cash_buffer_percentage <- 0.02 # decimal form
 
 # Trading characteristics
 commission_rate <- 0
-minimum_commission <- 0.1
+minimum_commission <- 0
 standard_spread <- 0.002
 soft_rebalancing_constraint <- 0.02 # don't trade if this close to perfect balance
 
