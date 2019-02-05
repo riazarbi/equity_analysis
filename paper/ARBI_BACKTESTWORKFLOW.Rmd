@@ -15,7 +15,8 @@ Journal: Journal of Finance
 Ref1: University of Cape Town, South Africa
 RemovePreprintSubmittedTo: yes
 abstract: |
-  Abstract to be written here. The abstract should not be too long and should provide the reader with a good understanding what you are writing about. Academic papers are not like novels where you keep the reader in suspense. To be effective in getting others to read your paper, be as open and concise about your findings here as possible. Ideally, upon reading your abstract, the reader should feel he / she must read your paper in entirety.
+  Researchers into anomalous equity returns ideally seek to make their results repeatable by others. Usually, only a small subset of the decisions made in the backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which to not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the Reproducible Research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
+  
 addfootrule: yes
 addtoprule: yes
 bibliography: Tex/ref.bib
@@ -326,15 +327,17 @@ This project should be useful to:
 
 ## Intended use case
 
-It is intended that a researcher will clone this repository to a local directory and then create an RStudio project in the project root directory. After querying data from an appropriate vendor and processing the data using `scripts/1_query_source.R` and `scripts/2_process_data.R`, a researcher will specify global parameters in the `scripts/parameters.R` file and place a batch of algorithms in the `trials/` directory. Running the `scripts/3_run_trials.R` script will backtest each algorithm and save the results in the `results/` directory. Running `scripts/4_report.R` will generate a report on the outcome of each backtest and running `scripts/5_cross_validate.R` will run the R package `pbo` against the overall results to test for the probability of backtest overfitting.
+It is intended that a researcher will clone this repository to a local directory and then create an RStudio project in the project root directory. Sourcing the script `scripts/0_all.R` will results in several dialogs, after which the script will run the entire backtesting workflow from data acquisition to cross validation in an automated fashion. The scripts will output actions to the console as they step through their procedures.
 
-These results can be used to create a research paper, which can be saved to the project root. Prior to release, the researcher can delete the source data for licensing reasons (but retain the query scripts!) and publish the entire compendium to a code hosting site such as [GitHub](https://github.com).
+The scripts which `0_all.R` calls can all be run standalone, and can be edited transparently. A common workflow is to copy the project directory to a removable flash drive, run `data_processing/1_bloomberg_to_datalog.R` on its own on a Bloomberg terminal, and then return to an analysts workstation (or docker container) to continue analysis. The researcher will then edit the `scripts/parameters.R` file to specify backtest behaviour, add a series of algorithm scripts in the `trials` directory and run the `0_all.R` again. The results of the backtest are saved to the `results` directory.
+
+These results can be used to create a research paper, which can be saved to the project root. Prior to release, the researcher can delete the source data for licensing reasons (but retain the query scripts!) and publish the entire compendium to a code hosting site such as [GitHub](https://github.com). Distributing query scripts along with the code means that a replicator need not have any ambiguity around the method of data collection and cleaning.
 
 ## Included data
 
 This repository does not include any equity data, but it does include working scripts to automatically extract data from data vendors, and to save that data in a well-formed way. It is assumed that the user will acquire data using the scripts which have been included in this repository. This will only be possible if a user has access to the relevant data services - namely Bloomberg, DataStream or iNet.
 
-We also include a script for generating a range of simulated index datasets, complete with constituent lists, metadata, market and fundamental ticker timeseries. This script accepts parameters from the `parameters.R` file to control various characteristics of the stock universe. The resulting simulated datasets can be used to explore the functioning of the code and test that it is working as expected.
+We also include a script for generating simulated index datasets, complete with constituent lists, metadata, market and fundamental ticker timeseries. This script accepts parameters from the `parameters.R` file to control various characteristics of the stock universe. The resulting simulated datasets can be used to explore the functioning of the code and test that it is working as expected.
 
 ## Future development
 
@@ -422,11 +425,13 @@ Complete directory structure:
 |    |   |   live_trading_functions.R
 |    scripts/
 |    |   parameters.R
+|    |   0_all.R
 |    |   1_query_source.R
 |    |   2_process_data.R
-|    |   3_run_trials.R
-|    |   4_report.R
-|    |   5_cross_validate.R
+|    |   3_load_data.R
+|    |   4_run_trials.R
+|    |   5_report.R
+|    |   6_cross_validate.R
 |    |   data_processing/
 |    |   |   1_bloomberg_to_datalog.R
 |    |   |   1_simulated_to_datalog.R
@@ -434,11 +439,14 @@ Complete directory structure:
 |    |   |   3_constituents_to_dataset.R
 |    |   |   3_metadata_to_dataset.R
 |    |   |   3_ticker_logs_to_dataset.R
-|    |   trading/
-|    |   |   example_trial.R
+|    |   data_loading/
 |    |   |   load_slow_moving_data.R
+|    |   |   compile_data_report.R
+|    |   trading/
+|    |   |   sample_trials/
 |    |   |   trade.R
 |    |   reporting/
+|    |   |   data_quality.Rmd
 |    |   |   tearsheet.Rmd
 |    |   |   cross_validate.Rmd
 |    trials/
@@ -452,7 +460,7 @@ In short, scripts in the `scripts/` directory pull data into the `data/` directo
 ```{r, fig.width = 4, out.width = "100%", fig.cap="Data Flow Diagram"}
 library(png)
 library(grid)
-img <- readPNG("data/workflow.png")
+img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/workflow.png")
 grid.raster(img)
 ```
 \newpage
@@ -475,6 +483,7 @@ This file is sourced in various other scripts. It determines the structure of si
 1) Reporting Parameters: here we set the risk-free rate, which is needed for computing the Sharpe ratio.
 2) Simulated Data Parameters: characteristics of simulated data such as universe size, index size, start and end of simulation, price and earnings growth.
 3) Trading parameters: mode (backtest or live), heartbeat duration, rebalancing periodicity, target index, start and end of backtest.
+4) Lag adjustment parameters: whether or not to conduct lag adjustment on fundamental data, and whether to try determine which fundamental metrics need adjustment.
 
 ## Data acquisition - `1_query_source.R`
 
@@ -494,7 +503,7 @@ Relevant parts of the directory tree:
 |    |   |   1_simulated_to_datalog.R
 ```
 
-We include two sample scripts. One for querying Bloomberg, the other for generating simulated dummy data for demonstration purposes. These scripts can be found in the `scripts/data_processing/` directory. This directory adopts a sequential naming convention because they are intended to be run sequentially.
+We include two sample scripts. One for querying Bloomberg, the other for generating simulated dummy data for demonstration purposes. These scripts can be found in the `scripts/data_processing/` directory. This directory adopts a sequential naming convention because they are intended to be run sequentially, but only one query script is intended tobe run at any one time. `0_run.R` will prompt the user to select a query script to run.
 
 `1_Bloomberg_to_datalog.R` follows the broad procedure of collecting all the data required to build a dataset. The query script performs the following steps in a non-interactive manner -
 
@@ -506,7 +515,8 @@ We include two sample scripts. One for querying Bloomberg, the other for generat
 6) Define required ticker metadata. At a minimum, the ticker code and the ISIN is required. Market data is extracted with the ticker code; fundamental data is extracted with the ISIN.
 7) Extract and save metadata for all tickers.
 3) Extract and save market data for each ticker based on ticker code.
-60 Extract and save fundamental data for each ticker based on ISIN.
+8) Extract and save fundamental data for each ticker based on ISIN.
+9) Reload metadata arrays and give critical metrics (`fundamental_identifier` and `market_identifier`) common names. This is so that the downstream scripts know which fields to use to join fundamental data to market data during data loading.
 
 ### File naming conventions
 
@@ -657,7 +667,62 @@ The datasets are converted to tidy format in-memory at backtest runtime.
 
 \newpage
 
-## Backtesting - `3_run_trials.R`
+## Loading Data - `3_load_data.R`
+
+The purpose of this series of scripts is to load at-rest data from datasets and save them in a backtest-ready form in a fast file format. These binary files are considered temporary and saved in the `temp` folder; deleting them does not impact reproducability.
+
+```
+Relevant parts of the directory tree: 
+
+. equity_analysis/
+|    data/
+|    |   datasets/
+|    scripts/
+|    |   parameters.R
+|    |   3_load_data.R
+|    |   data_loading/
+|    |   |   compile_data_report.R
+|    |   |   load_slow_moving_data.R
+|    |   reporting/
+|    |   |   data_quality.Rmd
+|    temp/
+|    |   ticker_data.Rds
+|    |   price_data.Rds
+|    |   constituent_list.Rds
+|    |   metadata.Rds
+|    |   data_report.Rdata
+
+```
+
+### Filtering
+
+The `load_slow_moving_data.R` script reads in parameters from the `parameters.R` file and then reads in the necessary files from the `datasets/` directory. It selects only the relevant constituent index, joins the necessary ticker market and fundamental data, drops unnecessary fields, and saves the results to a a `ticker_data.Rds` file. This file is then read at every rebalancing period by the backtest algorithm. 
+
+### Quote Engine
+
+The trading algorithm will run a `get_quote` function to get price quotes for each trade at each heartbeat. This function will read in prices from a `price_data` object. This `price_data` object is derived from the `ticker_data` object above, but saved to a separate file. This is because the `price_data` has several changes that may introduce backtest bias - 
+
+- It it not date-filtered at runtime, so contains look-ahead information
+- A high and low price are generated synthetically from available data
+- `NA` values are backfilled (for price data) or changed to `0` (for volume data)
+
+### Lag-detection
+
+The script also reads from `parameters.R` whether a lag must be imposed on fundamental data. This is necessary when fundamental dates are based on official financial reporting dates, not actual dates of release (which can be much later). Sometimes accompanying financial data is of a hybrid variety, where some metrics need to be lagged (typically financial statement data) while others (typically ratios) do not. For these datasets, the user has the option of enabling k-means cluster detection of the two populations of metrics. The k-means algorithm tries to cluster the fundamental metrics according to the number of occurrences of each metric in the population, the rationale being that financial data is updares far less frequently than ratio data. Once the clusters have been computed, the cluster of metrics with the lowest number of occurrences is has a pre-specified lag imposed on it, while the other cluster(s) are left unmodified.
+
+### Data quality reporting
+
+Data quality is critical to running a realistic backtest. The `compile_data_report.R` script computes a range of health measures for the entire dataset, including, but not limited to - 
+
+- Proportion of `NA` in selected market metrics.
+- Histogram of `NA` occurrences per ticker, per metric type
+- Results of k-means detection (if selected), along with verification that the lag has been imposed.
+
+If selected in `0_all.R`, these measures are fed to a `data_quality.Rmd` file, which generates an html report in the `results` directory that can be used to inspect the data.
+
+A typical workflow using these scripts is to run the backtest, while including all fundamental and market metrics, up until the data quality report is generatred, and then cancelling it. Inspection of the report guides the researcher as to which metrics may be useful in constructing a backtest, and whether there is sufficient data for a realistic backtest. The trading algorithm will drop any tickers that do not have sufficient data at runtime.
+
+## Backtesting - `4_run_trials.R`
 
 Unlike the data-processing scripts, the backtesting scripts are not named in a sequential fashion. This is because their sourcing is not sequential. 
 
@@ -669,42 +734,54 @@ Relevant parts of the directory tree:
 |    |   datasets/
 |    scripts/
 |    |   parameters.R
-|    |   3_run_trials.R
+|    |   4_run_trials.R
 |    |   trading/
-|    |   |   example_trial.R
-|    |   |   load_slow_moving_data.R
+|    |   |   sample_trials/
 |    |   |   trade.R
+|    temp/
+|    |   ticker_data.Rds
+|    |   price_data.Rds
+|    |   constituent_list.Rds
+|    |   metadata.Rds
 |    trials/
 |    results/
 ```
 
-Rather, these scripts follow a parent-child relationship. The parent script is `3_run_trials.R`. It sources the other scripts and uses their functions when necessary. Understanding how backtesting is accomplished is best achieved by working through this script from top to bottom, referring to other scripts when they are called.
+Rather, these scripts follow a parent-child relationship. The parent script is `4_run_trials.R`. It sources the other scripts and uses their functions when necessary. Understanding how backtesting is accomplished is best achieved by working through this script from top to bottom, referring to other scripts when they are called.
 
 ### Global parameters
 
 The `parameters.R` file sets parameters that are global to the trading session. The parameters in the trading section are -
 
-1) Mode
-    - `run_mode` - BACKTEST or LIVE. LIVE mode not yet implemented.
-    - `heartbeat_duration` - time between trade loops, in seconds. Typically between 600 and 3600. 
-    = `rebalancing periodicity` - time between rebalancing recalculations, in seconds. Typically in the order of days or months.
+1) Index-specific
 
-2) Universe
-    - `constituent_index` - index to backtest against.
-    - `data_source` - data source to use.
-    - `market_metrics` - market metrics to filter (defaults to all).
-    - `fundamental_metrics`  - fundamental metrics to filter (defaults to all).
+- `constituent_index` - "JALSH"
+- `data_source` - "bloomberg"
+- `price_related_data` - c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")
+- `last_price_field` - c('date', "TOT_RETURN_INDEX_GROSS_DVDS") 
+- `volume_data` - c("date", "VOLUME")
+- `market_metrics` - c("CUR_MKT_CAP")
+- `fundamental_metrics` - c() 
 
-3) Timeframe
-    - `start_backtest` - YYYYMMDD start of backtest.
-    - `end_backtest` - YYYYMMDD end of backtest.
+2) Lag-adjustment
+- `fundamental_data_lag_adjustment` - how much to lag data, in days. 0 will skip adjustment. 
+- `fundamental_data_metric_types` - either 1, 2 or auto. 1 will lag all fundamental metrics.
 
-4) Portfolio Characteristics
+3) General trading parameters
+- `run_mode` - either LIVE or BACKTEST (live not implemented).
+- `heartbeat_duration` how often to trade, in seconds.
+- `rebalancing_periodicity` how often to rebalance, in seconds.
+
+4) Timeframe
+- `start_backtest` -  YYYYMMDD inclusive
+- `end_backtest` -  YYYYMMDD not inclusive
+
+5) Portfolio Characteristics
     - `portfolio_starting_config` - CASH or STOCK. CASH initialises the portfolio with 100% cash. STOCK initialises the portfolio with perfect portfolio weights at start. STOCK not implemented yet.
     - `portfolio_starting_value` - starting cash value of portfolio.
     - `cash_buffer_percentage` - desired cash percentage of portfolio to target.
   
-5) Trading characteristics
+6) Trading characteristics
     - `commission_rate` - percentage of trade value charged as commission.
     - `minimum_commission` - minimum value of commission. 
     - `standard_spread` - simple assumed spread between bid and ask, expressed as a percentage of stock price.
@@ -728,8 +805,8 @@ grid.raster(img)
 
 The trading engine reuses several dataframes during the course of operations. Two of these are critical to understanding how it avoids look-ahead bias and generates trades.
 
-1) The `ticker_data` data object is a list of dataframes containing tickers relevant to the backtest. It is **not** free of survivorship bias or look ahead bias. It is constructed by sourcing `load_slow_moving_data.R`, which expects to find `3_run_trials.R` parameters in the global environment. 
-    1) It reads in the `constituent.feather` and `metadata.feather` datasets, and filters these datasets to include only `source` and `index` parameters included in the global environment. 
+1) The `ticker_data` data object is a list of dataframes containing tickers relevant to the backtest. It is **not** free of survivorship bias or look ahead bias. It is constructed by loading `ticker_data.Rds`.
+    1) It reads in the `constituent_list.Rds` and `metadata.Rds` datasets, and filters these datasets to include only `source` and `index` parameters included in the global environment. 
     2) It then constructs a list of dataframes, where each dataframe contains the market and fundamental data of a ticker in the filtered constituent list, joined on the metadata market and fundamental identifier fields.
     3) It filters all dataframes to take only the most recent timestamp version of data points with multiple timestamped versions.
     4) It spreads the dataframes into ‘short and wide’, tidy form.
@@ -754,9 +831,9 @@ The `trade.R` script performs the following operations -
 2) Set `heartbeat_count` to 0.
 3) Set `runtime_date` to start of backtest + `heartbeat_count`.
 4) Check if `ticker_data` has been loaded to memory and if it is less than 24 hours (in heartbeat time) old.
-    - If not, reload `ticker_data` by sourcing `load_slow_moving_data.R`
+    - If not, reload `ticker_data`.
 5) Check if `runtime_ticker_data` is stale.
-    - If it is stale, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function.
+    - If it is stale, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function. **Drop and tickers that do not have sufficient data to compute a target weight**. The `market_metrics` and `fundamental_metrics` parameters are the metrics that are checked for elminating tickers. **If the algorithm uses a metric not specified in these parameters, then a ticker that is included but has insufficient information will cause a halt to the backtest.**
 6) Get the `transaction_log` and `trade_history` data objects and compute our current portfolio and cash positions. 
 7) Query latest prices for the positions to obtain a portfolio valuation.
 8) Compute `trades` by calling `compute_trades`, using `target_weights` and `positions` as arguments.
@@ -779,9 +856,9 @@ In a backtest environment, this trade matching needs to be simulated. In this co
 
 ### Backtest results
 
-A well specified `compute_weights` function will result in a successful backtest. The results of each backtest run by `3_run_trials.R` will be placed in the `results` directory according to the naming convention covered earlier.
+A well specified `compute_weights` function will result in a successful backtest. The results of each backtest run by `4_run_trials.R` will be placed in the `results` directory according to the naming convention covered earlier.
 
-On completion of `3_run_trials.R`, the `results` subdirectories contain four files -
+On completion of `4_run_trials.R`, the `results` subdirectories contain four files -
 
 1) The original `algorithm_X.R` script from the `trials` directory.
 2) A `runtime_log` file, which contains relevant runtime information. Each line of this file represents another heartbeat.
@@ -792,7 +869,7 @@ In addition, the `parameters.R` file, which contains important information relat
 
 \newpage
 
-## Reporting - `4_report.R`
+## Reporting - `5_report.R`
 
 The `results` subdirectories contain all the necessary data to compute portfolio performance characteristics. 
 
@@ -804,7 +881,7 @@ Relevant parts of the directory tree:
 |    |   |   set_paths.R
 |    scripts/
 |    |   parameters.R
-|    |   4_report.R
+|    |   5_report.R
 |    |   reporting/
 |    |   |   tearsheet.Rmd
 |    results/
@@ -812,7 +889,7 @@ Relevant parts of the directory tree:
 
 There exist several portfolio performance reporting packages on CRAN; it is beyond the scope of this exercise to replicate the functionality of those packages. The data created by the backtest trading algorithm are designed to support general customisability of the results tear sheet.
 
-The `4_report.R` script has three objectives - 
+The `5_report.R` script has three objectives - 
 
 1) Create a matrix of daily returns for piping into a downstream portfolio analysis package.
 2) Generate a minimal performance tear sheet in order to demonstrate that portfolio analysis can, in principle, be conducted on the folder contents.
@@ -830,7 +907,7 @@ To achieve these aims, the script performs the following steps on each result su
 8) Copy in the `tearsheet.Rmd` template from `scripts/reporting/`.
 9) Parametrically render the `tearsheet.Rmd` into a `tearsheet.html` web page that can be read and distributed.
 
-As the script works through each subdirectory, it compiles cross-sectional dataframes that contain all the trials' daily and total returns. That is, dataframes with a row for every date, and a column for the daily returns or total returns for each trial result. These dataframes are saved to `results/daily_returns.feather` and `results/total_returns.feather`, where it can be consumed by the `5_cross_validate.R` cross-validation script.
+As the script works through each subdirectory, it compiles cross-sectional dataframes that contain all the trials' daily and total returns. That is, dataframes with a row for every date, and a column for the daily returns or total returns for each trial result. These dataframes are saved to `results/daily_returns.feather` and `results/total_returns.feather`, where it can be consumed by the `6_cross_validate.R` cross-validation script.
 
 ```{r, fig.width = 4, out.width = "100%", fig.cap="Tearsheet Excerpt"}
 library(png)
@@ -845,7 +922,7 @@ The parametrised template tearsheet resides at `scripts/reporting/tearsheet.Rmd`
 
 \newpage
 
-## Cross validation - `5_cross_validate.R`
+## Cross validation - `6_cross_validate.R`
 
 ```
 Relevant parts of the directory tree: 
@@ -855,7 +932,7 @@ Relevant parts of the directory tree:
 |    |   |   set_paths.R
 |    scripts/
 |    |   parameters.R
-|    |   5_cross_validate.R
+|    |   6_cross_validate.R
 |    |   reporting/
 |    |   |   cross_validate.Rmd
 |    results/
@@ -866,7 +943,7 @@ Relevant parts of the directory tree:
 
 In order to investigate whether backtest overfitting has occurred, we make use of the `pbo` package, available in CRAN. The `pbo` package expects a matrix or `xts` object of daily returns for a range of trials; it uses this array to compute the various metrics in @LopezdePrado2013. 
 
-The computations done in this section are the final part of the analysis; the output is intended to be read by humans. `5_cross_validate.R` is just a wrapper that knits an Rmarkdown notebook, `results/cross_validate.Rmd`. The end result is an html report that includes details on the probability of backtest overfitting as it relates to the array. 
+The computations done in this section are the final part of the analysis; the output is intended to be read by humans. `6_cross_validate.R` is just a wrapper that knits an Rmarkdown notebook, `results/cross_validate.Rmd`. The end result is an html report that includes details on the probability of backtest overfitting as it relates to the array. 
 
 The template `Rmd` file can be modified at `scripts/reporting/cross_validate.Rmd`
 
@@ -877,6 +954,33 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/cross_validation_
 grid.raster(img)
 ```
 
+
+\newpage
+
+## Application and Examples
+
+This section details the use of the environment to perform a variety of demonstations and tests. All of these tests were conducted on the `lag-correction` branch of https://github.com/riazarbi between the 1st and 5th February 2019. This branch will be merged into `master` on the 11th February 2019. This code was used largely unmodified for each test; the only differences between each test are those contained in the `parameters.R` file and the specific `trials` files. Unmodified copies of these files can be found at https://github.com/riazarbi/equity_analysis_trials. 
+
+Each test followed the same protocol - 
+
+1. Create a `parameters.R` file and trial script (or several, if necessary)
+2. Create a `deploy.R` script 
+3. Zip each backtest
+4. `docker run ... riazarbi/equity_analysis` a new backtest environment. This environemt already contains the code from the guthub repository mentioned above.
+5. Navigate to the correct url for the backtest environment
+6. Open the `equity_backtest` R project.
+7. Upload the relevant zip file. It is unzipped automatically by RStudio Server.
+8. Type `source("<unzippedfolder>/deploy.R")` and press `<ENTER>`.
+9. Follow prompts, entering appropriate answers for the particular backtest, and then wait for the backtest to complete. 
+10. Download results and compile results.
+
+In general, a backtest takes about 90 minutes per algortihm in the trials directory. That is, a 50-trial backtest will take up to 75 hours. These can be run in parallel, however, if one varies parameters to investigate outcomes in a range of trading conditions.
+
+### Querying and assessing real data
+
+### Trading engine validation
+
+### Example of Backtest Overfitting Detection
 
 
 \newpage
