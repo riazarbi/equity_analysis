@@ -228,8 +228,14 @@ print("Filtering to just the last two years...")
 fundamental_date_2yr_counts <- fundamental_date_counts %>% last('2 year') %>% colSums(na.rm=T) %>% enframe() %>% arrange(value)
 
 # Try auto-detects how many clusters there are
+kmax <- min(nrow(fundamental_date_2yr_counts), 5)
 # Plot many k-means.
-fundamental_metrics_silhouette_plot <- fviz_nbclust(as.data.frame(fundamental_date_2yr_counts$value), kmeans, method = "silhouette")
+if(kmax > 2) {
+  fundamental_metrics_silhouette_plot <- fviz_nbclust(as.data.frame(fundamental_date_2yr_counts$value), 
+                                                    kmeans, 
+                                                    method = "silhouette", 
+                                                    k.max = kmax)
+}
 # Only use the estimated number of clusters if "auto" sleected in parameters.
 # Figure out the cluster number we should use.
 if(fundamental_data_metric_types == "auto") {

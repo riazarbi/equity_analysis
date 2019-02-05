@@ -61,7 +61,7 @@ repeat{
     constituent_list <- readRDS("temp/constituent_list.Rds")
     ticker_data_load_date <- Sys.time() # TODO make this more elegant. Last modified time perhaps?
   # or load it if it was last loaded more than a day ago
-  } else if (difftime(begin, ticker_data_load_date,  units="days") >= 1) {
+  } else if (difftime(all_begin, ticker_data_load_date,  units="days") >= 1) {
     print("WARNING: Slow moving data was loaded more than 24 hours ago, and might be stale. Reloading...")
     ticker_data <- readRDS("temp/ticker_data.Rds")
     price_data <- readRDS("temp/price_data.Rds")
