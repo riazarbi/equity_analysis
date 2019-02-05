@@ -131,14 +131,17 @@ Plotting the number of occurrences of each metric can tell us if there is a mixe
 The below plot shows the silhouette of a k-means clustering algorithm run on a range of assumed cluster counts. The x-axis number corresponding to the maximum y-axis value is the probable number of clusters.
 
 ```{r}
+if(exists("fundamental_metrics_silhouette_plot")) {
 fundamental_metrics_silhouette_plot
+}
 ```
 
 The different populations of metrics are auto-labeled by using k-means clustering on observation counts for a recent sample. This backtester assumes there is either one or two clusters. If there is one cluster, the lag operation specified in the `parameters` file is applied to the entire dataset. If there are two clusters, the lag operation is applied only to those metrics that are part of the cluster with the lowest number of counts. 
 
 ```{r}
-
+if(exists("fundamental_metric_clusters_plot")) {
 fundamental_metric_clusters_plot + ylab("Cumulative Number of Occurrences") + xlab("Metric") + removeGrid()
+}
 ```
 
 ## Fundamental Data Lag Adjustment

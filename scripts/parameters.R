@@ -31,29 +31,31 @@ payout_ratio_stddev <- 0.1
 
 ##################################################################
 # INDEX SPECIFIC TRADING PARAMETERS
+
 # Bloomberg
-constituent_index <- "JALSH"
-data_source <- "bloomberg"
-price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")
-last_price_field <- c('date', "TOT_RETURN_INDEX_GROSS_DVDS") 
-volume_data <- c("date", "VOLUME")
-market_metrics <- c("CUR_MKT_CAP")
-fundamental_metrics <- c() 
+#constituent_index <- "JALSH"
+#data_source <- "bloomberg"
+#price_related_data <- c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")
+#last_price_field <- c('date', "TOT_RETURN_INDEX_GROSS_DVDS") 
+#volume_data <- c("date", "VOLUME")
+#market_metrics <- c("CUR_MKT_CAP")
+#fundamental_metrics <- c() 
+#market_metrics <- c()
 
 # Simulated
-# constituent_index <- "RISK_FREE_RANDOMS"
-# data_source <- "simulated"
-#price_related_data <- c("date", "open", "high", "low", "close", "last")
-#last_price_field <- c('date', 'last')
-# volume_data <- c("date", "volume")
-# market_metrics <- c("market_cap")
-#fundamental_metrics <- c()
+constituent_index <- "RISK_FREE_RANDOMS"
+data_source <- "simulated"
+price_related_data <- c("date", "open", "high", "low", "close", "last")
+last_price_field <- c('date', 'last')
+volume_data <- c("date", "volume")
+market_metrics <- c("market_cap")
+fundamental_metrics <- c()
 
 # Specify if fundamental data needs lag adjustment
 # we use k-means clustering to tag the metrics for adjustment or not.
 # if only 1 cluster, all will be lagged. If more then 1 cluster, only the slowest-updated metrics will be lagged.
-fundamental_data_metric_types <- "auto" # auto will auto-detect number of clusters. Override with a number if you want.
-fundamental_data_lag_adjustment <- 120 # days. How many do you want to shift your fundamental data back? 
+fundamental_data_metric_types <- 1 # auto will auto-detect number of clusters. Override with a number if you want.
+fundamental_data_lag_adjustment <- 0 # days. How many do you want to shift your fundamental data back? 
 
 ##################################################################
 # GENERAL TRADING PARAMETERS
@@ -61,13 +63,13 @@ fundamental_data_lag_adjustment <- 120 # days. How many do you want to shift you
 # Mode - either LIVE or BACKTEST
 run_mode <- "BACKTEST"
 # Heartbeat duration: how long between heartbeats (seconds)
-heartbeat_duration <- 60*60*24*5 # every 5 days
+heartbeat_duration <- 60*60*24*5 # every week
 # rebalancing period: how long between portfolio rebalancing (seconds)
-rebalancing_periodicity <- 60*60*24*30 # every 30 days
+rebalancing_periodicity <- 60*60*24*30 # every month
 
 # Timeframe
 start_backtest <- "2014-01-01" # inclusive
-end_backtest <- "2019-01-01" # not inclusive
+end_backtest <- "2015-01-01" # not inclusive
 
 # Portfolio characteristics
 portfolio_starting_configs <- c("CASH", "STOCK")
@@ -77,10 +79,10 @@ cash_buffer_percentage <- 0.02 # decimal form
 #cash_yearly_compounding_rate <- 0.05 # decimal form not implemented yet
 
 # Trading characteristics
-commission_rate <- 0.001
-minimum_commission <- 0
+commission_rate <- 0
+minimum_commission <- 0.1
 standard_spread <- 0.002
-soft_rebalancing_constraint <- 0.01 # don't trade if this close to perfect balance
+soft_rebalancing_constraint <- 0.02 # don't trade if this close to perfect balance
 
 ##############################################################
 # Process parameters

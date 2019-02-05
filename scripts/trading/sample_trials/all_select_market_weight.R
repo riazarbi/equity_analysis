@@ -21,8 +21,8 @@ compute_weights <- function(algo_data, metrics) {
   # 2. RANDOMLY WEIGHT TICKERS
   # 2. WEIGHT THE SURVIVORS 
   # specify the market_cap field for weighting purposes
-  algo_data <- lapply(algo_data, function(x) x <- x %>%
-                        mutate(market_cap = CUR_MKT_CAP))
+  #algo_data <- lapply(algo_data, function(x) x <- x %>%
+  #                      mutate(market_cap = CUR_MKT_CAP))
   # Drop all entries except the latest one
   algo_data <- algo_data %>% map(~filter(.x, date == max(date)))
   # Compute the index market cap
