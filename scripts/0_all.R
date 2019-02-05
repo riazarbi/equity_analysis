@@ -32,6 +32,12 @@ if(run_data_report=="y" | run_data_report == "Y") {
   print("Data report will be run after loading data.")
 } else print("Data report will NOT be run after loading data.")
 
+if(run_data_report=="y" | run_data_report=="Y") {
+  write_report <- file("write_report")
+  writeLines(c("YES"), write_report)
+  close(fileConn)
+}
+  
 # Delete trials
 delete_trials <- readline(prompt=paste("Delete all files in the trials directory? [N/y]: ", sep=" "))
 if(delete_trials == "y") {
@@ -65,10 +71,11 @@ source("scripts/2_process_data.R")
 print("Running 3_load_data.R")
 source("scripts/3_load_data.R")
 
-if(run_data_report=="y" | run_data_report=="Y") {
+if(file.exists("write_report")) {
+  unlink("write_report")
   rmarkdown::render(file.path(results_directory, "data_quality.Rmd"))
 }
-
+  
 print("Running 4_run_trials.R")
 source("scripts/4_run_trials.R")
 
