@@ -189,94 +189,96 @@ for (tick in names(ticker_data)){
 # LAG METRIC DETECTION
 # Read in all the fundamental source data
 # this section should not modify any ticker data
-print("Detecting which fundamental metrics need lag-correction...")
-if (exists("fundamental_dates")) {
-  rm(fundamental_dates)
-}
-print("Reading in fundamental data...")
-for (i in seq_along(1:nrow(metadata))) {
-  fundamental_filename <- metadata$fundamental_filename[i]
-  fundamental_filepath <- file.path(dataset_directory, 
-                                    "ticker_fundamental_data", fundamental_filename)
-  if (!file.exists(fundamental_filepath)) {
-    next 
-  }
-  single_fundamental_dates <- read_feather(fundamental_filepath) %>% select(-source, -timestamp)
-  if(nrow(single_fundamental_dates) == 0) {
-    next
-  }
-  if ((!exists("fundamental_dates"))) {
-    fundamental_dates <- single_fundamental_dates
-  } else {
-    fundamental_dates <- bind_rows(single_fundamental_dates, fundamental_dates)
-  }
-}
-
-# Count how many occurrences there are across tickers per fundamental metric
-print("Counting occurrences per date...")
-fundamental_date_counts_df <- fundamental_dates %>% group_by_(.dots=c("date","metric")) %>%
-  summarise(n()) %>% 
-  as_tibble() %>% 
-  rename(count = 'n()') %>%
-  spread(metric, count)
-
-# Convert to xts
-fundamental_date_counts <- xts(fundamental_date_counts_df %>% select(-date), order.by=fundamental_date_counts_df$date) 
-
-# Take just the last 2 years
-print("Filtering to just the last two years...")
-fundamental_date_2yr_counts <- fundamental_date_counts %>% last('2 year') %>% colSums(na.rm=T) %>% enframe() %>% arrange(value)
-
-# Try auto-detects how many clusters there are
-kmax <- min(nrow(fundamental_date_2yr_counts), 5)
-# Plot many k-means.
-if(kmax > 2) {
-  fundamental_metrics_silhouette_plot <- fviz_nbclust(as.data.frame(fundamental_date_2yr_counts$value), 
-                                                    kmeans, 
-                                                    method = "silhouette", 
-                                                    k.max = kmax)
-}
-# Only use the estimated number of clusters if "auto" sleected in parameters.
-# Figure out the cluster number we should use.
-if(fundamental_data_metric_types == "auto") {
-  print("Auto-detecting number of clusters in fundamental metrics...")
-  number_clusters <- fundamental_metrics_silhouette_plot$data %>% 
-    filter(y == max(y)) %>% 
-    select(clusters) %>% 
-    pull() %>% 
-    as.numeric()
-} else {
-  print("Number of clusters is hard-coded in parameters.R")
-  number_clusters <- fundamental_data_metric_types
-}
-
-# Classify the metrics 
-print("Classifying metrics into clusters...")
-kmeans_model <- kmeans(fundamental_date_2yr_counts$value, number_clusters, nstart = 25) 
-fundamental_metric_cluster_labels <- kmeans_model$cluster
-# Tag the metrics as part of a cluster
-print("Labeling metrics..")
-fundamental_metric_clusters <- cbind(fundamental_date_2yr_counts, fundamental_metric_cluster_labels)
-# Determine the cluster with the lowest score
-lag_cluster <- kmeans_model$centers 
-lag_cluster <- match(min(lag_cluster),lag_cluster)
-# Filter the metrics and get the ones that need to be lagged.
-print("Creating list of lag metrics...")
-lag_metrics <- fundamental_metric_clusters %>% 
-  filter(fundamental_metric_cluster_labels == lag_cluster) %>% 
-  select(name) %>% pull()
-print(lag_metrics)
-
-# Visualize the metric clusters.
-fundamental_metric_clusters_plot <- fviz_cluster(kmeans_model, data = as.data.frame(fundamental_date_2yr_counts), geom = "point",
-                                                 stand = FALSE, ellipse.type = "norm") + coord_flip()
-
-##############################################################################################
-# APPLYING LAG TO LAG METRICS
-
 if (fundamental_data_lag_adjustment == 0) {
-  print("Lag adjustment of 0 specified. Skipping lag adjustment.")
+  print("Parameters file specifies no lag adjustment...")
 } else {
+  print("Compiling a list of all fundamental metrics...")
+  if (exists("fundamental_dates")) {
+    rm(fundamental_dates)
+  }
+  print("Reading in fundamental data...")
+  for (i in seq_along(1:nrow(metadata))) {
+    fundamental_filename <- metadata$fundamental_filename[i]
+    fundamental_filepath <- file.path(dataset_directory, 
+                                      "ticker_fundamental_data", fundamental_filename)
+    if (!file.exists(fundamental_filepath)) {
+      next 
+    }
+    single_fundamental_dates <- read_feather(fundamental_filepath) %>% select(-source, -timestamp)
+    if(nrow(single_fundamental_dates) == 0) {
+      next
+    }
+    if ((!exists("fundamental_dates"))) {
+      fundamental_dates <- single_fundamental_dates
+    } else {
+      fundamental_dates <- bind_rows(single_fundamental_dates, fundamental_dates)
+    }
+  }
+  
+  # list of all fundamental metrics
+  all_fundamental_metrics <- fundamental_dates %>% select(metric) %>% unique()
+  # Count how many occurrences there are across tickers per fundamental metric
+
+  print("Counting occurrences per date...")
+  fundamental_date_counts_df <- fundamental_dates %>% group_by_(.dots=c("date","metric")) %>%
+    summarise(n()) %>% 
+    as_tibble() %>% 
+    rename(count = 'n()') %>%
+    spread(metric, count)
+  
+  # Convert to xts
+  fundamental_date_counts <- xts(fundamental_date_counts_df %>% select(-date), order.by=fundamental_date_counts_df$date) 
+  
+  # Take just the last 2 years
+  print("Filtering to just the last two years...")
+  fundamental_date_2yr_counts <- fundamental_date_counts %>% last('2 year') %>% colSums(na.rm=T) %>% enframe() %>% arrange(value)
+  
+  # Try auto-detects how many clusters there are
+  if (fundamental_data_metric_types == "auto") {
+    print("Trying to detect number of metric clusters")
+    kmax <- min(nrow(fundamental_date_2yr_counts), 5)
+    # Plot many k-means.
+    fundamental_metrics_silhouette_plot <- fviz_nbclust(as.data.frame(fundamental_date_2yr_counts$value), 
+                                                  kmeans, 
+                                                  method = "silhouette", 
+                                                  k.max = kmax)
+    # Figure out the cluster number we should use.
+    print("Auto-detecting number of clusters in fundamental metrics...")
+    number_clusters <- fundamental_metrics_silhouette_plot$data %>% 
+      filter(y == max(y)) %>% 
+      select(clusters) %>% 
+      pull() %>% 
+      as.numeric()
+    } else {
+      print("Number of clusters is hard-coded in parameters.R")
+      number_clusters <- fundamental_data_metric_types
+    }
+  
+  # Classify the metrics
+  if(number_clusters >= 2) {
+    print("Number clusters > 1. Classifying metrics into clusters...")
+    kmeans_model <- kmeans(fundamental_date_2yr_counts$value, number_clusters, nstart = 25) 
+    fundamental_metric_cluster_labels <- kmeans_model$cluster
+    # Tag the metrics as part of a cluster
+    print("Labeling metrics..")
+    fundamental_metric_clusters <- cbind(fundamental_date_2yr_counts, fundamental_metric_cluster_labels)
+    # Determine the cluster with the lowest score
+    lag_cluster <- kmeans_model$centers 
+    lag_cluster <- match(min(lag_cluster),lag_cluster)
+    # Filter the metrics and get the ones that need to be lagged.
+    print("Creating list of lag metrics...")
+    lag_metrics <- fundamental_metric_clusters %>% 
+      filter(fundamental_metric_cluster_labels == lag_cluster) %>% 
+      select(name) %>% pull()
+    print(lag_metrics)
+    # Visualize the metric clusters.
+    fundamental_metric_clusters_plot <- fviz_cluster(kmeans_model, data = as.data.frame(fundamental_date_2yr_counts), geom = "point",
+                                                     stand = FALSE, ellipse.type = "norm") + coord_flip()
+  } else {
+    lag_metrics <- all_fundamental_metrics$metric
+  }
+  
+  # apply lag adjustment
   print(paste("Applying lag adjustment of", fundamental_data_lag_adjustment, "days to lag metrics..."))
   ticker_data <- lapply(ticker_data, 
                      function(x) {
@@ -290,9 +292,9 @@ if (fundamental_data_lag_adjustment == 0) {
                     # join them back together
                       x <- left_join(split_x, lagged_x, by = "date")
                      })
-
 }
 
+############################################################################################
 # Get object size of test data
 print(paste("Slow Moving Data object size:", 
             format(object.size(ticker_data), units="auto", standard = "IEC")))

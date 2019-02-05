@@ -153,9 +153,11 @@ Financial years tend to follow a strong pattern of official releases at the end 
 The most frequently occurring dates in the lag metrics dataset is shown below. These figures are derived from the raw data and will not adjust to the lag parameters in the parameters file.  
 
 ```{r}
-knitr::kable(most_frequent_lag_dates, 
+if(exists("most_frequent_lag_dates")) {
+  knitr::kable(most_frequent_lag_dates, 
              caption = "Top 7 Frequency Counts per Date Among Lag Metrics",
              col.names = c("Date", "Occurrences"))
+}
 ```
 
 If there are any lag adjusted metrics in the metric-filtered dataset, the most frequently occurring dates in the **lag-adjusted** metrics will be shown below. There should be a direct relationship between these dates and the dates above (ie each date above should be `r fundamental_data_lag_adjustment`) days ahead of the dates below.

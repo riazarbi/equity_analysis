@@ -40,7 +40,6 @@ payout_ratio_stddev <- 0.1
 #volume_data <- c("date", "VOLUME")
 #market_metrics <- c("CUR_MKT_CAP")
 #fundamental_metrics <- c() 
-#market_metrics <- c()
 
 # Simulated
 constituent_index <- "RISK_FREE_RANDOMS"
@@ -54,8 +53,9 @@ fundamental_metrics <- c()
 # Specify if fundamental data needs lag adjustment
 # we use k-means clustering to tag the metrics for adjustment or not.
 # if only 1 cluster, all will be lagged. If more then 1 cluster, only the slowest-updated metrics will be lagged.
-fundamental_data_metric_types <- 1 # auto will auto-detect number of clusters. Override with a number if you want.
 fundamental_data_lag_adjustment <- 0 # days. How many do you want to shift your fundamental data back? 
+# if there is a lag adjustment, then is the fundamental data heterogenous?
+fundamental_data_metric_types <- 1 # auto will auto-detect number of clusters. Override with a number if you want.
 
 ##################################################################
 # GENERAL TRADING PARAMETERS

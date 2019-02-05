@@ -25,6 +25,13 @@ if(delete_data == "y") {
 } else {
   print("Not deleting all datasets...")
 }
+
+# Reset all directories
+run_data_report <- readline(prompt=paste("Run data report? (tends to fail on simulated data). [N/y]: ", sep=" "))
+if(run_data_report=="y" | run_data_report == "Y") {
+  print("Data report will be run after loading data.")
+} else print("Data report will NOT be run after loading data.")
+
 # Delete trials
 delete_trials <- readline(prompt=paste("Delete all files in the trials directory? [N/y]: ", sep=" "))
 if(delete_trials == "y") {
@@ -57,6 +64,10 @@ source("scripts/2_process_data.R")
 
 print("Running 3_load_data.R")
 source("scripts/3_load_data.R")
+
+if(run_data_report=="y" | run_data_report=="Y") {
+  rmarkdown::render(file.path(results_directory, "data_quality.Rmd"))
+}
 
 print("Running 4_run_trials.R")
 source("scripts/4_run_trials.R")

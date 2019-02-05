@@ -32,7 +32,7 @@ paper/ARBI_BACKTESTWORKFLOW_files/*
 # RStudio files
 .Rproj.user/
 # Rproj file
-*.Rproj
+#*.Rproj
 
 # produced vignettes
 vignettes/*.html
