@@ -15,7 +15,7 @@ Journal: Journal of Finance
 Ref1: University of Cape Town, South Africa
 RemovePreprintSubmittedTo: yes
 abstract: |
-  Researchers into anomalous equity returns ideally seek to make their results repeatable by others. Usually, only a small subset of the decisions made in the backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which to not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the Reproducible Research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
+  Research findings relating to anomalous equity returns should ideally be repeatable by others. Usually, only a small subset of the decisions made in a particular backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which do not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the reproducible research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
   
 addfootrule: yes
 addtoprule: yes
@@ -327,9 +327,9 @@ This project should be useful to:
 
 ## Intended use case
 
-It is intended that a researcher will clone this repository to a local directory and then create an RStudio project in the project root directory. Sourcing the script `scripts/0_all.R` will results in several dialogs, after which the script will run the entire backtesting workflow from data acquisition to cross validation in an automated fashion. The scripts will output actions to the console as they step through their procedures.
+It is intended that a researcher will clone this repository to a local directory and then create an RStudio project in the project root directory. Sourcing the script `scripts/0_all.R` will result in several dialogs, after which the script will run the entire backtesting workflow from data acquisition to cross validation in an automated fashion. The scripts will output actions to the console as they step through their procedures.
 
-The scripts which `0_all.R` calls can all be run standalone, and can be edited transparently. A common workflow is to copy the project directory to a removable flash drive, run `data_processing/1_bloomberg_to_datalog.R` on its own on a Bloomberg terminal, and then return to an analysts workstation (or docker container) to continue analysis. The researcher will then edit the `scripts/parameters.R` file to specify backtest behaviour, add a series of algorithm scripts in the `trials` directory and run the `0_all.R` again. The results of the backtest are saved to the `results` directory.
+The scripts which `0_all.R` calls can all be run stand-alone, and can be edited transparently. A common workflow is to copy the project directory to a removable flash drive, run `data_processing/1_bloomberg_to_datalog.R` on its own on a Bloomberg terminal, and then return to an analyst's workstation (or docker container) to continue analysis. The researcher will then edit the `scripts/parameters.R` file to specify backtest behaviour, add a series of algorithm scripts in the `trials` directory and run the `0_all.R` again. The results of the backtest are saved to the `results` directory.
 
 These results can be used to create a research paper, which can be saved to the project root. Prior to release, the researcher can delete the source data for licensing reasons (but retain the query scripts!) and publish the entire compendium to a code hosting site such as [GitHub](https://github.com). Distributing query scripts along with the code means that a replicator need not have any ambiguity around the method of data collection and cleaning.
 
@@ -708,7 +708,7 @@ The trading algorithm will run a `get_quote` function to get price quotes for ea
 
 ### Lag-detection
 
-The script also reads from `parameters.R` whether a lag must be imposed on fundamental data. This is necessary when fundamental dates are based on official financial reporting dates, not actual dates of release (which can be much later). Sometimes accompanying financial data is of a hybrid variety, where some metrics need to be lagged (typically financial statement data) while others (typically ratios) do not. For these datasets, the user has the option of enabling k-means cluster detection of the two populations of metrics. The k-means algorithm tries to cluster the fundamental metrics according to the number of occurrences of each metric in the population, the rationale being that financial data is updares far less frequently than ratio data. Once the clusters have been computed, the cluster of metrics with the lowest number of occurrences is has a pre-specified lag imposed on it, while the other cluster(s) are left unmodified.
+The script also reads from `parameters.R` whether a lag must be imposed on fundamental data. This is necessary when fundamental dates are based on official financial reporting dates, not actual dates of release (which can be much later). Sometimes accompanying financial data is of a hybrid variety, where some metrics need to be lagged (typically financial statement data) while others (typically ratios) do not. For these datasets, the user has the option of enabling k-means cluster detection of the two populations of metrics. The k-means algorithm tries to cluster the fundamental metrics according to the number of occurrences of each metric in the population, the rationale being that core financial data is updated far less frequently than financial ratios with a market component. Once the clusters have been computed, the cluster of metrics with the lowest number of occurrences have the dates of their occurrences lag-adjusted, while the other cluster(s) are left unmodified.
 
 ### Data quality reporting
 
@@ -833,7 +833,7 @@ The `trade.R` script performs the following operations -
 4) Check if `ticker_data` has been loaded to memory and if it is less than 24 hours (in heartbeat time) old.
     - If not, reload `ticker_data`.
 5) Check if `runtime_ticker_data` is stale.
-    - If it is stale, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function. **Drop and tickers that do not have sufficient data to compute a target weight**. The `market_metrics` and `fundamental_metrics` parameters are the metrics that are checked for elminating tickers. **If the algorithm uses a metric not specified in these parameters, then a ticker that is included but has insufficient information will cause a halt to the backtest.**
+    - If it is stale, run `get_runtime_dataset` again and then run `compute_weights` again to obtain new `target_weights`. We only re-compute `target_weights` when `runtime_ticker_data` changes because it is the only input to the `compute_weights` function. **Drop any tickers that do not have sufficient data to compute a target weight**. The `market_metrics` and `fundamental_metrics` parameters are the metrics that are checked for eliminating tickers. **If the algorithm uses a metric not specified in these parameters, then a ticker that is included but has insufficient information will cause a halt to the backtest.**
 6) Get the `transaction_log` and `trade_history` data objects and compute our current portfolio and cash positions. 
 7) Query latest prices for the positions to obtain a portfolio valuation.
 8) Compute `trades` by calling `compute_trades`, using `target_weights` and `positions` as arguments.
@@ -856,7 +856,7 @@ In a backtest environment, this trade matching needs to be simulated. In this co
 
 ### Backtest results
 
-A well specified `compute_weights` function will result in a successful backtest. The results of each backtest run by `4_run_trials.R` will be placed in the `results` directory according to the naming convention covered earlier.
+A well-specified `compute_weights` function will result in a successful backtest. The results of each backtest run by `4_run_trials.R` will be placed in the `results` directory according to the naming convention covered earlier.
 
 On completion of `4_run_trials.R`, the `results` subdirectories contain four files -
 
@@ -959,14 +959,14 @@ grid.raster(img)
 
 ## Application and Examples
 
-This section details the use of the environment to perform a variety of demonstations and tests. All of these tests were conducted on the `lag-correction` branch of https://github.com/riazarbi between the 1st and 5th February 2019. This branch will be merged into `master` on the 11th February 2019. This code was used largely unmodified for each test; the only differences between each test are those contained in the `parameters.R` file and the specific `trials` files. Unmodified copies of these files can be found at https://github.com/riazarbi/equity_analysis_trials. 
+This section details the use of the environment to perform a variety of demonstrations and tests. All of these tests were conducted on the `lag-correction` branch of https://github.com/riazarbi between the 1st and 5th February 2019. This branch will be merged into `master` on the 11th February 2019. This code was used largely unmodified for each test; the only differences between each test are those contained in the `parameters.R` file and the specific `trials` files. Unmodified copies of these files can be found at https://github.com/riazarbi/equity_analysis_trials. 
 
 Each test followed the same protocol - 
 
 1. Create a `parameters.R` file and trial script (or several, if necessary)
 2. Create a `deploy.R` script 
 3. Zip each backtest
-4. `docker run ... riazarbi/equity_analysis` a new backtest environment. This environemt already contains the code from the guthub repository mentioned above.
+4. `docker run ... riazarbi/equity_analysis` a new backtest environment. This environemt already contains the code from the GitHub repository mentioned above.
 5. Navigate to the correct url for the backtest environment
 6. Open the `equity_backtest` R project.
 7. Upload the relevant zip file. It is unzipped automatically by RStudio Server.
