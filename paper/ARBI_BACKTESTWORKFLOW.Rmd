@@ -2,7 +2,6 @@
 title: "A Data Scientific Approach to Equity Backtesting"
 Author1: Riaz Arbi
 Author2: Tim Gebbie
-BottomRFooter: \footnotesize Page \thepage
 output:
   pdf_document:
     fig_height: 3
@@ -11,12 +10,12 @@ output:
       in_header: Tex/packages.txt
     keep_tex: yes
     template: Tex/TexDefault.txt
+HardSet_layout: yes
 Journal: Journal of Finance
 Ref1: University of Cape Town, South Africa
 RemovePreprintSubmittedTo: yes
 abstract: |
   Research findings relating to anomalous equity returns should ideally be repeatable by others. Usually, only a small subset of the decisions made in a particular backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which do not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the reproducible research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
-  
 addfootrule: yes
 addtoprule: yes
 bibliography: Tex/ref.bib
@@ -30,7 +29,7 @@ linestretch: 1.2
 link-citations: yes
 margin: 2.3
 numbersections: yes
-HardSet_layout: yes
+BottomRFooter: \footnotesize Page \thepage
 AddTitle: yes
 toc: yes
 top: 2.5
@@ -974,11 +973,17 @@ Each test followed the same protocol -
 9. Follow prompts, entering appropriate answers for the particular backtest, and then wait for the backtest to complete. 
 10. Download results and compile results.
 
-In general, a backtest takes about 90 minutes per algortihm in the trials directory. That is, a 50-trial backtest will take up to 75 hours. These can be run in parallel, however, if one varies parameters to investigate outcomes in a range of trading conditions.
+In general, a backtest takes about 90 minutes per algortihm in the trials directory. That is, a 50-trial backtest will take up to 75 hours, if rebalanced daily and traded multiple times per day. These can be run in parallel, however, if one varies parameters to investigate outcomes in a range of trading conditions.
 
 ### Querying and assessing real data
 
-The first step in constructing a backtest is data collection. Once the data has been collected, it needs to be assesed for quality - how likely is a researcher to obtain an accurate or representative result, given the quality of the data? If an algorithm presumes that all data is available for each metric and for each ticker, what it the impact of a dataset that is missing entire ticker datasets on the accruacy of the result? What about data that contains all tickers, but is missing certain metrics? These sorts of issues are case-specific, so we provide an automated report that provides the researcher with measures of dataset health. The expectation is that the researcher will reflect on these measures and decide on an appropriate course of action. Appropriate courses of action could be -
+The first step in constructing a backtest is data collection. Once the data has been collected, it needs to be assesed for quality. Typical questions to be asked include - 
+
+- How likely is a researcher to obtain an accurate or representative result, given the quality of the data? 
+- If an algorithm presumes that all data is available for each metric and for each ticker, what it the impact of a dataset that is missing entire ticker datasets on the accuracy of the result? 
+- What about data that contains all tickers, but is missing certain metrics? 
+
+These sorts of issues are case-specific, so we provide an automated report that provides the researcher with measures of dataset health. The expectation is that the researcher will reflect on these measures and decide on an appropriate course of action. Appropriate courses of action could be -
 
 - Collect more data
 - Change the backtest window
@@ -991,13 +996,13 @@ The following paragraphs walk through a typical data quality assessment. They as
 
 A copy of the `equity_analysis` code package must be loaded on a Bloomberg terminal. If the user does not have rights to install R on the terminal, a portable version of R and RStudio for Windows can be installed on to removable storage media. The R installation must have the necessary packages (as detailed in `0_all.R`) pre-installed, since installing packages on-the-fly requires administrator rights.
 
-Once RStudio has been loaded on the terminal and the `equity_analyis` R project has been loaded, the user needs to log in to the Bloomberg user interface using provided credentials. This should start the `bbcomm.exe`background process, which is what R uses to communicate with Bloomberg. One can verify that `bbcomm.exe` is running by inspecting the Task Manager process panel.
+Once RStudio has been loaded on the terminal and the `equity_analyis` R project has been loaded, the user needs to log in to the Bloomberg user interface using provided credentials. This should start the `bbcomm.exe` background process, which is what R uses to communicate with Bloomberg. One can verify that `bbcomm.exe` is running by inspecting the Task Manager process panel.
 
 Query parameters are set directly in the `1_bloomberg_to_datalog.R` script. The user should set the stock index to query, the date range to query constituent indexes for, the currency to be returned, and the list of market and fundamental metrics to query. These metrics are separated because market data is an intersection of an index and a stock, while fundamental data is a property of the stock alone. Therefore market data will vary from exchange to exchange, but fundamental data will not. Fundamental data is always associated with the primary exchange ticker code, not the secondary exchange code, and the ISIN. We rely on ISIN codes for stability as these are unchanging over time.
 
-Our example queries the JSE All Share Iddex and Top 40 Indexes for a date range of 240 months, beginning on the 27th of January 2019. We query 15 metadata fields, 26 market data fields and 79 fundamental fields. The fields specified can be inspected in the code repository of this project. The script queries all data relating to those metrics for the period 1 January 1960 to 27 January 2019. We ran our queries on the 27th January 2019.
+Our example queries the JSE All Share Index and Top 40 Indexes for a date range of 240 months, beginning on the 27th of January 2019. We query 15 metadata fields, 26 market data fields and 79 fundamental fields. The fields specified can be inspected in the code repository of this project. The script queries all data relating to those metrics for the period 1 January 1960 to 27 January 2019. 
 
-Once these query parmeters have been set, we enter `source("scripts/1_bloomberg_to_datalog.R")` into the R console and press enter. The script takes approximately 30 minutes to run and saves over 14000 files to the datalog directory. Once complete, we transfer the removable media to a permanent workstation and transfer across the results.
+Once these query parameters have been set, we enter `source("scripts/1_bloomberg_to_datalog.R")` into the R console and press `<ENTER>`. The script takes approximately 30 minutes to run and saves over 14000 files to the datalog directory. Once complete, we transfer the removable media to a permanent workstation and transfer across the results.
 
 Here, we simply open up the `equity_analysis` R project and execute `source("scripts/0_all.R")`. We do not clear the dataset directory or trials directory, but we do run the data quality check. The `parameters.R` settings are default, except that `market_metrics` and `fundamental_metrics` are set to empty vectors to ensure no filtering is done, the fundamental lag is set to 120 days and the fundamental metrics clusters parameters is set to `auto`.
 
@@ -1012,8 +1017,8 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-metric-com
 grid.raster(img)
 ```
 
-This chart shows that some metrics are more complete than others. 
-In particular, `TOT_RETURN_INDEX_GROSS_DVDS` and `CUR_MKT_CAP` are largely complete from the year 2004 onwards. These metrics may be good candidates for portfolio performance scoring and the algorithm weighting, respectively. 
+This chart shows that some metrics are more complete than others. In particular, 
+total return with gross dividends and market capitalization are largely complete from the year 2004 onwards. These metrics may be good candidates for portfolio performance scoring and the algorithm weighting, respectively. 
 
 The report also shows the overall monthly market data `NA` percentages over time. `NA` values are problematic because they result in constituents being dropped from the dataset. Ideally a user will select the subset of metrics and the date range that minimizes this error while testing useful hypotheses.
 
@@ -1037,7 +1042,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/k-means-silhouett
 grid.raster(img)
 ```
 
-The data health report also show histograms of the `NA` proportions per market metric group per ticker. The groups are overall market fields, alogorthm-related fields, price-related fields, volume, and last price. This allows the user to discern the distribution of `NA` values across the constituents. One wants as many of the tickers as possible to have as low `NA` counts as possible, because this means less tickers will be dropped from the dataset at runtime.
+The data health report also show histograms of the `NA` proportions per market metric group per ticker. The groups are overall market fields, alogorithm-related fields, price-related fields, volume, and last price. This allows the user to discern the distribution of `NA` values across the constituents. One wants as many of the tickers as possible to have as low `NA` counts as possible, because this means less tickers will be dropped from the dataset at runtime.
 
 ```{r, fig.height = 4, fig.cap="Fundamental Metric Clusters"}
 library(png)
@@ -1056,7 +1061,7 @@ grid.raster(img)
 ```
 
 
-The corresponding monthly `NA` timeseries plot is shown below. The best-quality period appears to be after 2010.
+The corresponding monthly `NA` timeseries plot is shown below. The best-quality period appears to be after 2010, and the base `NA` rate for that period has dropped from over 20% to under 5%.
 
 ```{r, fig.height = 4, fig.cap="Monthly Overall Market NA Over Time, Filtered Dataset"}
 library(png)
@@ -1074,13 +1079,13 @@ After obtaining data from a suitable source and validating its quality, the rese
 
 There are three necessary conditions for a backtest - 
 
-1) There is data in the datalog
-2) The backtest parameters are specified in the `parameters.R` file
+1) There is data in the `datalog`.
+2) The backtest parameters are specified in the `parameters.R` file.
 3) There is at least one algorithm file in the `trials/` directory.
 
 If these three conditions have been met, the researcher need only `source("scripts/0_all.R")`, complete the prompts, and then wait for the results. 
 
-In order to validate that the backtester is functioning correctly, we run seven backtests on identical data, with an identical algorithm. 
+In order to validate that the backtester is functioning correctly, we run six backtests on identical data, with an identical algorithm. 
 
 In order to ensure that data quality is not an issue, we run these backtests against synthetically generated data, which can be replicated by running `1_simulated_to_datalog.R` prior to running the catchall `0_all.R` script. 
 
@@ -1091,7 +1096,7 @@ In order to ensure that data quality is not an issue, we run these backtests aga
 |10	         |	Same as 8 but rebalance quarterly. Expect lower correlation with index than 2. |
 |11	         |	Same as 8 but 0.5% transaction costs. Expect lower performance than 8. |
 |12	         |	Same as 8 but 5% transaction costs. Expect even lower performance than 8. |
-|13	         |	Same as 12 but portfolio 10000 and minimum commisison of 10. Expect transaction costs to eat portolio. |
+|13	         |	Same as 12 but portfolio 10000 and minimum commission of 10. Expect transaction costs to eat portolio. |
 Table: Details of Each backtest Instance for Engine Validation Exercise\label{Table1}
 
 The results of the above backtests are available at https://github.com/riazarbi/equity_analysis_trials.
@@ -1104,7 +1109,7 @@ correl <- readRDS("/home/riaz/projects/equity_analysis/paper/data/correlation.Rd
 knitr::kable(correl, caption = "Identical Portfolios, Varying Rebalancing Periodicity, Return Correlations")
 ```
 
-With regard to the transaction costs test, trial 8 strictly dominates trial 11, with strictly dominates trial 12. As expected, trial 11 is much closer to trial 8 thna trial 12.
+With regard to the transaction costs test, trial 8 strictly dominates trial 11, which strictly dominates trial 12. As expected, trial 11 is much closer to trial 8 than trial 12.
 
 ```{r, fig.height = 4, fig.cap="Identical Portolios, Varying Transaction Costs"}
 library(png)
@@ -1113,7 +1118,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/transaction_costs
 grid.raster(img)
 ```
 
-The low-value, high minimum commission portfolio (portfolio 13) also behaves as expected, descending immediately into bankruptcy. The tearsheet for this portfolio indicates that it only completed 442 trades. The portfolio did manage to trade sporadically until the end of the backtest window, whenever a stock it happened to own could be swapped for a desirable stock in the same heartbeat. This suggests that the code would benefit from a `break` in the event of bankruptcy.
+The low-value, high-minimum-commission portfolio (portfolio 13) also behaves as expected, descending immediately into bankruptcy. The tearsheet for this portfolio indicates that it only completed 442 trades. The portfolio did manage to trade sporadically until the end of the backtest window, whenever a stock it happened to own could be swapped for a desirable stock in the same heartbeat. This suggests that the code would benefit from a `break` in the event of bankruptcy.
 
 ```{r, fig.height = 4, fig.cap="Identical Portolios, Smaller Portfolio Size and High Minimum Commission"}
 library(png)
@@ -1128,24 +1133,15 @@ These tests demonstrate how one would go about conducting a backtest from a cold
 
 As detailed in \ref{Backtest Overfitting}, running many trials on the same dataset seriously increases the risk of backtest ovefitting. This is especially risky for a process that is amenable to parameter tuning (varying reabalancing periods, portfolio sizes and weighting rules and the like). For this reason, we include a backtest overfitting report in the `results/` directory. 
 
-In this section we run a series of trials that randomly select stocks every rebalancing period and then weight them randomly. When the next rebalancing period occurs, a new portfolio set is generated, leading to a new set of target weights. This results in a lost of trading activity. Because these strategies have absolutely no underlying rule, we expect that there should be no correlation between in sample and out of sample performance. One caveat is that randomness can mask underlying systematic processes. In our initial tests we discovered that randomly weighting a fixed number of stocks resulted in correlated portfolio returns. This is because, in a situation where any stock is as likely to go up as go down, and we are weighting them randomly, the up movements tend to cancel the down movements in aggregate, and the portfolios behave much like an equally weighted portolio. For this reason our algorithms also randomly select the number of stocks to hold each period.
+The `5_report.R` script packages the portfolio data from all trials into a pair of dataframes that can be fed into the R `PBO` packages to calculate a range of backtest overfitting tests. These tests are run by `6_cross_validate.R`, which computes the necessary statistics and renders the results in an html table.
 
-We divide our backtests across six environments. In each environment we run 50 identical trials. Because the backtests run in a detemerministic fashion, the random seed that we set in the `parameters.R` file ensures that these trials will run in lockstep. This property is useful for varying control parameters to precisely measure how they affect outcomes. in this case, however, we want as much diversity in behaviur as possible. 
+In order to demonstrate this functionality, we simulate a set of portfolio returns and portfolio values that would have been derived from truly random returns. We do this by creating an R `data frame` with 50 columns and 2000 rows; each of these cells has a random sample taken from the standard normal distribution. Each column represents a portolio and each row a date. We adjust the standard deviation to a reasonable daily rate ($sd = \frac{1}{365^2}$) to make the distribution compatible with a daily compounding rates. We assign a dates column to the `data frame` and then save it do disk, in the location that the cross validation script looks for portfolio array returns. 
 
-Within each backtest enviroment, each trial should have no correlation with any other one. In order to introduce a diversity of returns across the backtest environments, we vary the rebalancing parameter. Because the weights are randomly reinitialized each period, varying the rebalancing periodicity will effectively break the lockstep behaviour of the environments.
+Next we create a price data frame from the returns data frame by converting each column into a rolling compounding column - 
 
-|Trial ID| Variation                                            | Trials Completed|
-|-----------:|:-------------------------------------------------|:----------------|
-|2	         |	4 years, no transaction costs, rebalance daily, trade daily, random weight. |
-|3	         |	Same as 2 but rebalance weekly.|
-|4	         |	Same as 2 but rebalance quarterly. |
-|5	         |	Same as 2 but rebalance yearly. ||
-|6	         |	Same as 2 but never rebalance. |50|
-Table: Details of Each Backtest Instance for PBO Demonstration\label{Table1}
+$$price_t = (1+return_t)*(price_{t-1})$$
 
-Event-based backtesting is computationally expensive; after 24 hours we terminated the backtester trading process and proceeded to report generation.
-
-The process for running these backtests in exactly the last section, with the exception that we interrrupt the console prematurely and then manually run `5_report.R` and `6_cross_validate.R`. Because the `cross_validate.R` script depends solely on the portfolio returns array, we can extract the portfolio array from each backtest environmment, join them, and re-run the `6_cross_validate.R` script on the joined array to obtain an overall cross validation report. The array of returns is plotted below. The best-performing portfolio appear to perfom substantially better than the risk free rate, and nively looks like a good candidate for selection.
+We save this data frame to disk in the expected location as well. Next, we run `6_cross_validate.R` and inspect the html report.The array of returns is plotted below. The portfolio values appear to be truly random.
 
 ```{r, fig.height = 4, fig.cap="Portfolio Returns Time Series, Random Weighting Algorithms"}
 library(png)
@@ -1156,16 +1152,18 @@ grid.raster(img)
 
 Once the cross validation report has been generated we can inspect it so assess the probability of backtest overfitting. The excess return metric we use is the same as the metric used in @LopezdePrado2013 - the Sharpe Ratio. This ratio is defined as 
 
-$$\Sharpe = \frac{ave\ (Excess\ Return)}{sd(Excess\ Return)}$$
-Where the $Excess Return$ is the portfolio return over and above the risk free return.
+$$Sharpe = \frac{ave\ (Excess\ Return)}{sd(Excess\ Return)}$$
+> where the $Excess Return$ is the portfolio return over and above the risk free return.
+
+The results of the PBO execrcise are summarised below.
 
 ```{r}
-summary$results <- c(1,1,1,1)
-rownames(summary) <- c("PBO", "Slope", "Adjusted R-squared", "Probability of Loss")
-colnames(summary) <- "Value"
-summary$Range <- c("0->1", "-inf->inf", "0->1", "0->1")
-summary$Desirable  <- c("1", "NA", "1", "0")
-knitr::kable(summary, caption="PBO Results")
+results <- c(1,-0.00008,0.98,1)
+names(results) <- c("PBO", "Slope", "Adjusted R-squared", "Probability of Loss")
+colnames_summary <- "Value"
+summary_Range <- c("0->1", "-inf->inf", "0->1", "0->1")
+summary_Desirable  <- c("1", "NA", "1", "0")
+knitr::kable(cbind(results, summary_Range, summary_Desirable), col.nmaes=colnames_summary, caption="PBO Results")
 ```
 
 
@@ -1187,7 +1185,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/oos_degradation.p
 grid.raster(img)
 ```
 
-Finally, tha pairs plot shows little relationship between in sample and out of sample performance.
+Finally, the pairs plot shows little relationship between in sample and out of sample performance.
 
 ```{r, fig.height = 4, fig.cap="Pairs Pot, Random Weighting Algorithms"}
 library(png)
@@ -1196,7 +1194,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/pairs_plot.png")
 grid.raster(img)
 ```
 
-The cross validation report works as expected - given a sample of truly random returns, some of which look promising, it reports that the result is probably a result of backtest overfitting.
+The cross validation report works as expected. Given a sample of truly random returns, some of which look promising, it reports that the result is probably a result of backtest overfitting.
 
 
 \newpage
@@ -1211,8 +1209,6 @@ The data processing script (which converts the `datalog` into `datasets`) is hig
 
 Trading heartbeat processing time increases linearly with time. This is a function of disk IO, and the fact that the transaction log and trade history files (which are read and written each heartbeat) grow with time. This processing time could be significantly reduced by keeping both of these datasets in memory. This has not been implemented because reading and writing each heartbeat to disk facilitates transparency. If a backtest crashes, a researcher can load the files of the last heartbeat to investigate the cause. If the files were kept in memory this would not be possible. There are several possible solutions to this problem. For instance, the process could write each heartbeat, but read from memory. Or the IO could write to a ramdisk which is regularly synchronised to the hard disk, effectively decoupling the heartbeat processing time from the bottleneck. But these solutions are not without their risks, and the risks have not been weighed up as part of this project.
 
-At present the entire ticker dataset for a particular index is loaded into memory at runtime. This does not present problems for small datasets, but large datasets will consume large amounts of memory. This can be mitigated by dropping all metrics except those necessary for the backtest. This has not been implemented.
-
 The crafting of portfolio-weighting algorithms is challenging. We have included three examples under `scripts/trading/sample_trials` - market capitalisation, equal, and random weighting. It would be useful to include more elaborate examples to give researchers a broader choice of starting points - especially with regard to subsetting portfolios according to sector and using fundamentals and ratios as a basis for portfolio weighting.
 
 Transaction costs and slippage are modelled naively - either as a percentage of the total trade value or a hard minimum. These two factors encompass entire fields of research in their own right. It would be useful to generalise how these factors are incorporated into the backtest so that more complex estimation methods can be dropped in easily.
@@ -1221,7 +1217,7 @@ As present portfolio rebalancing periodicity is a global parameter. However, sin
 
 ### Enhancements
 
-In line with our goal of enabling high-quality, reproducible research, it would be desirable to include automated report generation of dataset characteristics and quality. The data processing pipeline accommodates multiple sources and versions of data, so a reporting suite built around the comparative quality of various data sources would be useful. Such a suite could contain metrics such as breadth (number of tickers) and depth (number of metrics) of coverage, accuracy and frequency of retroactive updates. 
+In line with our goal of enabling high-quality, reproducible research, it would be desirable to expand the data quality reporting to compare multiple data sources and make a 'est guess' synthetic dataset out of muliple fragmented sources.
 
 On the other end of the pipeline, the tear sheets could be augmented with more summary statistics. Similarly to the data quality reporting, the underlying data is present in the appropriate form. What is needed is the computation of summary statistics and inclusion of those summary statistics in the parametrised report. This would require research into the relevant R packages and the modification of the `tearsheet.Rmd` template file into a more comprehensive report.
 
