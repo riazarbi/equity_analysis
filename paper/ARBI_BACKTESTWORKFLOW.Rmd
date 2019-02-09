@@ -977,10 +977,10 @@ In general, a backtest takes about 90 minutes per algortihm in the trials direct
 
 ### Querying and assessing real data
 
-The first step in constructing a backtest is data collection. Once the data has been collected, it needs to be assesed for quality. Typical questions to be asked include - 
+The first step in constructing a backtest is data collection. Once the data has been collected, it needs to be assessed for quality. Typical questions to be asked include - 
 
 - How likely is a researcher to obtain an accurate or representative result, given the quality of the data? 
-- If an algorithm presumes that all data is available for each metric and for each ticker, what it the impact of a dataset that is missing entire ticker datasets on the accuracy of the result? 
+- If an algorithm presumes that all data is available for each metric and for each ticker, what is the impact of a dataset that is missing entire ticker datasets on the accuracy of the result? 
 - What about data that contains all tickers, but is missing certain metrics? 
 
 These sorts of issues are case-specific, so we provide an automated report that provides the researcher with measures of dataset health. The expectation is that the researcher will reflect on these measures and decide on an appropriate course of action. Appropriate courses of action could be -
@@ -994,7 +994,7 @@ These decisions can impact the final backtest outcome, but since the algorithm, 
 
 The following paragraphs walk through a typical data quality assessment. They assume that the user has an already-initialized environment, as detailed in \ref{Application}. The data source in this example is Bloomberg, and the query method is via the `Rblpapi` package. 
 
-A copy of the `equity_analysis` code package must be loaded on a Bloomberg terminal. If the user does not have rights to install R on the terminal, a portable version of R and RStudio for Windows can be installed on to removable storage media. The R installation must have the necessary packages (as detailed in `0_all.R`) pre-installed, since installing packages on-the-fly requires administrator rights.
+A copy of the `equity_analysis` code package must be loaded on a Bloomberg terminal. If the user does not have rights to install R on the terminal, a portable version of R and RStudio for Windows can be installed on to removable-storage media. The R installation must have the necessary packages (as detailed in `0_all.R`) pre-installed, since installing packages on-the-fly requires administrator rights.
 
 Once RStudio has been loaded on the terminal and the `equity_analyis` R project has been loaded, the user needs to log in to the Bloomberg user interface using provided credentials. This should start the `bbcomm.exe` background process, which is what R uses to communicate with Bloomberg. One can verify that `bbcomm.exe` is running by inspecting the Task Manager process panel.
 
@@ -1008,7 +1008,7 @@ Here, we simply open up the `equity_analysis` R project and execute `source("scr
 
 Once the script has passed the data quality report generation step, it can be terminated. One convenient way to terminate the script prematurely is to leave the `trials/` directory empty; this results in speedy conclusion of the script.
 
-The data quality `html` report can be obtained frmom the `results/` directory. It is accompanied by a sidecar `.Rmd` file, which can be edited and re-run for exploratory analysis. The report contains some datalog summary statistics which validate that all the information in the datalogs are being transferred to the at-rest datasets. It also contains a market data field completeness chart, which provides a visual representation of the proportion of each market metric that contain NA values across the dataset. 
+The data quality `html` report can be obtained from the `results/` directory. It is accompanied by a sidecar `.Rmd` file, which can be edited and re-run for exploratory analysis. The report contains some datalog summary statistics which validate that all the information in the datalogs are being transferred to the at-rest datasets. It also contains a market data field completeness chart, which provides a visual representation of the proportion of each market metric that contain NA values across the dataset. 
 
 ```{r, fig.height = 4, fig.cap="Market Metric Field Completeness, Full Dataset"}
 library(png)
@@ -1017,8 +1017,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-metric-com
 grid.raster(img)
 ```
 
-This chart shows that some metrics are more complete than others. In particular, 
-total return with gross dividends and market capitalization are largely complete from the year 2004 onwards. These metrics may be good candidates for portfolio performance scoring and the algorithm weighting, respectively. 
+This chart shows that some metrics are more complete than others. In particular, total return with gross dividends and market capitalization are largely complete from the year 2004 onwards. These metrics may be good candidates for portfolio performance scoring and the algorithm weighting, respectively. 
 
 The report also shows the overall monthly market data `NA` percentages over time. `NA` values are problematic because they result in constituents being dropped from the dataset. Ideally a user will select the subset of metrics and the date range that minimizes this error while testing useful hypotheses.
 
@@ -1031,9 +1030,9 @@ grid.raster(img)
 
 The report also checks whether there are any tickers which do not have metadata, market data and fundamental data. These tickers will be excluded from the backtest. 
 
-Fundamental data cannot be submitted to the same `NA` criterion as above becuse it is slow moving, and hence has many `NA` values on a daily time scale. The backtester backfills fundamental data into daily values on the assumption that, if a stock has one fundamental data entry, it probably has a complete relevant set. Stocks with no fundamental data for a particular field have that field dropped, and, if they are required for the backtest, the ticker is excluded from the set. These exclusions are recorded in the console output at runtime. However since data is released on different schedules for different stocks, it is difficult to impute the best periodicity and aligment for assessing `NA` values. 
+Fundamental data cannot be submitted to the same `NA` criterion as above becuse it is slow-moving, and hence has many `NA` values on a daily time scale. The backtester backfills fundamental data into daily values on the assumption that, if a stock has one fundamental data entry, it probably has a complete relevant set. Stocks with no fundamental data for a particular field have that field dropped, and, if they are required for the backtest, the ticker is excluded from the set. These exclusions are recorded in the console output at runtime. However since data is released on different schedules for different stocks, it is difficult to impute the best periodicity and aligment for assessing `NA` values. 
 
-Another issue with fundamental data is lag adjustments. The amount of lag to be applied to fundamental data is specified in the `parameters.R` file. Some fundamental datasets contain a mix of daily and low-frequency data; the former does not need adjustment. To address this, the data loading script will auto-detect the number of clusters in the dataset, and, if there are two or mre, apply the lag to only the least-frequently-updated set of metrics. Our dataset does indeed have two lcusters, as shown by the k-means silhouette below. The metrics contained in cluster 2 in the below cluster plot have their dates lag-adjusted by 120 days.
+Another issue with fundamental data is lag adjustments. The amount of lag to be applied to fundamental data is specified in the `parameters.R` file. Some fundamental datasets contain a mix of daily and low-frequency data; the former does not need adjustment. To address this, the data loading script will auto-detect the number of clusters in the dataset, and, if there are two or mre, apply the lag to only the least-frequently-updated set of metrics. Our dataset does indeed have two clusters, as shown by the k-means silhouette below. The metrics contained in cluster 2 in the below cluster plot have their dates lag-adjusted by 120 days.
 
 ```{r, fig.height = 4, fig.cap="K-means Fundamental Metric Counts Silhouette Plot"}
 library(png)
@@ -1042,7 +1041,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/k-means-silhouett
 grid.raster(img)
 ```
 
-The data health report also show histograms of the `NA` proportions per market metric group per ticker. The groups are overall market fields, alogorithm-related fields, price-related fields, volume, and last price. This allows the user to discern the distribution of `NA` values across the constituents. One wants as many of the tickers as possible to have as low `NA` counts as possible, because this means less tickers will be dropped from the dataset at runtime.
+The data health report also show histograms of the `NA` proportions per market metric group per ticker. The groups are overall market fields, algorithm-related fields, price-related fields, volume, and last price. This allows the user to discern the distribution of `NA` values across the constituents. One wants as many of the tickers as possible to have as low `NA` counts as possible, because this means less tickers will be dropped from the dataset at runtime.
 
 ```{r, fig.height = 4, fig.cap="Fundamental Metric Clusters"}
 library(png)
@@ -1087,7 +1086,7 @@ If these three conditions have been met, the researcher need only `source("scrip
 
 In order to validate that the backtester is functioning correctly, we run six backtests on identical data, with an identical algorithm. 
 
-In order to ensure that data quality is not an issue, we run these backtests against synthetically generated data, which can be replicated by running `1_simulated_to_datalog.R` prior to running the catchall `0_all.R` script. 
+In order to ensure that data quality is not an issue, we run these backtests against synthetically-generated data, which can be replicated by running `1_simulated_to_datalog.R` prior to running the catchall `0_all.R` script. 
 
 |Trial ID| Variation                                            | 
 |-----------:|:-----------------------------------------------------|
@@ -1095,7 +1094,7 @@ In order to ensure that data quality is not an issue, we run these backtests aga
 |9	         |	Same as 8 but rebalance monthly. Expect lower correlation with index than 1.|
 |10	         |	Same as 8 but rebalance quarterly. Expect lower correlation with index than 2. |
 |11	         |	Same as 8 but 0.5% transaction costs. Expect lower performance than 8. |
-|12	         |	Same as 8 but 5% transaction costs. Expect even lower performance than 8. |
+|12	         |	Same as 8 but 5% transaction costs. Expect lower performance than 8. |
 |13	         |	Same as 12 but portfolio 10000 and minimum commission of 10. Expect transaction costs to eat portolio. |
 Table: Details of Each backtest Instance for Engine Validation Exercise\label{Table1}
 
@@ -1131,7 +1130,7 @@ These tests demonstrate how one would go about conducting a backtest from a cold
 
 ### Example of Backtest Overfitting Detection
 
-As detailed in \ref{Backtest Overfitting}, running many trials on the same dataset seriously increases the risk of backtest ovefitting. This is especially risky for a process that is amenable to parameter tuning (varying reabalancing periods, portfolio sizes and weighting rules and the like). For this reason, we include a backtest overfitting report in the `results/` directory. 
+As detailed in \ref{Backtest Overfitting}, running many trials on the same dataset seriously increases the risk of backtest overfitting. This is especially risky for a process that is amenable to parameter tuning (varying rebalancing periods, portfolio sizes and weighting rules and the like). For this reason, we include a backtest overfitting report in the `results/` directory. 
 
 The `5_report.R` script packages the portfolio data from all trials into a pair of dataframes that can be fed into the R `PBO` packages to calculate a range of backtest overfitting tests. These tests are run by `6_cross_validate.R`, which computes the necessary statistics and renders the results in an html table.
 
@@ -1150,7 +1149,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/random_returns.pn
 grid.raster(img)
 ```
 
-Once the cross validation report has been generated we can inspect it so assess the probability of backtest overfitting. The excess return metric we use is the same as the metric used in @LopezdePrado2013 - the Sharpe Ratio. This ratio is defined as 
+Once the cross validation report has been generated we can inspect it to assess the probability of backtest overfitting. The excess return metric we use is the same as the metric used in @LopezdePrado2013 - the Sharpe Ratio. This ratio is defined as 
 
 $$Sharpe = \frac{ave\ (Excess\ Return)}{sd(Excess\ Return)}$$
 > where the $Excess Return$ is the portfolio return over and above the risk free return.
@@ -1176,7 +1175,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/histogram_of_logi
 grid.raster(img)
 ```
 
-The out of sample performance degradation indicates that greater in sample performance results in worse out of sample performance.
+The out of sample performance degradation indicates that greater in-sample performance results in worse out-of-sample performance.
 
 ```{r, fig.height = 4, fig.cap="Out of Sample Performance Degradation, Random Weighting Algorithms"}
 library(png)
@@ -1185,7 +1184,7 @@ img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/oos_degradation.p
 grid.raster(img)
 ```
 
-Finally, the pairs plot shows little relationship between in sample and out of sample performance.
+Finally, the pairs plot shows little relationship between in-sample and out-of-sample performance.
 
 ```{r, fig.height = 4, fig.cap="Pairs Pot, Random Weighting Algorithms"}
 library(png)
