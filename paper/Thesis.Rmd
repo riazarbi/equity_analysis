@@ -16,6 +16,10 @@ Ref1: University of Cape Town, South Africa
 RemovePreprintSubmittedTo: yes
 abstract: |
   Research findings relating to anomalous equity returns should ideally be repeatable by others. Usually, only a small subset of the decisions made in a particular backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which do not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the reproducible research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
+  Research findings relating to anomalous equity returns should ideally be repeatable by others. Usually, only a small subset of the decisions made in a particular backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which do not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the reproducible research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
+  Research findings relating to anomalous equity returns should ideally be repeatable by others. Usually, only a small subset of the decisions made in a particular backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which do not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the reproducible research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
+  Research findings relating to anomalous equity returns should ideally be repeatable by others. Usually, only a small subset of the decisions made in a particular backtest workflow are released, which limits reproducability. Data collection and cleaning, parameter setting, algorithm development and report generation are often done with manual point-and-click tools which do not log user actions. This problem is compounded by the fact that the trial-and-error approach of researchers increases the probability of backtest overfitting. Borrowing practices from the reproducible research community, we introduce a set of scripts that completely automate a portfolio-based, event-driven backtest. Based on free, open source tools, these scripts can completely capture the decisions made by a researcher, resulting in a distributable code package that allows easy reproduction of results.
+  
 addfootrule: yes
 addtoprule: yes
 bibliography: Tex/ref.bib
@@ -38,6 +42,32 @@ top: 2.5
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 6, fig.height = 5, fig.pos="H", fig.pos = 'H')
 ```
+\pagebreak
+  
+\  
+  
+\  
+  
+\  
+  
+\  
+  
+\  
+  
+\  
+  
+\  
+  
+\begin{center}\textbf{Acknowledgements}\end{center}
+
+\begin{center}This work would not have been possible without the ongoing emotional and practical support of my wife Simone Lilienfeld. I would like to thank Tim Gebbie for his technical guidance and advice on how to ensure that this technical implementation is sufficiently statistically robust. Finally, I would like to extend my gratitude to the statistical computing community at large for the generosity with which knowledge has been shared with me during the course of my research.\end{center}
+
+
+
+
+
+
+
 
 \pagebreak
 
@@ -104,9 +134,9 @@ A realistic backtest also needs to address the following data quality issues:
 
 Regardless of the backtest approach, the following issues need to be taken into account to assess the realism of the model:
 
-1) Has *market impact* been taken into account? Return anomalies may be related to illiquidity. That is to say, the returns of a stock (or class of stocks) may appear to be abnormal, but there exists no liquidity in the market to make a trade at the modelled price. A realistic model will adjust for this by assuming minimal impact for only a small fraction of daily volume traded, increment the price if the trade size exceeds this volume, and respect the bid/ask spread when deciding that a trade matches.
+1) Has *market impact* been taken into account? Return anomalies may be related to illiquidity. That is to say, the returns of a stock (or class of stocks) may appear to be abnormal, but there exists no liquidity in the market to make a trade at the modelled price (@Harvey2017). A realistic model will adjust for this by assuming minimal impact for only a small fraction of daily volume traded, increment the price if the trade size exceeds this volume, and respect the bid/ask spread when deciding that a trade matches.
 
-2) Have *transaction costs* been taken into account? Similar to market impact, transaction costs are associated with every real trade but often ignored in research. The transaction costs depend on the commission structure, which varies by broker and exchange. A class of stocks may appear to exhibit abnormal returns but all suffer from high transaction costs because they are, for instance, penny stocks that all require an exorbitant minimum commission for small lots.
+2) Have *transaction costs* been taken into account? Similar to market impact, transaction costs are associated with every real trade but often ignored in research. The transaction costs depend on the commission structure, which varies by broker and exchange. A class of stocks may appear to exhibit abnormal returns but all suffer from high transaction costs because they are, for instance, penny stocks that all require an exorbitant minimum commission for small lots (@Loonat2018).
 
 3) Failing to account for *short positions or portfolio bankruptcy*. Portfolios can be long only or allow for short positions. Long-only portfolios can either hold stocks or cash. Portfolios that can be short can, in addition to long-only portfolios, lend stocks that they do not own. This is done by borrowing a stock and selling it in the market, with an expectation that the share price will decline, at which point a trader can buy it back and return it to the lender. Short positions involve interest charges and margin requirements that need to be taken into account. Long-only portfolios cannot have negative positions. Similarly, portfolio cash balances cannot be negative if no leverage (which attract interest charges) is employed. The psychological impact of portfolio behaviour needs to be accounted for as well - if a strategy has an average excess return of 2%, but there are several periods in which the return is -50%, then the researcher needs to interrogate whether a reasonable trader would maintain those positions.
 
@@ -122,21 +152,27 @@ All of the tools rely on a method that @LopezdePrado2013 named Combinatorially S
 
 1) Divide a matrix $M$ of the returns of a cohort of trials into an even number $S$ row-wise partitions, and then form all possible combinations of the partitions.
 3) Select all those combinations that contain $S/2$ partitions. That is, use those combinations which contain half of the returns, divided into segments. Call these combinations the set $C$. 
-2) Order each combination set of partitions $C$ chronologically and join them to form a training set $C_i{train}$. The remaining partitions in the matrix $M$ are joined to form the testing set $C_i{test}$, for this particular combination. $C_i{train}$ and $C_test$ are the same dimensions, by design.
-3) For each $C$, performance statistics are computed for each trial on the training set $C_i{train}$ and the testing set $C_i{test}$. Rank the trials accordingly. At the conclusion of this step, for each combination, the tester has a set of performance statistics in sample and out of sample, and the corresponding in and out of sample trials rankings.
+2) Order each combination set of partitions $C$ chronologically and join them to form a training set $C_i^{train}$. The remaining partitions in the matrix $M$ are joined to form the testing set $C_i^{test}$, for this particular combination. $C_i^{train}$ and $C_i^{train}$ are the same dimensions, by design.
+3) For each $C$, performance statistics are computed for each trial on the training set $C_i^{train}$ and the testing set $C_i^{test}$. Rank the trials accordingly. At the conclusion of this step, for each combination, the tester has a set of performance statistics in sample and out of sample, and the corresponding in and out of sample trials rankings.
 4) For each of these combinations $C$, determine the best in-sample strategy. Determine the relative rank of these best in sample strategies out of sample. Relative rank is defined as 
 
-$$Relative\ Rank =\frac{OOS\ Rank\ of\ IS\ Winner}{(Number\ of\ Trials + 1)}$$ 
+\begin{align}
+Relative\ Rank =\frac{OOS\ Rank\ of\ IS\ Winner}{(Number\ of\ Trials + 1)} 
+\end{align}
 
 The possible range of relative rank is therefore $[0-1]$.
 5) For each of these combinations, compute the logit $\lambda_i$, where 
 
-$$\lambda = ln \frac{Relative\ Rank}{(1-Relative Rank)}$$
+\begin{align}
+\lambda = ln \frac{Relative\ Rank}{(1-Relative Rank)}
+\end{align}
 
 Rankings which persist across in sample and out of sample performance will have a high logit value.
 6) Collect all the logits from all the combinations, and determine the relative frequency of logit occurrence across the $C$ combinations. That is, determine a density function $F$ where 
+\begin{align}
+\int dF = 1
+\end{align}
 
-$$\int_{a}^{b}F = 1$$.
 
 $F$ can be visualised as a histogram of the logits along with a density function.
 
@@ -144,7 +180,7 @@ The first of the tools presented is the *Probability of Backtest Overfitting* (P
 
 The second is the *Performance Degradation*, which determines the correlation between performance IS and OOS. This is useful for determining if memory effects are present, because it implies a relationship between the two ranks. It is simply the regression of OOS performance against IS performance, and is typically shown as a scatter plot with a regression line. A negative regression slope indicates the presence of memory effects.
 
-The third is the *Probability of loss*, which is the probability that the optimal IS strategy will deliver an OOS loss. It is the probability that the OOS Sharpe ratio will be less than zero.
+The third is the *Probability of Loss*, which is the probability that the optimal IS strategy will deliver an OOS loss. It is the probability that the OOS Sharpe ratio will be less than zero.
 
 The final one is *Stochastic dominance*, which determines whether the algorithm selection procedure is preferable to random selection of a strategy from the cohort. This test determines whether the distribution of ranks OOS stochastically dominates over the distribution of all OOS returns. If it does not, then the selection criteria is no better than random.
 
@@ -208,6 +244,8 @@ Up until the late 20th century, practical constraints limited the amount of supp
 In response to these calls, a taxonomy of reproducibility has emerged, allowing peers to effectively categorize research.
 
 This taxonomy allows us to distinguish *reviewability* (which assumes mathematical competence and focuses on reasoning) from *reproducibility* (which allow the extension of the review into assessment of mathematical competence and quality of data).
+
+\pagebreak
 
 | Term  | Description |
 | :------------ | :--------------------------------------------- | 
@@ -301,7 +339,7 @@ In the following section we unpack our implementation of a reproducible backtest
 
 We provide a working example of a reproducible equity-backtesting workflow that covers the full data-processing chain from acquisition to reporting. 
 
-All code is available at https://github.com/riazarbi/equity_analysis .
+All code is available at https://github.com/riazarbi/equity_analysis (@Arbi2019).
 
 The data processing scripts can consume multiple data sources, for multiple equity indexes, for any timeframe, and for arbitrary data attributes. The implementation is index-based. That is, data acquisition begins with obtaining constituents for an equity index at a point in time, and then proceeds to obtaining metadata and timeseries attributes for the constituents.
 
@@ -754,13 +792,13 @@ The `parameters.R` file sets parameters that are global to the trading session. 
 
 1) Index-specific
 
-- `constituent_index` - "JALSH"
-- `data_source` - "bloomberg"
-- `price_related_data` - c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")
-- `last_price_field` - c('date', "TOT_RETURN_INDEX_GROSS_DVDS") 
-- `volume_data` - c("date", "VOLUME")
-- `market_metrics` - c("CUR_MKT_CAP")
-- `fundamental_metrics` - c() 
+- `constituent_index` - the index. `"JALSH"`
+- `data_source` - the data source. `"bloomberg"`
+- `price_related_data` - a list of all metrics that are price related. `c("date", "PX_OPEN", "PX_HIGH", "PX_LOW", "PX_LAST")`
+- `last_price_field` - a list of the metrics used to value the portfolio holdings. `c("date", "TOT_RETURN_INDEX_GROSS_DVDS") `
+- `volume_data` - the volume metric. `c("date", "VOLUME")`
+- `market_metrics` - a list of all market metrics required for the algorithm to work. `c("CUR_MKT_CAP")`
+- `fundamental_metrics` - a list of all fundamental metrics required for the algorithm to work. `c("BS_SH_OUT", "DIVIDEND_YIELD")` 
 
 2) Lag-adjustment
 - `fundamental_data_lag_adjustment` - how much to lag data, in days. 0 will skip adjustment. 
@@ -1138,7 +1176,9 @@ In order to demonstrate this functionality, we simulate a set of portfolio retur
 
 Next we create a price data frame from the returns data frame by converting each column into a rolling compounding column - 
 
-$$price_t = (1+return_t)*(price_{t-1})$$
+\begin{align}
+price_t = (1+return_t)*(price_{t-1})
+\end{align}
 
 We save this data frame to disk in the expected location as well. Next, we run `6_cross_validate.R` and inspect the html report.The array of returns is plotted below. The portfolio values appear to be truly random.
 
@@ -1151,10 +1191,13 @@ grid.raster(img)
 
 Once the cross validation report has been generated we can inspect it to assess the probability of backtest overfitting. The excess return metric we use is the same as the metric used in @LopezdePrado2013 - the Sharpe Ratio. This ratio is defined as 
 
-$$Sharpe = \frac{ave\ (Excess\ Return)}{sd(Excess\ Return)}$$
+\begin{align}
+Sharpe = \frac{\mathbb{E}\ (Excess\ Return)}{\mathrm{Std}(Excess\ Return)}
+\end{align}
+
 > where the $Excess Return$ is the portfolio return over and above the risk free return.
 
-The results of the PBO execrcise are summarised below.
+The results of the PBO exercise are summarised below.
 
 ```{r}
 results <- c(1,-0.00008,0.98,1)
@@ -1237,6 +1280,8 @@ This collection of scripts make it possible to test an investment algorithm agai
 Using this code-base as a starting point should save a researcher a great deal of time in preparing stock data for backtesting, and the open source nature of the project ensures that any researcher can comb the operations for bugs or implement features that are not present. While it is not expected that this code base is necessary or sufficient for end-to-end backtesting, it represents a solid base for ongoing development. 
 
 It is hoped that researchers will treat this project as a reproducible project in and of itself. That is, they will inspect the code, ensure that it is working as intended (or suggest fixes) and thereby verify it as a legitmate base for engaging in the real meat of backtesting - discovering anomalies.
+
+\pagebreak
 
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->
