@@ -81,7 +81,7 @@ df_melt = melt(total_returns, id.vars = 'date')
 dygraph(total_returns, 
                 main = "All Trials Normalised Total Returns", 
         ylab = "Indexed Value") %>%
-  dyLegend(width = 600) %>%
+  dyLegend(width = 600, show = "follow") %>%
   dyOptions(maxNumberWidth = 20, stackedGraph = FALSE) %>%
   dyRangeSelector %>%
   dyRebase(value=100) %>%
@@ -93,7 +93,7 @@ dygraph(total_returns,
 
 We use the methods described in the (Probability of Backtest Overfitting) [https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253] to detect overfitting.
 
-To compute the probability of backtest overfitting, we need to define a performance metric. We can use any performance metric we want. We use the same performance metric here as was used in the orignal paper - the Sharpe Ration. This ratio is defined in the `pbo` package vignette as - 
+To compute the probability of backtest overfitting, we need to define a performance metric. We can use any performance metric we want. We use the same performance metric here as was used in the orignal paper - the Sharpe Ratio. This ratio is defined in the `pbo` package vignette as - 
 
 ```{r, echo = T}
 sharpe <- function(x,rf=daily_risk_free_rate) {

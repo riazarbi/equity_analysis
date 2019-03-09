@@ -1,36 +1,177 @@
-#######################################################################################
-print("")
-print("NEXT: Scraping ZAR data from Bloomberg...")
-
 # Clear environment
 rm(list=ls())
+print("NEXT: Loading libraries, defining paths and reading in parameters...")
+######################################################################################
+# DEFINE PARAMETERS
 
-# Log the time taken for the script
-begin <- Sys.time()
+# Specify indexes
+# Specify currency
+indexes <- c("JALSH", "TOP40")
+currency <- "ZAR"
+index_query_months <- 3
+ticker_query_start_date <- as.Date("1960-01-31")
+
+#######################################################################################
+# DEFINE DIMENSIONS
+
+# Fundamental Fields
+fundamental_fields <- c("PE_RATIO",
+                        "DIVIDEND_INDICATED_YIELD",
+                        "EQY_DVD_YLD_12M",
+                        "EQY_DVD_YLD_12M_NET",
+                        "SHAREHOLDER_YIELD_EX_DEBT",
+                        "SHAREHOLDER_YIELD",
+                        "PX_TO_BOOK_RATIO",
+                        "RETURN_COM_EQY",
+                        "PX_TO_CASH_FLOW",
+                        "PX_TO_FREE_CASH_FLOW",
+                        "PX_TO_SALES_RATIO",
+                        "BS_SH_OUT",
+                        "SALES_REV_TURN",
+                        "IS_COGS_TO_FE_AND_PP_AND_G",
+                        "IS_OPERATING_EXPN",
+                        "IS_OPER_INC",
+                        "IS_INT_EXPENSE",
+                        "IS_FOREIGN_EXCH_LOSS",
+                        "IS_NET_NON_OPER_LOSS",
+                        "IS_INC_TAX_EXP",
+                        "IS_INC_BEF_XO_ITEM",
+                        "IS_XO_LOSS_BEF_TAX_EFF",
+                        "MIN_NONCONTROL_INTEREST_CREDITS",
+                        "NET_INCOME",
+                        "EBIT",
+                        "PRETAX_INC",
+                        "IS_TOT_CASH_PFD_DVD",
+                        "IS_TOT_CASH_COM_DVD",
+                        "REINVEST_EARN",
+                        "IS_DEPR_EXP",
+                        "IS_RD_EXPEND",
+                        "BS_CASH_NEAR_CASH_ITEM",
+                        "BS_MKT_SEC_OTHER_ST_INVEST",
+                        "BS_ACCT_NOTE_RCV",
+                        "BS_INVENTORIES",
+                        "BS_OTHER_CUR_ASSET",
+                        "BS_CUR_ASSET_REPORT",
+                        "BS_GROSS_FIX_ASSET",
+                        "BS_ACCUM_DEPR",
+                        "BS_NET_FIX_ASSET",
+                        "BS_LT_INVEST",
+                        "BS_OTHER_ASSETS_DEF_CHRG_OTHER",
+                        "BS_TOT_ASSET",
+                        "BS_ACCT_PAYABLE",
+                        "BS_ST_BORROW",
+                        "BS_OTHER_ST_LIAB",
+                        "BS_CUR_LIAB",
+                        "BS_LT_BORROW",
+                        "BS_OTHER_LT_LIABILITIES",
+                        "BS_TOT_LIAB2",
+                        "BS_PFD_EQTY_&_HYBRID_CPTL",
+                        "MINORITY_NONCONTROLLING_INTEREST",
+                        "TOT_COMMON_EQY",
+                        "TOTAL_EQUITY",
+                        "TOT_LIAB_AND_EQY",
+                        "CF_NET_INC",
+                        "CF_DEPR_AMORT",
+                        "CF_OTHER_NON_CASH_ADJUST",
+                        "CF_CHNG_NON_CASH_WORK_CAP",
+                        "CF_CASH_FROM_OPER",
+                        "CF_DISP_FIX_ASSET",
+                        "CF_CAP_EXPEND_PRPTY_ADD",
+                        "CF_DECR_INVEST",
+                        "CF_INCR_INVEST",
+                        "CF_OTHER_INV_ACT",
+                        "CF_CASH_FROM_INV_ACT",
+                        "CF_DVD_PAID",
+                        "CF_INCR_ST_BORROW",
+                        "CF_INCR_LT_BORROW",
+                        "CF_REIMB_LT_BORROW",
+                        "CF_INCR_CAP_STOCK",
+                        "CF_DECR_CAP_STOCK",
+                        "CF_OTHER_FNC_ACT",
+                        "CF_CASH_FROM_FNC_ACT",
+                        "CF_NET_CHNG_CASH",
+                        "CF_CASH_PAID_FOR_TAX",
+                        "CF_ACT_CASH_PAID_FOR_INT_DEBT",
+                        "CF_FREE_CASH_FLOW",
+                        "EBITDA")
+  
+# Marketdata Fields
+market_fields <- c("PX_OPEN",
+                   "PX_OFFICIAL_CLOSE",
+                   "PX_LAST",
+                   "PX_HIGH",
+                   "PX_LOW",
+                   "VOLUME",
+                   "LAST_TRADE",
+                   "PX_ASK",
+                   "PX_BID",
+                   "MID",
+                   "NUM_TRADES",
+                   "TOT_RETURN_INDEX_GROSS_DVDS",
+                   "DAY_TO_DAY_TOT_RETURN_GROSS_DVDS",
+                   "CUR_MKT_CAP",
+                   "PE_RATIO",
+                   "DIVIDEND_INDICATED_YIELD",
+                   "EQY_DVD_YLD_12M",
+                   "EQY_DVD_YLD_12M_NET",
+                   "SHAREHOLDER_YIELD_EX_DEBT",
+                   "SHAREHOLDER_YIELD",
+                   "PX_TO_BOOK_RATIO",
+                   "RETURN_COM_EQY",
+                   "PX_TO_CASH_FLOW",
+                   "PX_TO_FREE_CASH_FLOW",
+                   "PX_TO_SALES_RATIO",
+                   "BS_SH_OUT")
+  
+# metadata Fields
+metadata_fields <- c("TICKER",
+                     "TICKER_AND_EXCH_CODE",
+                     "EQY_FUND_TICKER",
+                     "CNTRY_OF_DOMICILE",
+                     "GICS_SECTOR_NAME",
+                     "GICS_INDUSTRY_GROUP_NAME",
+                     "GICS_INDUSTRY_NAME",
+                     "GICS_SUB_INDUSTRY_NAME",
+                     "GICS_SUB_INDUSTRY",
+                     "LONG_COMP_NAME",
+                     "ID_BB_COMPANY",
+                     "ID_BB_GLOBAL",
+                     "ID_ISIN",
+                     "CRNCY",
+                     "QUOTED_CRNCY")
+
+# Define dates and create a date dimension
+# Periodicity is monthly but you can chosse any periodicity you like
+today <- Sys.Date()
+start_date <- ticker_query_start_date
+dates <- seq.Date(start_date, today, by = "month")
+
+#######################################################################################
+# MAKE SURE THE DIRECTORY STRUCTURE IS IN PLACE
+
+# Get working directory
+working_directory <- getwd()
+# Define directory paths
+data_root <- file.path(working_directory, "data")
+# Make sure data_directory exists, create it if it does not
+dir.create(data_root, showWarnings = FALSE)
+# Define datalog path
+data_directory <- file.path(data_root, "datalog")
+# Make sure data_directory exists, create it if it does not
+dir.create(data_directory, showWarnings = FALSE)
+
+#######################################################################################
+# LOAD LIBRARIES AND DEFINE FUNCTIONS
 
 # Load libraries
 library(tidyverse)
 library(Rblpapi)
 
-# connect to Bloomberg API
-conn <- tryCatch(blpConnect(), error = function(e) print("Bloomberg Connection Failed."))
-
-if(conn == "Bloomberg Connection Failed.") {
-  print("Skipping datalog queries.")
-} else {
-  
-
-#######################################################################################
-print("################################")
-print("Defining functions")
-
-### Filter log directory files
+# Filter log directory files
 get_file_list <- function( 
-                          source_substring, 
-                          data_type_substring, 
-                          data_label_substring) 
-
-  {  
+  source_substring, 
+  data_type_substring, 
+  data_label_substring) {  
   file_list <- list.files(data_directory)
   data_log <- as.data.frame(str_split_fixed(file_list, "__", 4), stringsAsFactors=FALSE)
   colnames(data_log) <- c("timestamp", "source", "data_type", "data_label")
@@ -42,66 +183,20 @@ get_file_list <- function(
 }
 
 #######################################################################################
-print("################################")
-print("Setting directory path variables and loading lists")
-smallbegin <- Sys.time()
-
-# Get working directory
-working_directory <- getwd()
-
-# Define directory paths
-dimensions_directory <- file.path(working_directory, "data/dimensions")
-data_directory <- file.path(working_directory, "data/datalog")
-# Make sure data_directory exists, create it if it does not
-dir.create(data_directory, showWarnings = FALSE)
-
-# Define dates and create a date dimension
-# Periodicity is monthly but you can chosse any periodicity you like
-today <- Sys.Date()
-start_date <- as.Date("1960-01-31")
-# Create a date dimension, save to file
-dates <- seq.Date(start_date, today, by = "month")
-dates_file <- file.path(dimensions_directory, "dates.csv")
-write.table(dates, dates_file, col.names = FALSE, row.names = FALSE)
-rm(dates_file)
-
-# Read in the indexes dimension
-# These are stock indexs (eg. SPX Index)
-#indexes_file <- file.path(dimensions_directory, "indexes.csv")
-#indexes <- read.csv(indexes_file, header = FALSE, colClasses = "character")
-#indexes <- indexes[,1]
-#rm(indexes_file)
-indexes <- c("JALSH", "TOP40")
-
-# Read in the fundamental data fields dimension
-fundamental_fields_file <- file.path(dimensions_directory, "fundamental_fields.csv")
-fundamental_fields <- read.csv(fundamental_fields_file, header = FALSE, colClasses = "character")
-fundamental_fields <- fundamental_fields[,1]
-rm(fundamental_fields_file)
-
-# Read in the marketdata dimension
-market_fields_file <- file.path(dimensions_directory, "market_fields.csv")
-market_fields <- read.csv(market_fields_file, header = FALSE, colClasses = "character")
-market_fields <- market_fields[,1]
-rm(market_fields_file)
-
-# Read in the metadata dimension
-metadata_fields_file <- file.path(dimensions_directory, "metadata_fields.csv")
-metadata_fields <- read.csv(metadata_fields_file, header = FALSE, colClasses = "character")
-metadata_fields <- metadata_fields[,1]
-rm(metadata_fields_file)
-
-### DON'T THINK YOU ACTUALLY NEED THIS
-# Read in the tickers field dimension
-#tickers_file <- file.path(dimensions_directory, "tickers.csv")
-#tickers <- read.csv(tickers_file, header = FALSE, colClasses = "character")
-#tickers
-
-# Print time elapsed
-end <- Sys.time()
-print("Time Elapsed for this section:")
-print(end - smallbegin)
 print("")
+print("NEXT: Connecting to Bloomberg client...")
+
+# Log the time taken for the script
+begin <- Sys.time()
+
+# connect to Bloomberg API
+conn <- tryCatch(blpConnect(), error = function(e) print("Bloomberg connection failed."))
+
+# This doesn't work it's 
+if(class(conn) != "externalptr") {
+  print("Connection to Bloomberg failed. Skipping datalog queries.")
+} else {
+
 
 #######################################################################################
 # THE ORIGIN DATASET FOR THIS PLATFORM IS THE TICKER INDEX. 
@@ -112,7 +207,7 @@ print("")
 # BASED ON THOSE ATTRIBUTES, HAS EXPLANATORY VALUE IN PREDICTING PRICE PERFORMANCE
 
 print("################################")
-print("Querying constituents for 20 years since present")
+print("Querying index constituents")
 smallbegin <- Sys.time()
 
 # This section queries each index in the indexes list for each date in the 
@@ -126,7 +221,7 @@ while (index_iter <= length(indexes)) {
   index_iter <- index_iter + 1
   print(the_index_ticker)
   # Date loop starts here
-  date_iter <- length(dates) - 6
+  date_iter <- length(dates) - index_query_months
   while(date_iter <= length(dates)) {
     the_date <- (gsub("-", "", dates[date_iter]))  
     date_iter <- date_iter + 1
@@ -189,14 +284,12 @@ for (file in file_list) {
 # cleaning up
 rm(file_list)
 
-# extract only nique values
+# extract only unique values
 tickers <- unique(pull(constituents_merge[,1]))
 class(tickers)
 tickers <- paste(tickers, " Equity", sep = "")
 
 rm(constituents_merge)
-tickers_file <- file.path(dimensions_directory, "tickers.csv")
-write.table(tickers, tickers_file, col.names = FALSE, row.names = FALSE)
 length(tickers)
 # Print time elapsed
 end <- Sys.time()
@@ -249,53 +342,62 @@ print("")
 
 #######################################################################################
 print("################################")
-print("Querying market data for unique tickers")
+print("Querying ticker market data...")
 smallbegin <- Sys.time()
 
-# This section takes the unique ticker list, the marketdata 
-# field list, a start and end date and returns a list of 
-# flat data frames.
-# Then it saves each flat data frame to the data log.
+# This section queries fundamental fields for a list of
+# ISIN tickers for a prespecified range of dates.
+# Because there appears to be an undocumented limit to number of fields
+# queried, we chunk the fields.
+# We also chunk the ISINs so that no single query gets too big.
 
-# Need to chunk the tickers to keep the queries manageable
+# Need to chunk the ISINs to keep the queries manageable
+# https://github.com/Rblp/Rblpapi/issues/207
 ticker_iter <- 1
 while (ticker_iter <= length(tickers)) {
   startticker <- ticker_iter
-  endticker <- min(ticker_iter + 100, length(tickers))
+  endticker <- min(ticker_iter + 60, length(tickers))
   ticker_iter <- endticker + 1
-
-  # the actual query
-  opt <- c("currency"="ZAR")
-  marketdata <- bdh(securities = tickers[startticker:endticker],
-           fields = market_fields,
-           start.date = start_date,
-           end.date = as.Date(today), options=opt)
-
-  # Save each flat dataframe in the object to a separate
-  # log file
-  marketdata_iter <- 1
-  while (marketdata_iter <= length(marketdata)) {
-    # Defining the filename parameters for logging
-    timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
-    data_source <- "bloomberg"
-    query <- marketdata[[marketdata_iter]]
-    name <- names(marketdata[marketdata_iter])
-    data_type <- "ticker_market_data" 
-    #data_identifier <- paste(the_date, name, sep = "__")
-    data_identifier <- name
-    file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
-    file_string <- paste(file_string, ".csv", sep = "")
-    save_file <- file.path(data_directory, file_string)
-    # saving the file
-    write.table(query, save_file, row.names = FALSE, sep = ",")
-    rm(query)
-    marketdata_iter <- marketdata_iter + 1
+  
+  # Need to chunk the fields
+  market_fields_iter <- 1
+  while (market_fields_iter <= length(market_fields)) {
+    startfield <- market_fields_iter
+    endfield <- min(market_fields_iter + 10, length(market_fields))
+    print(startfield)
+    print(endfield)
+    market_fields_iter <- endfield + 1
+    
+    # Now run the query on chunked fields
+    opt <- c(#"periodicitySelection"="MONTHLY", # removed periodicity because we now have compaction so might as well get the exact date something changes 
+      "currency"=currency)
+    marketdata <- bdh(securities = tickers[startticker:endticker],
+                           fields = market_fields[startfield:endfield],
+                           start.date = start_date,
+                           end.date = as.Date(today),
+                           options=opt
+    )
+    
+    # Save  chunked fundamental data queries to log
+    marketdata_iter <- 1
+    while (marketdata_iter <= length(marketdata)) {
+      # Defining the filename parameters for logging
+      timestamp <- as.numeric(as.POSIXct(Sys.time()))*10^5
+      data_source <- "bloomberg"
+      query <- marketdata[[marketdata_iter]]
+      name <- names(marketdata[marketdata_iter])
+      data_type <- "ticker_market_data" 
+      #data_identifier <- paste(the_date, name, sep = "__")
+      data_identifier <- gsub("\\s*\\w*$", "", name)
+      file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
+      file_string <- paste(file_string, ".csv", sep = "")
+      save_file <- file.path(data_directory, file_string)
+      # saving the file
+      write.table(query, save_file, row.names = FALSE, sep = ",")
+      marketdata_iter <- marketdata_iter + 1
+    }
   }
-  rm(marketdata_iter)
 }
-rm(ticker_iter)
-rm(startticker)
-rm(endticker)
 
 # Print time elapsed
 end <- Sys.time()
@@ -319,15 +421,13 @@ smallbegin <- Sys.time()
 # Add the Equity suffix otherwise queries don't work
 ISINs <- paste(metadata$ID_ISIN , " Equity", sep = "")
 ISINs <- unique(ISINs)
-ISINs_file <- file.path(dimensions_directory, "ISINs.csv")
-# Write to disk
-write.table(ISINs, ISINs_file, col.names = FALSE, row.names = FALSE)
 
 # Print time elapsed
 end <- Sys.time()
 print("Time Elapsed for this section:")
 print(end - smallbegin)
 print("")
+
 
 #######################################################################################
 print("################################")
@@ -358,7 +458,7 @@ while (ISIN_iter <= length(ISINs)) {
   
     # Now run the query on chunked fields
     opt <- c(#"periodicitySelection"="MONTHLY", # removed periodicity because we now have compaction so might as well get the exact date something changes 
-             "currency"="ZAR")
+             "currency"=currency)
     fundamentaldata <- bdh(securities = ISINs[startISIN:endISIN],
                        fields = fundamental_fields[startfield:endfield],
                        start.date = start_date,
@@ -376,7 +476,7 @@ while (ISIN_iter <= length(ISINs)) {
       name <- names(fundamentaldata[fundamentaldata_iter])
       data_type <- "ticker_fundamental_data" 
       #data_identifier <- paste(the_date, name, sep = "__")
-      data_identifier <- name
+      data_identifier <- gsub("\\s*\\w*$", "", name)
       file_string <- paste(timestamp, data_source, data_type, data_identifier, sep = "__")
       file_string <- paste(file_string, ".csv", sep = "")
       save_file <- file.path(data_directory, file_string)
@@ -393,7 +493,52 @@ print("Time Elapsed for this section:")
 print(end - smallbegin)
 print("")
 
+}
+####################################################################################
+# CONVERT BLOOMBERG FIELDS TO INTERNALLY RECOGNISABLE FIELDS
+print("")
+print("NEXT: Converting Bloomberg fieldnames to consistent fieldnames...")
+# Clear environment
+rm(list=ls())
+# Read in data_pipeline functions
+source("R/set_paths.R")
+source("R/data_pipeline_functions.R")
+# Time the script
+begin <- Sys.time()
+
+# Create a dataframe of data log files
+print("Scanning datalog...")
+data_log <- convert_datalog_to_dataframe()
+
+# METADATA
+print("NEXT: Converting metadata fieldnames...")
+dataset <- "metadata_array"
+
+print("Reading datalog files...")
+# Read in log data
+# Filter the log to show just filtered data files
+filtered_data_log <- data_log %>% 
+  dplyr::filter(ext == "csv") %>% 
+  dplyr::filter(grepl(dataset, data_type))
+nrow(filtered_data_log)
+
+print("Adding necessary fieldnames...")
+if(nrow(filtered_data_log >= 1)) {
+  for (i in 1:nrow(filtered_data_log)) {
+    metadata <- read_csv(paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"))
+    if (nrow(metadata) >= 1) {
+      # Add necessary fieldnames
+      metadata <- metadata %>% mutate(market_identifier = TICKER_AND_EXCH_CODE,
+                                      fundamental_identifier = ID_ISIN)
+      write.table(metadata, 
+                  paste(datalog_directory, filtered_data_log[i,]$filename, sep = "/"), 
+                  row.names = FALSE, sep = ",")
+    }
+  }}
+
+
 #######################################################################################
+
 print("################################")
 print("")
 end <- Sys.time()
@@ -402,4 +547,4 @@ print("Total Script Run Time")
 print(end - begin)
 print("############################")
 print("Script completed") 
-}
+

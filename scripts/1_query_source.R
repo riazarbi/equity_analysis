@@ -3,10 +3,14 @@
 # Clean out environment so we know this script works in a clean environment
 rm(list=ls())
 #####################################################
-# All these scripts can be run independently - they all actually clear the
-# environment before running.
-# These scripts are not parametrized, and they don't need to be.
-source("scripts/data_processing/1_bloombergUSD_to_datalog.R")
-source("scripts/data_processing/1_bloomberg_to_datalog.R")
-source("scripts/data_processing/1_simulated_to_datalog.R")
-#####################################################
+# GET PROMPT
+scripts <- c("scripts/data_processing/1_bloomberg_to_datalog.R",
+             "scripts/data_processing/1_simulated_to_datalog.R")
+
+print("Available scripts:")
+for (i in seq_along((1:length(scripts)))) {
+  print(paste(i, scripts[i], sep=" : "))
+}
+
+script_to_run <- readline(prompt=paste("Select script to run [1-",length(scripts),"]: ", sep=""))
+source(scripts[as.integer(script_to_run)])

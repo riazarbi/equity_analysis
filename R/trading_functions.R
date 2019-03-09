@@ -15,7 +15,16 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
   index_members <- (constituent_list %>%
                       filter(date <= execution_date) %>%
                       filter(date == max(date)))
-  
+  if (nrow(index_members) == 0) {
+    stop(paste("FATAL: Constituent list is empty for date ", 
+               execution_date, 
+               ". Perhaps you don't have enough date for a backtest of range ", 
+               start_backtest,
+               "->",
+               end_backtest,
+               "?",
+               sep=""))
+  }
   # SURVIVORSHIP BIAS
   print("ACTION: Filtering for SURVIVORSHIP BIAS...") 
   # FILTER: to only include time-appropriate index members
@@ -24,13 +33,12 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
   print(paste("CHECKING FOR ISSUES:", (setdiff((index_members$ticker), names(runtime_ticker_data)))))
   print(paste("CHECKING FOR ISSUES:", (setdiff(names(runtime_ticker_data), (index_members$ticker)))))
   # CHECK: what has been dropped from master dataset?
-  print(paste("DROPPED:", 
-              length((setdiff(names(ticker_data), names(runtime_ticker_data)))),
-              "/",
-              length(ticker_data),
-              "tickers from ticker_data because they are not in the",
+  print(paste("FILTERING:", 
+              "Index has",
+              length(ticker_data) - length((setdiff(names(ticker_data), names(runtime_ticker_data)))),
+              "members for at",
               execution_date,
-              "constituent list."))
+              "."))
   # LOOKAHEAD BIAS
   print("ACTION: Filtering for LOOKAHEAD BIAS...") 
   # FILTER: any row entries after execution date 
@@ -42,13 +50,25 @@ get_runtime_dataset <- function(execution_date, constituent_list, ticker_data) {
                                                     function(x) (dim(x)[1]) > 0)]
   # CHECK: verify no look-ahead data
   print(paste("CHECK: execution date is:", execution_date))
-  print(paste("CHECK: latest date in runtime_ticker_data is:", 
+  print(paste("CHECK: latest date in runtime_ticker_data set is:", 
               zoo::as.Date(max(unlist(lapply(runtime_ticker_data, function(x) max(x$date)))))))
   # CLEANUP: drop any missing columns
   print("ACTION: Dropping ticker columns with no data...")
   not_all_na <- function(x) {!all(is.na(x))}
   runtime_ticker_data <- lapply(runtime_ticker_data, 
                                 function(x) x %>% select_if(not_all_na))
+  # CLEANUP: Drop dataframes that don't have necessary fields
+  # This only drops those tickers that don't have market metrics and fundamentalS metrics
+  print("ACTION: Dropping tickers that don't have enough data for algorithm to run")
+  for (metric in c(market_metrics, fundamental_metrics)) {
+    for (tick in names(runtime_ticker_data)){
+      if(!(metric  %in% colnames(runtime_ticker_data[[tick]]))) {
+        print(paste("Dropping", tick, "because it is missing metric", metric))
+        runtime_ticker_data[[tick]] <- NULL
+        }
+    }
+  }
+
   # FILL: fill NA values with last known value
   print("ACTION: Backfilling NA values with last known value")
   runtime_ticker_data <- lapply(runtime_ticker_data, 

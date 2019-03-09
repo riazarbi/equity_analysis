@@ -1,9 +1,11 @@
-# DATA FILES
+# FILES GENERATED FROM RUNNING
 data/*
 results/*
 trials/*
 temp/*
 scripts/temp/*
+console_log
+scripts/trash/*
 
 # PAPER FILES
 paper/ARBI_BACKTESTWORKFLOW.pdf
@@ -30,7 +32,7 @@ paper/ARBI_BACKTESTWORKFLOW_files/*
 # RStudio files
 .Rproj.user/
 # Rproj file
-*.Rproj
+#*.Rproj
 
 # produced vignettes
 vignettes/*.html
