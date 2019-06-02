@@ -85,7 +85,7 @@ This paper is organised as follows. Section \ref{Backtest section} briefly intro
 
 \pagebreak
 
-# Backtesting in Academia and Industry\label{Backtest section}
+# Backtesting in academia and industry\label{Backtest section}
 
 ## History and distinction between academics and practitioners
 
@@ -325,7 +325,7 @@ In the following section we unpack our implementation of a reproducible backtest
 
 \pagebreak
  
-# A Reference Implementation of a Data Scientific Equity Backtester in R\label{Documentation Intro}
+# A Reference implementation of a data scientific equity backtester in R\label{Documentation Intro}
 
 We provide a working example of a reproducible equity-backtesting workflow that covers the full data-processing chain from acquisition to reporting. 
 
@@ -377,7 +377,7 @@ The source code referenced in this section is released under the GNU General Pub
 
 \newpage
 
-# Detailed Documentation, With Design Justifications\label{Detailed Documentation}
+# Detailed documentation, with design justifications\label{Detailed Documentation}
 
 Because the workflow is linear and procedural in design, this documentation will proceed in a linear, procedural fashion. This design facilitates ease of understanding as regards the process flow, but means that code can be brittle and repeat in places. After familiarising the reader with the directory structure, we will work through the code in a step-wise fashion from data acquisition through to final reporting.
 
@@ -1094,7 +1094,7 @@ grid.raster(img)
 
 The corresponding monthly `NA` timeseries plot is shown below. The best-quality period appears to be after 2010, and the base `NA` rate for that period has dropped from over 20% to under 5%.
 
-```{r, fig.height = 4, fig.cap="Monthly overall market NA over time, filtered dataset"}
+```{r, fig.height = 4, fig.cap="Data health report on constrained dataset excerpt: Monthly overall market NA over time, filtered dataset"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-overall-market-na-over-time_filtered.png")
