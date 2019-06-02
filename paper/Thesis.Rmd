@@ -85,32 +85,32 @@ This paper is organised as follows. Section \ref{Backtest section} briefly intro
 
 \pagebreak
 
-# Backtesting in Academia and Industry\label{Backtest section}
+# Backtesting in academia and industry\label{Backtest section}
 
 ## History and distinction between academics and practitioners
 
-Stock selection strategies have a long history. Professional bodies of knowledge, often captured in heuristics or rules of thumb, have existed since at least the early 20th century. For instance @Graham1934a released the first edition of their *Security Analysis* textbook in 1934. As time has progressed, professionals and academics have sought to test these rules in a rigorous manner, and to implement automated trading strategies based on those rules. 
+Stock selection strategies have a long history. Professional bodies of knowledge, often captured in heuristics or rules of thumb, have existed since at least the early 20th century. For instance [@Graham1934a] released the first edition of their *Security Analysis* textbook in 1934. As time has progressed, professionals and academics have sought to test these rules in a rigorous manner, and to implement automated trading strategies based on those rules. 
 
-Academics often frame these investigations as an attempt to identify whether a population of stocks subsetted along the lines of some attribute exhibit statistically significant differences in returns. @Fama1992, for instance, split the US stock universe by market capitalization and market beta ($\beta$), and then regress the cohorts against size, book to market, leverage and earnings yield to investigate whether any of these variables have explanatory power for outsize returns. 
+Academics often frame these investigations as an attempt to identify whether a population of stocks subsetted along the lines of some attribute exhibit statistically significant differences in returns. [@Fama1992], for instance, split the US stock universe by market capitalization and market beta ($\beta$), and then regress the cohorts against size, book to market, leverage and earnings yield to investigate whether any of these variables have explanatory power for outsize returns. 
 
-Practitioners, in contrast, tend to frame the question in terms of raw performance. Common measures include annualized return, excess return over some benchmark, risk-adjusted return, Sharpe Ratio or information ratio. There is a rich ecosystem of software packages, tutorials, online communities, books and blog posts that attempts to tackle this question (see @Quantpedia2018 for a list of software packages). 
+Practitioners, in contrast, tend to frame the question in terms of raw performance. Common measures include annualized return, excess return over some benchmark, risk-adjusted return, Sharpe Ratio or information ratio. There is a rich ecosystem of software packages, tutorials, online communities, books and blog posts that attempts to tackle this question (see [@Quantpedia2018] for a list of software packages). 
 
 ## Differences in backtesting methods
 
-These subtly different objectives result in different statistical approaches. Academics tend to focus on using statistical techniques to explain abnormal returns in terms of independent variables. @Fama1992 uses regression techniques to test a null hypothesis that one population is different from another. 
+These subtly different objectives result in different statistical approaches. Academics tend to focus on using statistical techniques to explain abnormal returns in terms of independent variables. [@Fama1992] uses regression techniques to test a null hypothesis that one population is different from another. 
 
-Traders tend to focus on prediction rather than inference; trading rules range from being extremely simple, such as moving averages, to exceedingly complex implementations that use machine learning to automatically select features (@Peterson2017). There are two main approaches to practitioner-led backtesting. Vectorized backtesting applies mathematical functions to $date x ticker$ arrays to quickly arrive at a solution, and event-driven backtesting 'steps through' time, presenting a trading engine with data in a spooling fashion. Each of these steps is a heartbeat. At every heartbeat the trading engine computes whether an action is required and acts accordingly. At the end of each heartbeat the engine moves a fixed increment forward in time and the next heartbeat commences; this repeats until the backtest date range ends.
+Traders tend to focus on prediction rather than inference; trading rules range from being extremely simple, such as moving averages, to exceedingly complex implementations that use machine learning to automatically select features [@Peterson2017]. There are two main approaches to practitioner-led backtesting. Vectorized backtesting applies mathematical functions to $date * ticker$ arrays to quickly arrive at a solution, and event-driven backtesting 'steps through' time, presenting a trading engine with data in a spooling fashion. Each of these steps is a heartbeat: At every heartbeat the trading engine computes whether an action is required and acts accordingly. At the end of each heartbeat the engine moves a fixed increment forward in time and the next heartbeat commences; this repeats until the backtest date range ends.
 
 Vectorized backtesting tends to be much faster, because computations can be done in parallel. But it is easier to allow look-ahead bias into the backtest because the computation has access to all the data at once - a simple cell offset in a function can completely nullify the result. Migrating a vectorized backtest to real-time trading is also very difficult, because new code needs to be written for the function to compute on streaming, rather than array, data. Event-driven backtesters are less likely to leak future information into computations because the engine is only presented with data that existed prior to the heartbeat period. It is also much easier to move into real trading, since all that needs to be done is the redirection of the data stream from a simulated source to a live source. The trade-off is that these backtesters are much slower, and much more complex to build.
 
-Confusingly, all of the methods mentioned above fall under the term 'backtesting'. To avoid confusion, we adopt a broad definition from @Bailey2014 when discussing the term :
+Confusingly, all of the methods mentioned above fall under the term 'backtesting'. To avoid confusion, we adopt a broad definition from [@Bailey2014] when discussing the term :
 
-> A *backtest* is a historical simulation of an algorithmic investment strategy.
+> "A *backtest* is a historical simulation of an algorithmic investment strategy."
 
 
 ## Common areas between academics and practitioners
 
-Both groups of researchers are concerned with whether their result is robust. For both groups, a well-designed backtest should yield results *out of sample* (OOS) which are similar to results derived *in sample* (IS). Unfortunately, backtesting is a very difficult operation to achieve correctly, and as a result it is quite easy to design strategies which perform well IS but poorly OOS (@Bailey2014).
+Both groups of researchers are concerned with whether their result is robust. For both groups, a well-designed backtest should yield results *out of sample* (OOS) which are similar to results derived *in sample* (IS). Unfortunately, backtesting is a very difficult operation to achieve correctly, and as a result it is quite easy to design strategies which perform well IS but poorly OOS [@Bailey2014].
 
 Because of this common concern, there are common opinions on how to appropriately construct datasets and to assess whether a result is statistically robust.
 
@@ -120,13 +120,13 @@ Every backtest needs a historical dataset upon which to simulate a trading strat
 
 A realistic backtest also needs to address the following data quality issues: 
 
-1) Does the dataset contain *survivorship bias*? At any point in time, constituents of a stock universe are survivors. They are, by definition, the stocks which have not disappeared from the universe because of bankruptcy, delisting or mergers (@Peterson2017). To base our data only on the history of this select group will mean that we apply the rule only to a very particular subset of a stock universe: those destined to remain listed. Since this implicit filter cannot be applied going forward (i.e we cannot filter our existing universe to include only those that will be listed at some arbitrary point in the future), our IS result is likely to be different from our OOS result.
+1) Does the dataset contain *survivorship bias*? At any point in time, constituents of a stock universe are survivors. They are, by definition, the stocks which have not disappeared from the universe because of bankruptcy, delisting or mergers [@Peterson2017]. To base our data only on the history of this select group will mean that we apply the rule only to a very particular subset of a stock universe: those destined to remain listed. Since this implicit filter cannot be applied going forward (i.e we cannot filter our existing universe to include only those that will be listed at some arbitrary point in the future), our IS result is likely to be different from our OOS result.
 
-2) Does the dataset contain *look-ahead bias*? There are many ways that we can implicitly 'peek' into the future with historical datasets. A common pitfall is to use the 'close' price as representative of a day's average price. This, of course, uses future data because the close price cannot be known before the end of day. Another example is the inappropriate joining of fundamental and market data. Fundamental data is usually timestamped to the time at which the fact was true in the real world. However, these facts only become known at a (typically much later) future date. The Current Assets of a company at 31 December 2003, for instance, are only known at release of the annual financial statements, which might have been on the 27th February 2004. Joining this data point to market data on the date 31 December 2003 will introduce look-ahead bias to dataset (@Peterson2017).
+2) Does the dataset contain *look-ahead bias*? There are many ways that we can implicitly 'peek' into the future with historical datasets. A common pitfall is to use the 'close' price as representative of a day's average price. This, of course, uses future data because the close price cannot be known before the end of day. Another example is the inappropriate joining of fundamental and market data. Fundamental data is usually timestamped to the time at which the fact was true in the real world. However, these facts only become known at a (typically much later) future date. The Current Assets of a company at 31 December 2003, for instance, are only known at release of the annual financial statements, which might have been on the 27th February 2004. Joining this data point to market data on the date 31 December 2003 will introduce look-ahead bias to dataset [@Peterson2017].
 
-3) Is the dataset *complete*? Some datasets contain more information than others. @Trice2017 compares data for the S&P 500 Index across the free data vendors Google.com and Yahoo.com and finds discrepancies between them - the salient chart is reproduced below. In this instance, the discrepancy derives from the fact that Google contains a significant number of N/A values, which skew the summary statistics. 
+3) Is the dataset *complete*? Some datasets contain more information than others. [@Trice2017] compares data for the S&P 500 Index across the free data vendors Google.com and Yahoo.com and finds discrepancies between them - the salient chart is reproduced below. In this instance, the discrepancy derives from the fact that Google contains a significant number of N/A values, which skew the summary statistics. 
 
-![Data Discrepancies between Google and Yahoo! (@Trice2017)\label{Table1}](/home/riaz/projects/equity_analysis/paper/data/data-quality-a-boxplot-1.png)
+![S&P 500 Open, High, Closing and Low prices as reported by Google and Yahoo!. All price fields have higher average reported values in the Google source. [@Trice2017]\label{Table1}](/home/riaz/projects/equity_analysis/paper/data/data-quality-a-boxplot-1.png)
 
 4) Does the dataset contain *retroactive corrections*? It is common for companies to restate financial information after the fact. This can be because of changes in accounting rules, new information that comes to light, or to aid in comparison across major changes to the company structure. If these restatements are retroactively applied to a dataset, they can introduce look-ahead bias.
 
@@ -134,43 +134,37 @@ A realistic backtest also needs to address the following data quality issues:
 
 Regardless of the backtest approach, the following issues need to be taken into account to assess the realism of the model:
 
-1) Has *market impact* been taken into account? Return anomalies may be related to illiquidity. That is to say, the returns of a stock (or class of stocks) may appear to be abnormal, but there exists no liquidity in the market to make a trade at the modelled price (@Harvey2017). A realistic model will adjust for this by assuming minimal impact for only a small fraction of daily volume traded, increment the price if the trade size exceeds this volume, and respect the bid/ask spread when deciding that a trade matches.
+1) Has *market impact* been taken into account? Return anomalies may be related to illiquidity. That is to say, the returns of a stock (or class of stocks) may appear to be abnormal, but there exists no liquidity in the market to make a trade at the modelled price [@Harvey2017]. A realistic model will adjust for this by assuming minimal impact for only a small fraction of daily volume traded, increment the price if the trade size exceeds this volume, and respect the bid/ask spread when deciding that a trade matches.
 
-2) Have *transaction costs* been taken into account? Similar to market impact, transaction costs are associated with every real trade but often ignored in research. The transaction costs depend on the commission structure, which varies by broker and exchange. A class of stocks may appear to exhibit abnormal returns but all suffer from high transaction costs because they are, for instance, penny stocks that all require an exorbitant minimum commission for small lots (@Loonat2018).
+2) Have *transaction costs* been taken into account? Similar to market impact, transaction costs are associated with every real trade but often ignored in research. The transaction costs depend on the commission structure, which varies by broker and exchange. A class of stocks may appear to exhibit abnormal returns but all suffer from high transaction costs because they are, for instance, penny stocks that all require an exorbitant minimum commission for small lots [@Loonat2018].
 
 3) Failing to account for *short positions or portfolio bankruptcy*. Portfolios can be long only or allow for short positions. Long-only portfolios can either hold stocks or cash. Portfolios that can be short can, in addition to long-only portfolios, lend stocks that they do not own. This is done by borrowing a stock and selling it in the market, with an expectation that the share price will decline, at which point a trader can buy it back and return it to the lender. Short positions involve interest charges and margin requirements that need to be taken into account. Long-only portfolios cannot have negative positions. Similarly, portfolio cash balances cannot be negative if no leverage (which attract interest charges) is employed. The psychological impact of portfolio behaviour needs to be accounted for as well - if a strategy has an average excess return of 2%, but there are several periods in which the return is -50%, then the researcher needs to interrogate whether a reasonable trader would maintain those positions.
 
-4) Data mining and *backtest overfitting*. When a researcher iterates over many strategies while recycling the same dataset, it is easy to overfit a model. Overfitting a model is when one selects rules which perform well IS but poorly OOS. That is, they model the noise in the training set, not the signal (@Bailey2014). This possibility is especially acute in the age of hyperparameter tuning and feature selection, where a computer can modify large numbers of parameters at once to select ones that perform optimally. This can be dealt with by keeping track of the number of trials and adjusting the hurdle for statistical significance accordingly, or testing for path-dependency, which is an indicator that a model has been tuned for a particular path-dependent series, as opposed to an underlying signal (@LopezdePrado2013).
+4) Data mining and *backtest overfitting*. When a researcher iterates over many strategies while recycling the same dataset, it is easy to overfit a model. Overfitting a model is when one selects rules which perform well IS but poorly OOS. That is, they model the noise in the training set, not the signal [@Bailey2014]. This possibility is especially acute in the age of hyperparameter tuning and feature selection, where a computer can modify large numbers of parameters at once to select ones that perform optimally. This can be dealt with by keeping track of the number of trials and adjusting the hurdle for statistical significance accordingly, or testing for path-dependency, which is an indicator that a model has been tuned for a particular path-dependent series, as opposed to an underlying signal [@LopezdePrado2013].
 
 ### Backtest overfitting\label{Backtest Overfitting}
 
-Data mining, in particular, deserves some elaboration. It is standard practice to divide a dataset into a training and test set, and to train models on the training set (@Peterson2017). Once a profitable strategy has been found, it can be tested on the test set to determine how well it performs OOS. The rationale is that, since the test set was not used to train the model, good OOS performance implies that the strategy has legitimately detected some real signal in the data. Unfortunately, it is extremely easy to programatically tune backtest parameters to obtain a strategy that performs well IS. @Bailey2014 show how easy it is to derive high Sharpe ratios over a random series by hyperparameter tuning. They claim that, with five years of data, only 45 trials can be tried before the expected IS Sharpe ratio is 1, whereas the expected OOS Sharpe ratio is 0. A fundamental issue is that the likelihood of uncovering a spuriously high Sharpe ratio increases with the number of trials. The limited amount of data available (there is only one history) inevitably results in knowledge of the test set characteristics bleeding into IS training. In the presence of memory effects IS performance is *negatively* correlated with out-of-sample performance.
+Data mining, in particular, deserves some elaboration. It is standard practice to divide a dataset into a training and test set, and to train models on the training set [@Peterson2017]. Once a profitable strategy has been found, it can be tested on the test set to determine how well it performs OOS. The rationale is that, since the test set was not used to train the model, good OOS performance implies that the strategy has legitimately detected some real signal in the data. Unfortunately, it is extremely easy to programatically tune backtest parameters to obtain a strategy that performs well IS. [@Bailey2014] show how easy it is to derive high Sharpe ratios over a random series by hyperparameter tuning. They claim that, with five years of data, only 45 trials can be tried before the expected IS Sharpe ratio is 1, whereas the expected OOS Sharpe ratio is 0. A fundamental issue is that the likelihood of uncovering a spuriously high Sharpe ratio increases with the number of trials. The limited amount of data available (there is only one history) inevitably results in knowledge of the test set characteristics bleeding into IS training. In the presence of memory effects IS performance is *negatively* correlated with out-of-sample performance.
 
-@LopezdePrado2013 present several mathematical tools to test for backtest overfitting. 
-
-All of the tools rely on a method that @LopezdePrado2013 named Combinatorially Symmetric Cross-Validation (CSCV). This method requires that the following steps be performed - 
+[@LopezdePrado2013] present several mathematical tools to test for backtest overfitting. All of these tools rely on a method that [@LopezdePrado2013] named Combinatorially Symmetric Cross-Validation (CSCV). This method requires that the following steps be performed:
 
 1) Divide a matrix $M$ of the returns of a cohort of trials into an even number $S$ row-wise partitions, and then form all possible combinations of the partitions.
 3) Select all those combinations that contain $S/2$ partitions. That is, use those combinations which contain half of the returns, divided into segments. Call these combinations the set $C$. 
 2) Order each combination set of partitions $C$ chronologically and join them to form a training set $C_i^{train}$. The remaining partitions in the matrix $M$ are joined to form the testing set $C_i^{test}$, for this particular combination. $C_i^{train}$ and $C_i^{train}$ are the same dimensions, by design.
 3) For each $C$, performance statistics are computed for each trial on the training set $C_i^{train}$ and the testing set $C_i^{test}$. Rank the trials accordingly. At the conclusion of this step, for each combination, the tester has a set of performance statistics in sample and out of sample, and the corresponding in and out of sample trials rankings.
 4) For each of these combinations $C$, determine the best in-sample strategy. Determine the relative rank of these best in sample strategies out of sample. Relative rank is defined as 
-
 \begin{align}
-Relative\ Rank =\frac{OOS\ Rank\ of\ IS\ Winner}{(Number\ of\ Trials + 1)} 
+\mbox{Relative Rank} =\frac{\mbox{OOS Rank of IS Winner}}{(\mbox{Number of Trials} + 1)} 
 \end{align}
-
-The possible range of relative rank is therefore $[0-1]$.
+The possible range of relative rank is therefore $[0-1]$.  
 5) For each of these combinations, compute the logit $\lambda_i$, where 
-
 \begin{align}
-\lambda = ln \frac{Relative\ Rank}{(1-Relative Rank)}
+\lambda = ln \frac{\mbox{Relative Rank}}{(1-\mbox{Relative Rank})}
 \end{align}
-
-Rankings which persist across in sample and out of sample performance will have a high logit value.
+Rankings which persist across in sample and out of sample performance will have a high logit value.  
 6) Collect all the logits from all the combinations, and determine the relative frequency of logit occurrence across the $C$ combinations. That is, determine a density function $F$ where 
 \begin{align}
-\int dF = 1
+\int \mbox{dF} = 1
 \end{align}
 
 
@@ -184,7 +178,7 @@ The third is the *Probability of Loss*, which is the probability that the optima
 
 The final one is *Stochastic dominance*, which determines whether the algorithm selection procedure is preferable to random selection of a strategy from the cohort. This test determines whether the distribution of ranks OOS stochastically dominates over the distribution of all OOS returns. If it does not, then the selection criteria is no better than random.
 
-## The Replication Crisis
+## The replication crisis
 
 While total data fidelity and perfect model specification are good goals in theory, the reality is that compromises often need to be made. It is often simply impossible to model the exact market impact a trade will have; data may not be available in sufficient detail; information on when fundamental data was released may simply not exist. 
 
@@ -192,14 +186,14 @@ Inevitably, a researcher needs to make judgment calls. A typical backtest involv
 
 ### The crisis in academia
 
-It is a standard aspiration for researchers to disclose all the judgment calls made during the backtest process, but these disclosures are invariably incomplete. This makes validation by other researchers very difficult. At the extreme, independent validators may arrive at a completely different conclusion (@Hou2017). With ambiguity on both sides it is unclear whether the discrepancy is due to differences in underlying data, preparation methodologies, mathematical errors or some other factor unrelated to the question at hand. 
+It is a standard aspiration for researchers to disclose all the judgment calls made during the backtest process, but these disclosures are invariably incomplete. This makes validation by other researchers very difficult. At the extreme, independent validators may arrive at a completely different conclusion [@Hou2017]. With ambiguity on both sides it is unclear whether the discrepancy is due to differences in underlying data, preparation methodologies, mathematical errors or some other factor unrelated to the question at hand. 
 
-The academic discipline of anomalies research has grown into a substantial body of contradictory claims. These contradictions are mirrored in the business of investment management by competing investment philosophies, each with its own library of peer-reviewed papers (@Damodaran2012). While markets may very well accommodate contradictory drivers of returns, it is often difficult to discern whether differing claims are the result of genuine facts or the result of methodological differences.
+The academic discipline of anomalies research has grown into a substantial body of contradictory claims. These contradictions are mirrored in the business of investment management by competing investment philosophies, each with its own library of peer-reviewed papers [@Damodaran2012]. While markets may very well accommodate contradictory drivers of returns, it is often difficult to discern whether differing claims are the result of genuine facts or the result of methodological differences.
 
-@Hou2017 attempt to replicate the entire anomalies literature to identify which results can actually be confirmed. They attempt to replicate 447 anomalies and find that between 64% and 85% of them are insignificant. In other words, they suspect widespread misuse of statistical analysis to  make claims that are not, in fact, true. This is possible, in part, because practitioners have a large degree of discretion in determining every aspect of the backtesting analysis chain. @Hou2017 attempt to set out a common set of replication procedures to standardise research output, including (but not limited to):
+[@Hou2017] attempt to replicate the entire anomalies literature to identify which results can actually be confirmed. They attempt to replicate 447 anomalies and find that between 64% and 85% of them are insignificant. In other words, they suspect widespread misuse of statistical analysis to  make claims that are not, in fact, true. This is possible, in part, because practitioners have a large degree of discretion in determining every aspect of the backtesting analysis chain. [@Hou2017] attempt to set out a common set of replication procedures to standardise research output, including (but not limited to):
 
 1) Specifying datasets: Compustat Annual and Quarterly Fundamental Files; Center for Research and Security Prices (CRSP).
-2) Specifying breakpoints: Use NYSE breakpoints.
+2) Specifying breakpoints: Use NYSE breakpoints. Breakpoints are the market capitalization size boundaries according to which stocks are assigned to size bins.
 3) Use value-weighted, not equal-weighted portfolios.
 4) No sample screening (i.e. don't exclude stocks because of some arbitrary cutoff).
 5) For annually-composed portfolios, re-sort at the end of June.
@@ -209,19 +203,19 @@ Many of the above guidelines are designed to avoid outsize effects from micro-ca
 
 ### The crisis in industry
 
-Unfortunately, these guidelines are not directly applicable to backtesting for trading. Traders are primarily interested in real-world excess returns; the use of CRSP prices to compute returns, for instance, does not translate into real cash balances because CRSP are not available on a real-time basis.
+Unfortunately, the aforementioned guidelines are not directly applicable to backtesting for trading. Traders are primarily interested in real-world excess returns; the use of CRSP prices to compute returns, for instance, does not translate into real cash balances because CRSP are not available on a real-time basis.
 
 The approach taken by developers of backtesting software has been to build event-based engines which are capable of easily switching between simulated and real-life trading. The rationale is that, as long as the data is from the same source, signal generation, trade matching, transaction costs, account balances and portfolio composition can operate unmodified. This somewhat mitigates concerns around replicability - if it works on historical data, simply switch the data source to live data and don't ask too many questions.
 
-The caveats are as follow. Firstly, many of these engines are proprietary (@Quantpedia2018) and the actual mathematics of what is going on is not available, which means that the researcher has to take it on faith that the implementation (and source data) is correct. If IS results differ from OOS results it is difficult to debug where the issue is: it could be data quality, poor implementation, or overfitting. One cannot be certain that one's returns are being driven by the reasons one thinks.
+The caveats are as follows: Firstly, many of these engines are proprietary [@Quantpedia2018] and the actual mathematics of what is going on is not available, which means that the researcher has to take it on faith that the implementation (and source data) is correct. If IS results differ from OOS results it is difficult to identify where the issue is: it could be data quality, poor implementation, or overfitting. 
 
-There do exist many open-source backtesting libraries, most notably the `zipline` python package (@Zipline2018), the Quantopian trading platform (@Quantopian2018), which is built on top of `zipline`, and the R package `quantstrat` (@Carl2018).
+There do exist many open-source backtesting libraries, most notably the `zipline` python package [@Zipline2018], the Quantopian trading platform [@Quantopian2018[], which is built on top of `zipline`, and the R package `quantstrat` [@Carl2018].
 
 Although these packages make it possible to inspect the entire analytical chain they do not provide historical data. Historical data is difficult (and expensive) to procure, and the same concerns raised in \ref{Data Quality} still exist. In many ways, these issues are worse because these packages default to free data sources such as Yahoo! and Google Finance, which do not document index constituent membership changes, retroactive data modification or provide any guarantees of veracity. Bias-free data must be procured, cleaned and put in an appropriate format beforehand; documentation of how to conduct these operations is left as an exercise to the researcher. Even if a researcher can procure well-formed, comprehensive data, there exists no toolset to transform that data into an appropriate format for ingestion to any particular software package, and no tools to investigate the health of the data with reference to the biases mentioned in \ref{Data Quality}.
 
-These shortcomings in free data sources drive areas of research among enthusiasts: the documentation on `zipline`, Quantopian and `quantstrat` focus overwhelmingly on price signals (algorithms relying on non-market data such as fundamental, macroeconomic or alternative data are scarce) and single-stock or fixed-basket portolios. This makes them much less suitable for research into general strategies that can be applied across an entire universe or research which relies on more than just market data.
+These shortcomings in free data sources drive areas of research among enthusiasts: the documentation on `zipline`, Quantopian and `quantstrat` focus overwhelmingly on price signals (algorithms relying on non-market data such as fundamental, macroeconomic or alternative data are scarce) and single-stock or fixed-basket portolios. This makes them much less suitable for research into general strategies that can be applied across an entire universe of investable securities or into research which relies on more than just market data.
 
-There is something of an irony here. It is difficult for industry practitioners to translate findings in anomalies research into actionable strategies because of incomplete documentation and it is difficult for academics to use production-level backtesters to search for new anomalies. Part of this is because they have differing objectives. But another hurdle is the steep learning curve required to understand what is going on 'under the hood' of a production trading engine. Both `zipline` and `quantstrat` implement the Object Oriented Programming (OOP) paradigm, which focuses on objects rather than procedures (@VanRoy2009). This is in contrast to a procedural approach, which focuses on operations (i.e taking an input, performing an operation, and producing an output). OOP programs scale well, and enable encapsulation: knowledge of the implementation of an object is not necessary for its use. This provides convenience and lowers barriers to entry for new users, but comes at a cost: linear mapping of the sequence of procedures that constitute an operation can be difficult.
+Somewhat ironically, it is difficult for industry practitioners to translate findings in anomalies research into actionable strategies because of incomplete documentation and it is also difficult for academics to use production-level backtesters to search for new anomalies. Part of this is because they have differing objectives. But another hurdle is the steep learning curve required to understand what is going on 'under the hood' of a production trading engine. Both `zipline` and `quantstrat` implement the Object Oriented Programming (OOP) paradigm, which focuses on objects rather than procedures [@VanRoy2009]. This is in contrast to a procedural approach, which focuses on operations (i.e taking an input, performing an operation, and producing an output). OOP programs scale well, and enable encapsulation: knowledge of the implementation of an object is not necessary for its use. This provides convenience and lowers barriers to entry for new users, but comes at a cost: linear mapping of the sequence of procedures that constitute an operation can be difficult.
 
 Procedural programs, on the other hand, can typically be read from top to bottom, and the procedural flow is often quite easy to follow. Unfortunately, as a program’s size increases, the complexity and brittleness of a procedural program increase super-linearly, as the procedure has to incorporate more and more subroutines to manage the various inputs and outputs of a particular part of the program.
 
@@ -229,15 +223,13 @@ Procedural programs, on the other hand, can typically be read from top to bottom
 
 #  Reproducible research and the R programming language\label{Reproducible Research}
 
-Problems with replication are not unique to backtesting. Science as a whole is experiencing a replication crisis.
-
-Despite scientific research being an accretive process, involving verification and building upon earlier datasets and findings, the computational work done by researchers is often poorly documented, or absent (@Stodden2013). This introduces the risk that views or principles that are considered to be scientifically verified may, in fact, be false.
+Problems with replication are not unique to backtesting. Science as a whole is experiencing a replication crisis. Despite scientific research being an accretive process, involving verification and building upon earlier datasets and findings, the computational work done by researchers is often poorly documented, or absent [@Stodden2013]. This introduces the risk that views or principles that are considered to be scientifically verified may, in fact, be false.
 
 Gaps in documentation allow bad reasoning, calculation errors or spurious results to creep in to the corpus of knowledge of a discipline because peers are forced to take it on faith that a researcher has a proper understanding of underlying mathematical concepts, and that workings have been thoroughly cross-checked before release.
 
-Worse still, because replication is difficult with poor documentation or insufficient data, incorrect beliefs can persist for years, or even decades (@Munafo2017). *P-hacking*, or the selection of data and finessing of results to conform to significance tests of 5% or lower, has resulted in a situation where a research finding is as likely to be false it is to be true (@Ioannidis2005). 
+Worse still, because replication is difficult with poor documentation or insufficient data, incorrect beliefs can persist for years, or even decades [@Munafo2017]. *P-hacking*, or the selection of data and finessing of results to conform to significance tests of 5% or lower, has resulted in a situation where research findings are as likely to be false as they are to be true [@Ioannidis2005].
 
-Up until the late 20th century, practical constraints limited the amount of supporting material a researcher could distribute along with a research paper. Documentation of every single mathematical operation conducted with pencil and paper would be extremely laborious; duplication and distribution of source data and computations would be extremely expensive. However, in recent years, as computational power and storage has become increasingly cheap and available, there have been persistent calls for a review of the way that scientific research is packaged and presented (@Stodden2013, @Koenker2009).
+Up until the late 20th century, practical constraints limited the amount of supporting material a researcher could distribute along with a research paper. Documentation of every single mathematical operation conducted with pencil and paper would be extremely laborious; duplication and distribution of source data and computations would be extremely expensive. However, in recent years, as computational power and storage has become increasingly cheap and accessible, there have been persistent calls for a review of the way that scientific research is packaged and presented [@Stodden2013; @Koenker2009].
 
 ## Reproducible research terminology
 
@@ -249,49 +241,47 @@ This taxonomy allows us to distinguish *reviewability* (which assumes mathematic
 
 | Term  | Description |
 | :------------ | :--------------------------------------------- | 
-| Confirmable   | Main conclusions can be attained independently  |
-| Reviewable    | Descriptions of methods can be independently assessed and judged | 
-| Replicable    | Tools are made available that would allow duplication of results  | 
-| Auditable     | Sufficient records exist (perhaps privately) to defend research| 
-| Reproducible | Auditable research is made openly available, including code and data |
-| To Verify | To check that computer code correctly performs the intended operation |
-| To Validate | To check that the results of a computation agree with observations |
+| Confirmable   | Main conclusions can be attained independently.  |
+| Reviewable    | Descriptions of methods can be independently assessed and judged. | 
+| Replicable    | Tools are made available that would allow duplication of results.  | 
+| Auditable     | Sufficient records exist (perhaps privately) to defend research. | 
+| Reproducible | Auditable research is made openly available, including code and data. |
+| To Verify | To check that computer code correctly performs the intended operation. |
+| To Validate | To check that the results of a computation agree with observations. |
 
-Table: Common Terminology in Reproducible Science (@Stodden2013)\label{Table1}
+Table: Common Terminology in Reproducible Science [@Stodden2013]\label{Table2}
 
-This paper adopts the definition of reproducibility as it has been done in \ref{Table1}, which is to say, it refers to research output being bundled and distributed with well-documented, fully-transparent code and data that allows a peer to fully review, replicate, audit and thereby confirm the results of a body of work (@Stodden2013).
+This paper adopts the definition of reproducibility as it has been done in Table \ref{Table2}, which is to say, it refers to research output being bundled and distributed with well-documented, fully-transparent code and data that allows a peer to fully review, replicate, audit and thereby confirm the results of a body of work [@Stodden2013].
 
 ## The relationship between reproducible research and open source software
 
-Open source software development principles exhibit properties which are useful to practitioners of reproducible research. 
+Open source software development principles exhibit properties which are useful to practitioners of reproducible research. In general, software is written in text files, by humans, in a particular programming language. This *source code*, which is made up of nouns, verbs, adjectives and operations, is *compiled* or *interpreted* by another program into binary *machine code* (which is a long sequence of $0$ and $1$ digits and is not readable by humans). Binary machine code is passed to a computer's central processing unit (CPU) for execution. The software for the popular spreadsheet program Microsoft Excel, for instance, would be written by a group of humans in a human-readable programming language. These text files would be compiled by a compiler program into a binary executable program, which is distributed to consumers who can execute the binary using the CPUs in their computers. When someone clicks the Excel icon on their computer to 'launch' the program, they are executing the binary. 
 
-In general, software is written in text files, by humans, in a particular programming language. This *source code*, which is made up of nouns, verbs, adjectives and operations, is *compiled* or *interpreted* by another program into binary *machine code* (which is a long sequence of $0$ and $1$ digits and is not readable by humans). Binary machine code is passed to a computer's central processing unit (CPU) for execution. The software for the popular spreadsheet program Microsoft Excel, for instance, would be written by a group of humans in a human-readable programming language. These text files would be compiled by a compiler program into a binary executable program, which is distributed to consumers who can execute the binary using the CPUs in their computers. When someone clicks the Excel icon on their computer to 'launch' the program, they are executing the binary. 
-
-Open source software is software for which the source code is made publicly available. Microsoft Excel is closed source, and the source code is not made available. Source code can be read by humans, binary cannot. Changes to source code can be meaningfully interpreted by humans, because one can read the changes in plain text. Changes to binary code cannot be interpreted by humans, because the changes are simply alterations to a very long sequence of `0` and `1` digits. It is trivial to compile source code into binary code. It is extremely difficult to accurately decompile binary code into source code, and the tools are not readily available (@Li2004).
+Open source software is software for which the source code is made publicly available. Microsoft Excel is closed source, and the source code is not made available. Source code can be read by humans, binary cannot. Changes to source code can be meaningfully interpreted by humans, because one can read the changes in plain text. Changes to binary code cannot be interpreted by humans, because the changes are simply alterations to a very long sequence of `0` and `1` digits. It is trivial to compile source code into binary code. It is extremely difficult to accurately decompile binary code into source code, and the tools are not readily available [@Li2004].
 
 The text-based nature of source code makes all source code reproducible (and, by corollary, auditable), and code-versioning tools make the tracking of changes in source code very simple. The implications of this are twofold. Firstly, a researcher using open source software for computation can be assured that the full software stack will be open to scrutiny. That is, at the limit, an auditor could inspect every single line of code from some arbitrary 'open starting point' up to verify that the computations are correct. This 'open starting point' is from the operating-system level up for Linux-based machines, and from the application level up for Mac and Windows-based machines.
 
-Secondly, and perhaps more importantly, the open source software community has decades of experience in defining good practice for creating and maintaining large, open, verifiable and repeatable environments. These principles are often quoted in the folkloric 'Unix Way', which manifests in epithets such as "text is the universal interface" (@Baum2002), "each unit should do one thing and do it well",  and "build things to talk to other things" (@Raymond:2003:AUP:829549). Reproducible research practice is built on the same principles - simple, readable text-based data and code where possible; clear separation between data, code and results; complete transparency; and portability by design (see @Baum2002, @Bache2014, @Wickham2014).
+Secondly, and perhaps more importantly, the open source software community has decades of experience in defining good practice for creating and maintaining large, open, verifiable and repeatable environments. These principles are often quoted in the folkloric 'Unix Way', which manifests in epithets such as "text is the universal interface" [@Baum2002], "each unit should do one thing and do it well",  and "build things to talk to other things" [@Raymond:2003:AUP:829549]. Reproducible research practice is built on the same principles - simple, readable text-based data and code where possible; clear separation between data, code and results; complete transparency; and portability by design [see @Baum2002; @Bache2014; @Wickham2014].
 
 Historically, there has been close collaboration between the open source software and the free software communities. This means that, as a rule, most open source software is free or has a free analogue which promoted accessibility to sophisticated tools. The core tools of data science, for instance (such as the python and R programming languages, the Apache Foundation of big data processing packages and the Jupyter and RStudio interactive development environments), are all open source and free. This means that the cost of replication is not prohibitive: in general, reproducible research should be reproducible for free on commodity hardware.
 
 ## The suitability of R for reproducible research
 
-The R programming language was originally conceived of as a project to build an open source statistical programming environment. In development since 1997, base R is now a mature ecosystem comprising a scriptable language, a graphical rendering system and a debugger (@RCoreTeam2018). A large community of third party developers (some commercial, most free) have extended base R with over 13,000 packages, including a fully-fledged interactive development environment (Rstudio), interactive dashboarding web server (Shiny) and bindings to LaTex for rendering of publication-ready LaTex documents from markdown (knitr and rmarkdown) (@RStudioTeam2015). Because of its roots in open source, it adheres to many open source software conventions. For instance- 
+The R programming language was originally conceived of as a project to build an open source statistical programming environment. In development since 1997, base R is now a mature ecosystem comprising a scriptable language, a graphical rendering system and a debugger [@RCoreTeam2018]. A large community of third party developers (some commercial, most free) have extended base R with over 13,000 packages, including a fully-fledged interactive development environment (Rstudio), interactive dashboarding web server (Shiny) and bindings to \LaTeX\ for rendering of publication-ready \LaTeX\ documents from markdown (knitr and rmarkdown) [@RStudioTeam2015]. Because of its roots in open source, it adheres to many open source software conventions. For instance:
 
 - All source code is freely available.
 - All development work in R is done in plain text files, which are transparently human and machine readable.
-- The R project has adopted the GNU General Public License version 2, which "does not restrict anyone from making use of the program in a specific field of endeavour" (@RCoreTeam2018). This free availability means that anybody with a commodity computer and an internet connection can install and use R.
+- The R project has adopted the GNU General Public License version 2, which "does not restrict anyone from making use of the program in a specific field of endeavour" [@RCoreTeam2018]. This free availability means that anybody with a commodity computer and an internet connection can install and use R.
 
-Although the reproducible research community is principle-based and language-agnostic, the free, text-based nature of the R language have made it a good candidate for reproducible work (@Gentleman2004). @Marwick2018 review the concept of a research compendium - a bundle of research, method and data that facilitates replication - and explore how research done in R can be packaged into compendia. They argue that a compendium should follow these three principles - 
+Although the reproducible research community is principle-based and language-agnostic, the free, text-based nature of the R language have made it a good candidate for reproducible work [@Gentleman2004]. [@Marwick2018] review the concept of a research compendium - a bundle of research, method and data that facilitates replication - and explore how research done in R can be packaged into compendia. They argue that a compendium should follow these three principles:
 
 > 1. Organise files according to a prevailing standard so that others can immediately understand the structure of the project.
 > 2. Maintain a clear separation between data, method and output. Separation means that data is treated as read only, and that all steps in getting from source data to output is documented. Output should be treated as disposable, and rebuildable from the programmatic application of the method to the data.
 > 3. Specify the computational environment that was used to conduct the research. This provides critical information to a replicator about the underlying tooling needed to support the analysis.
 
-These principles are intended to ensure that a certain input (the data) and a certain operation (the method) results in a deterministic output (the analysis). With these details out of the way, an auditor can focus on verifying the correctness of the reasoning (i.e should we use this theory?) and of the implementation (i.e are there any errors in the math?).
+These principles are intended to ensure that a certain input (the data) and a certain operation (the method) results in a deterministic output (the analysis). With these details out of the way, an auditor can focus on verifying the correctness of the reasoning (i.e., should we use this theory?) and of the implementation (i.e., are there any errors in the math?).
 
-The richness of the R ecosystem means that one can complete the full research life cycle from data-loading to publishing without leaving the R ecosystem (@Baumer2014). Data can be loaded, cleaned, transformed, modelled and aggregated in R. The results can be written up in RStudio - in fact, the code and write-up can be combined into a single text document using the RMarkdown format - and exported to a wide range of academically accepted typesets and formats (such as Tex, Microsoft Word, Markdown and HTML). Because R is scriptable, R scripts can also be used in production environments, where results can be periodically recomputed and handed on to some other production process.
+The richness of the R ecosystem means that one can complete the full research life cycle from data-loading to publishing without leaving the R ecosystem [@Baumer2014]. Data can be loaded, cleaned, transformed, modelled and aggregated in R. The results can be written up in RStudio - in fact, the code and write-up can be combined into a single text document using the RMarkdown format - and exported to a wide range of academically accepted typesets and formats (such as Tex, Microsoft Word, Markdown and HTML). Because R is scriptable, R scripts can also be used in production environments, where results can be periodically recomputed and handed on to some other production process.
 
 This property dramatically simplifies the complexity of building a compendium and the required skill-set of a replicator. For instance, a single-platform research compendium can be assessed by anyone with knowledge of that single environment. Multi-platform compendia, on the other hand, need replicators well-versed in each platform, which dramatically reduces the pool of potential replicators. 
 
@@ -299,13 +289,13 @@ Upon publication, code-versioning tools such as Git allow the public to view all
 
 ## Tidy extensions to base R
 
-The open source and reproducible science principles of interoperability, readability, modular code and common standards have been extended into the practice of data manipulation by @Wickham2014. The collection of R packages which fall under this banner are collectively known as the 'Tidyverse'. These packages provide a common, idiosyncratic syntax for data ingestion, munging, manipulation and visualization that are opinionated in their expectations about data structure and focused on enabling readable code (@Wickham2017). Wickham defines ‘tidy’ data as data that intuitively maps the meaning of a dataset to its structure - 
+The open source and reproducible science principles of interoperability, readability, modular code and common standards have been extended into the practice of data manipulation by [@Wickham2014]. The collection of R packages which fall under this banner are collectively known as the 'Tidyverse'. These packages provide a common, idiosyncratic syntax for data ingestion, munging, manipulation and visualization that are opinionated in their expectations about data structure and focused on enabling readable code [@Wickham2017]. Wickham defines ‘tidy’ data as data that intuitively maps the meaning of a dataset to its structure:
 
 > 1. Each variable forms a column.
 > 2. Each observation forms a row.
 > 3. Each type of observational unit forms a table.
 
-Whether there is a single optimal data structure is up for debate. What is not up for debate is that the adoption of a common standard for structures allows researchers to make assumptions about the meaning of data before engaging with the content, i.e simply knowing that data is tidy means that a researcher knows that each column maps to a variable, and each row an observation, prior to looking at the data. Setting standards enables the decoupling of processes - process (a) can produce some piece of analytical output with no knowledge of what it will be used for. As long as it is tidy, any downstream process can consume that output on the understanding that is confirms to the tidy standard and take the analysis further. In this way, the tidy data concept pushes the Unix Way concept of 'build things that talk to other things' into the practice of structuring data for reproducible research.
+Whether there is a single optimal data structure is open for debate. What is not open for debate is that the adoption of a common standard for structures allows researchers to make assumptions about the meaning of data before engaging with the content, i.e., simply knowing that data is tidy means that a researcher knows that each column maps to a variable, and each row an observation, prior to looking at the data. Setting standards enables the decoupling of processes - process (a) can produce some piece of analytical output with no knowledge of what it will be used for. As long as it is tidy, any downstream process can consume that output on the understanding that is confirms to the tidy standard and take the analysis further. In this way, the tidy data concept pushes the Unix Way concept of 'build things that talk to other things' into the practice of structuring data for reproducible research.
 
 ## The potential for reproducible research to address the replication crisis in anomalies research
 
@@ -313,7 +303,7 @@ We have explored how the sheer number of judgement calls involved in building a 
 
 We have also shown how these obstacles are being addressed in the scientific community at large by the concepts of reproducible research, the research compendium, and tidy data. These concepts are supported by certain technologies: cheap commodity computing, free and open source scientific computing software and text-versioning tools, and the R programming language and ecosystem for acquisition-to-publication analysis.
 
-It stands to reason that the concepts and tools of reproducible research could be used to address the issues in backtesting at large. These tools would have to - 
+It stands to reason that the concepts and tools of reproducible research could be used to address the issues in backtesting at large. These tools would have to:
 
 1) Be able to run on a typical researcher's computer.
 2) Produce artefacts (models and data objects) that are portable across the academic/industry divide.
@@ -335,11 +325,11 @@ In the following section we unpack our implementation of a reproducible backtest
 
 \pagebreak
  
-# A Reference Implementation of a Data Scientific Equity Backtester in R\label{Documentation Intro}
+# A Reference implementation of a data scientific equity backtester in R\label{Documentation Intro}
 
 We provide a working example of a reproducible equity-backtesting workflow that covers the full data-processing chain from acquisition to reporting. 
 
-All code is available at https://github.com/riazarbi/equity_analysis (@Arbi2019).
+All code is available at https://github.com/riazarbi/equity_analysis [@Arbi2019].
 
 The data processing scripts can consume multiple data sources, for multiple equity indexes, for any timeframe, and for arbitrary data attributes. The implementation is index-based. That is, data acquisition begins with obtaining constituents for an equity index at a point in time, and then proceeds to obtaining metadata and timeseries attributes for the constituents.
 
@@ -387,7 +377,7 @@ The source code referenced in this section is released under the GNU General Pub
 
 \newpage
 
-# Detailed Documentation, With Design Justifications\label{Detailed Documentation}
+# Detailed documentation, with design justifications\label{Detailed Documentation}
 
 Because the workflow is linear and procedural in design, this documentation will proceed in a linear, procedural fashion. This design facilitates ease of understanding as regards the process flow, but means that code can be brittle and repeat in places. After familiarising the reader with the directory structure, we will work through the code in a step-wise fashion from data acquisition through to final reporting.
 
@@ -405,9 +395,11 @@ All the actions required to conduct a complete backtest are captured in plain te
 
 ## Launching a Docker image
 
-In order to ensure reproducibility the repository includes a `Dockerfile`. The codebase has been written with broad compatibility to the `rocker/tidyverse` docker image. Because of this, our `Dockerfile` uses `rocker/tidyverse` as a base image and merely adds a few specific packages. Rocker is the most popular docker image download on docker hub. Any machine that has docker installed can build a Docker image from this `Dockerfile` which will run the entire codebase with no additional configuration required. 
+It is not necessary to use a Docker image to run this code. Provided the user has installed the necessary dependencies, one can simply docwnload the code from the repository and execute it. However, this may impact the reproducibility of one's work - different users may have different versions of R or dependency packages; file path strings may behave differently on different operating systems. Encapsulating the code in a Docker container ensures that one can share a reproducible host environment for the code to execute in.
 
-For a Linux-based computer with docker installed, the following steps should suffice to begin interacting with the codebase - 
+The codebase has been written with broad compatibility to the `rocker/tidyverse` docker image. Because of this, the `Dockerfile` in our repository uses `rocker/tidyverse` as a base image and merely adds a few specific packages. Rocker is the most popular docker image download on docker hub. Any machine that has docker installed can build a Docker image from this `Dockerfile` which will run the entire codebase with no additional configuration required. 
+
+For a Linux-based computer with docker installed, the following steps should suffice to begin interacting with the codebase:
 
 1) Open a terminal
 2) Enter the following command: `docker run -p 8787:8787 -e PASSWORD=complicatedpassword riazarbi/equity_analysis`
@@ -423,7 +415,7 @@ For a Linux-based computer with docker installed, the following steps should suf
 
 ## Directory structure
 
-The directory structure loosely conforms to @Marwick2018's definition of a valid R packages structure, and most closely resembles the author's example of an intermediate-level compendium. The root directory contains the following files and directories: 
+The directory structure loosely conforms to the [@Marwick2018] definition of a valid R packages structure, and most closely resembles the author's example of an intermediate-level compendium. The root directory contains the following files and directories: 
 
 - A `README.md` file that describes the overall project and where to get started.
 - A `Dockerfile` allows a user to build docker image identical to the researcher's environment.
@@ -490,11 +482,11 @@ Complete directory structure:
 |    results/
 ```
 
-@Marwick2018 recommend an `analysis/` directory to house all scripts, reports and results. Because our code applies parameters to an arbitrary number $n$ algorithms to compute $n$ results, we have split this `analysis/` directory into a `scripts/`, `trials/` and `results/` directory.
+[@Marwick2018] recommend an `analysis/` directory to house all scripts, reports and results. Because our code applies parameters to an arbitrary number $n$ algorithms to compute $n$ results, we have split this `analysis/` directory into a `scripts/`, `trials/` and `results/` directory.
 
 In short, scripts in the `scripts/` directory pull data into the `data/` directory and process that source data into tidy datasets. They then run the algorithms in the `trials/` directory on `data/datasets` in order to generate results, which goes into the `results/` directory. A detailed data flow diagram is rendered below.
 
-```{r, fig.width = 4, out.width = "100%", fig.cap="Data Flow Diagram"}
+```{r, fig.width = 4, out.width = "100%", fig.cap="Data flow diagram"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/workflow.png")
@@ -515,7 +507,7 @@ Relevant parts of the directory tree:
 
 ```
 
-This file is sourced in various other scripts. It determines the structure of simulated datasets, the characteristics of the trading environment, and the behaviour of the trading engine. It has the following sections - 
+This file is sourced in various other scripts. It determines the structure of simulated datasets, the characteristics of the trading environment, and the behaviour of the trading engine. It has the following sections:
 
 1) Reporting Parameters: here we set the risk-free rate, which is needed for computing the Sharpe ratio.
 2) Simulated Data Parameters: characteristics of simulated data such as universe size, index size, start and end of simulation, price and earnings growth.
@@ -544,7 +536,7 @@ We include two sample scripts. One for querying Bloomberg, the other for generat
 
 `1_Bloomberg_to_datalog.R` follows the broad procedure of collecting all the data required to build a dataset. The query script performs the following steps in a non-interactive manner -
 
-1) Connect to the vendor via an API (in the case of Bloomberg, this is via @Armstrong2018's R package Rblpapi).
+1) Connect to the vendor via an API (in the case of Bloomberg, this is via the [@Armstrong2018] R package Rblpapi).
 2) Define a target index. For instance, we extract JALSH, which is the Johannesburg Securities Exchange (JSE) All Share Index.
 4) Define how far back to extract constituent lists.
 5) Extract monthly constituent lists for the index and save to the `datalog`.
@@ -567,9 +559,9 @@ Where
 -  `source` is the data source, such as `BLOOMBERG`.
 - `data_type` is one of `constituent_list`, `metadata_array`, `ticker_fundamental_data` or `ticker_market_data`.
 -  `data_label` is the identifier of the particular object. 
-  - `constituent_list` types are of the form `YYYMMDD_INDEX`; 
-  - `metadata_array` types are simply the `INDEX`; 
-  - `ticker_market_data` are of the form `TICKER`, 
+  - `constituent_list` types are of the form `YYYMMDD_INDEX`.
+  - `metadata_array` types are simply the `INDEX`.
+  - `ticker_market_data` are of the form `TICKER`. 
   - `ticker_fundamental_data` are of the form `ISIN`.
   
 Using this file-naming convention is essential. It allows us to save many versions of the same data in a manner that is very fast to filter for downstream processing. Downstream scripts use these filenames to mine the datalog and build master datasets. An example of a well-formed datalog file name is -
@@ -578,7 +570,7 @@ Using this file-naming convention is essential. It allows us to save many versio
 
 ### File contents conventions
 
-Datalog files should also be tidy. That is, each file related to a particular object in the real world (i.e. an index, a metadata array, or a ticker), and the dat is flat and tabular, with each row being an observation (i.e. a date) and each column an attribute (e.g. CLOSE, LOW, HIGH etc). An example of a tidy `fundamental_data` file is - 
+Datalog files should also be tidy. That is, each file related to a particular object in the real world (i.e. an index, a metadata array, or a ticker), and the data structure is flat and tabular, with each row being an observation (i.e. a date) and each column an attribute (e.g. CLOSE, LOW, HIGH etc). An example of a tidy `fundamental_data` file is:
 
 ```{r}
 library(readr)
@@ -586,7 +578,7 @@ library(readr)
 #View(sample_datalog_file)
 #write_csv(sample_datalog_file, "data/sample_datalog.csv")
 sample_file <- read_csv("data/sample_datalog.csv")
-knitr::kable(head(sample_file[,1:3]))
+knitr::kable(head(sample_file[,1:3]), caption = "An example of tidy data.")
 
 ```
 
@@ -601,7 +593,7 @@ It is not necessary that all `data_types` attributes are contained in a single f
 
 This chunking can be done along either rows or columns or both. Chunking does not have to be sequential, either. A query can be run multiple times, saving more and more data to the datalog. 
 
-`1_simulated_to_datalog.R` reads in parameters from the `parameters.R` file and generates a datalog that confirms to the above specification. The ticker names are randomly generated, but reproducible through the specification of a seed. This datalog can be consumed by downstream scripts in the same manner as queried data.
+`1_simulated_to_datalog.R` reads in parameters from the `parameters.R` file and generates a datalog that conforms to the above specification. The ticker names are randomly generated, but reproducible through the specification of a seed. This datalog can be consumed by downstream scripts in the same manner as queried data.
 
 \newpage
 
@@ -641,32 +633,28 @@ The objective of the scripts in `1_process_data.R` is to read in the contents of
 
 ### Melting
 
-In contrast to datalogs, datasets are stored in a ‘tall and narrow’ data structure.
-
-The following table is ‘short and wide’, with one row per date, and one column per attribute (we omit columns due to limited space. There are also timestamp and source columns in this table) - 
+In contrast to datalogs, datasets are stored in a ‘tall and narrow’ data structure. The following table is ‘short and wide’, with one row per date, and one column per attribute (we omit columns due to limited space. There are also timestamp and source columns in this table): 
 
 ```{r}
 sample_file <- read_csv("data/sample_datalog.csv")
 sample_file$timestamp <- "152874575747280"
 sample_file$source <- "bloomberg"
 
-knitr::kable(head(sample_file[,1:3]))
+knitr::kable(head(sample_file[,1:3]), caption="Short and wide data structure.")
 ```
 
-The same table can be converted into ‘tall and narrow’ format using the `tidyr:gather()` function into this format -
+The same table can be converted into ‘tall and narrow’ format using the `tidyr:gather()` function into this format:
 
 ```{r}
 library(magrittr)
 library(tidyr)
  sample_file  <- sample_file  %>% 
         tidyr::gather(metric, value, -timestamp, -source, -date)
-knitr::kable(head(sample_file[,1:5], 10))
+knitr::kable(head(sample_file[,1:5], 10), caption="Tall and narrow data structure")
 ```
 
 
-We do this conversion for a number of reasons. Firstly, it allows us to filter for a particular data point (i.e, a date, attribute, and ticker cell) much more quickly by simply filtering each column. This enables efficient deduplication, compaction and versioning, which reduces the dataset size dramatically and speeds load, write and processing operations.
-
-Secondly, it allows us great flexibility in the attributes we collect. Collecting variable numbers of attributes in the querying step results in tables with varying columns. Joining multiple files to create one dataset on 'short and wide' data would require column matching on every single join operation, which is expensive and error-prone. In contrast, columns are stable when ‘tall and narrow’. No matter what the original attributes are, or how they change across queries, we know that we will always have the same columns, namely `date`, `timestamp`, `source`, `metric` and `value`. 
+We do this conversion for a number of reasons. Firstly, it allows us to filter for a particular data point (i.e, a date, attribute, and ticker cell) much more quickly by simply filtering each column. This enables efficient deduplication, compaction and versioning, which reduces the dataset size dramatically and speeds load, write and processing operations. Secondly, it allows us great flexibility in the attributes we collect. Collecting variable numbers of attributes in the querying step results in tables with varying columns. Joining multiple files to create one dataset on 'short and wide' data would require column matching on every single join operation, which is expensive and error-prone. In contrast, columns are stable when ‘tall and narrow’. No matter what the original attributes are, or how they change across queries, we know that we will always have the same columns, namely `date`, `timestamp`, `source`, `metric` and `value`. 
 
 Finally, the ‘tall and narrow’ format allows us to deal with NA values properly. With this format, we know that if the `value` column is `NA`, then we should drop the row. Consider the 'short and wide' example. There are multiple attributes. Some are `NA`, others are not. How do we deal with this? There is no easy way to drop a single attribute for a single date without dropping the other attributes for that date. This is not a big issue for single-query datalogs. But consider what happens when we have multiple versions of a data point, some of which are `NA`, and some of which are not. Finding the latest value of a data point that is not `NA` and using that as your latest value is quite complex with ‘short and wide’ data. For ‘tall and narrow’ data, it's quite simple. Just filter the rows appropriately, drop any `NA` entries and then take the most recent timestamp. Dropping of `NA` values is done without loss of information, since recasting into ‘short and narrow’ format inserts `NA` values into empty cells.
 
@@ -680,22 +668,22 @@ One exception to this is the reporting done after the backtests have been comple
 
 ### Script procedures
 
-The series of scripts sourced in `1_process_data.R` each perform the following procedures - 
+The series of scripts sourced in `1_process_data.R` each perform the following procedures:
 
 1) Read all files in the `datalog` into a dataframe, splitting each fieldname into an appropriate column.
 2) From the file names, determine the set of datasets that can be generated from the logfiles.
 3) For each dataset:
-    1) Read in logfiles relevant to the dataset
-    2) Convert to ‘tall and narrow’ format
-    3) Check if a dataset already exists and, if it does, read it in to memory
-    4) Join the datasets
-    5) Filter out any NA values
-    6) Remove any duplicates
-    7) Filter out any records that have not changed since the last timestamp, but update the timestamp field
+    1) Read in logfiles relevant to the dataset.
+    2) Convert to ‘tall and narrow’ format.
+    3) Check if a dataset already exists and, if it does, read it in to memory.
+    4) Join the datasets.
+    5) Filter out any NA values.
+    6) Remove any duplicates.
+    7) Filter out any records that have not changed since the last timestamp, but update the timestamp field.
 
 The end result is a set of directories in `data/datasets`. Because the scripts merge, rather than overwrite datset files, it is possible (but not necessary) to periodically empty or delete the datalog without loss of information. 
 
-The files in the `datasets` directories are **not** tidy. In particular - 
+The files in the `datasets` directories are **not** tidy. In particular:
 
 1) The constituent and metadata files contain all data for all indexes and tickers in a single file. This contradicts the tidy guideline of separating each ‘thing’ (ie ticker, or date) into a separate table.
 2) Each attribute is not a column.
@@ -704,7 +692,7 @@ The datasets are converted to tidy format in-memory at backtest runtime.
 
 \newpage
 
-## Loading Data - `3_load_data.R`
+## Loading data - `3_load_data.R`
 
 The purpose of this series of scripts is to load at-rest data from datasets and save them in a backtest-ready form in a fast file format. These binary files are considered temporary and saved in the `temp` folder; deleting them does not impact reproducability.
 
@@ -735,24 +723,26 @@ Relevant parts of the directory tree:
 
 The `load_slow_moving_data.R` script reads in parameters from the `parameters.R` file and then reads in the necessary files from the `datasets/` directory. It selects only the relevant constituent index, joins the necessary ticker market and fundamental data, drops unnecessary fields, and saves the results to a a `ticker_data.Rds` file. This file is then read at every rebalancing period by the backtest algorithm. 
 
-### Quote Engine
+### Quote engine
 
-The trading algorithm will run a `get_quote` function to get price quotes for each trade at each heartbeat. This function will read in prices from a `price_data` object. This `price_data` object is derived from the `ticker_data` object above, but saved to a separate file. This is because the `price_data` has several changes that may introduce backtest bias - 
+The trading algorithm will run a `get_quote` function to get price quotes for each trade at each heartbeat. This function will read in prices from a `price_data` object. This `price_data` object is derived from the `ticker_data` object above, but saved to a separate file. This is because the `price_data` has several changes that may introduce backtest bias:
 
-- It it not date-filtered at runtime, so contains look-ahead information
-- A high and low price are generated synthetically from available data
-- `NA` values are backfilled (for price data) or changed to `0` (for volume data)
+- It it not date-filtered at runtime, so contains look-ahead information.
+- A high and low price are generated synthetically from available data.
+- `NA` values are backfilled (for price data) or changed to `0` (for volume data).
 
 ### Lag-detection
 
-The script also reads from `parameters.R` whether a lag must be imposed on fundamental data. This is necessary when fundamental dates are based on official financial reporting dates, not actual dates of release (which can be much later). Sometimes accompanying financial data is of a hybrid variety, where some metrics need to be lagged (typically financial statement data) while others (typically ratios) do not. For these datasets, the user has the option of enabling k-means cluster detection of the two populations of metrics. The k-means algorithm tries to cluster the fundamental metrics according to the number of occurrences of each metric in the population, the rationale being that core financial data is updated far less frequently than financial ratios with a market component. Once the clusters have been computed, the cluster of metrics with the lowest number of occurrences have the dates of their occurrences lag-adjusted, while the other cluster(s) are left unmodified.
+The script also reads from `parameters.R` whether a lag must be imposed on fundamental data. This is necessary when fundamental dates are based on official financial reporting dates, not actual dates of release (which can be much later). Sometimes accompanying financial data is of a hybrid variety, where some metrics need to be lagged (typically financial statement data) while others (typically ratios) do not. For these datasets, the user has the option of enabling k-means cluster detection of the two populations of metrics. 
+
+If enabled, the `load_slow_moving_data.R` script will use the R built-in `kmeans` function to to cluster the fundamental metrics according to the number of occurrences of each metric in the population. The rationale here is that core financial data is updated far less frequently than financial ratios with a market component, and that there will therefore be far less entries of fundamental metric measurements than market-related ones. The k-means algorithm assigns metrics into either a high-frequency cluster (typically updated daily or weekly) or low-frequnecy cluster (updated quarterly, biannually or annually). Once the clusters have been computed, the cluster of metrics with the lowest number of occurrences (i.e., the low-frequency metrics) have the dates of their occurrences lag-adjusted, while the other cluster(s) are left unmodified.
 
 ### Data quality reporting
 
-Data quality is critical to running a realistic backtest. The `compile_data_report.R` script computes a range of health measures for the entire dataset, including, but not limited to - 
+Data quality is critical to running a realistic backtest. The `compile_data_report.R` script computes a range of health measures for the entire dataset, including, but not limited to: 
 
 - Proportion of `NA` in selected market metrics.
-- Histogram of `NA` occurrences per ticker, per metric type
+- Histogram of `NA` occurrences per ticker, per metric type.
 - Results of k-means detection (if selected), along with verification that the lag has been imposed.
 
 If selected in `0_all.R`, these measures are fed to a `data_quality.Rmd` file, which generates an html report in the `results` directory that can be used to inspect the data.
@@ -824,13 +814,13 @@ The `parameters.R` file sets parameters that are global to the trading session. 
     - `standard_spread` - simple assumed spread between bid and ask, expressed as a percentage of stock price.
     - `soft_rebalancing_constraint` - cancel trade if the holding is within a certain percentage of the ideal weight. This is to mitigate churn from chasing an unnecessary degree of precision.
 
-We see from these parameters that the backtester uses a stock index as the defining unit of a stock universe. It can only use one data source at a time, but synthetic datasets can be built into the data pipeline stage. It expects a start and end date for the backtest, and we have to specify a portfolio starting value and desired cash buffer. This is because excess returns are portfolio-size dependent. Large portfolios may not be able to trade illiquid stocks; small portfolios may suffer from high commissions. We have also specified rudimentary transaction-cost modelling and slippage, in the form of a simple commission structure and a standard spread which will be imposed at trade. 
+We see from these parameters that the backtester uses a stock index as the defining unit of a stock universe, and that it can only use one data source at a time. It expects a start and end date for the backtest, and we have to specify a portfolio starting value and desired cash buffer. This is because excess returns are portfolio-size dependent. Large portfolios may not be able to trade illiquid stocks; small portfolios may suffer from high commissions. We have also specified rudimentary transaction-cost modelling and slippage, in the form of a simple commission structure and a standard spread which will be imposed at trade. 
 
 The script runs `trade.R` against each `algorithm_X.R` file in the `trials/` directory, saving the results, and the `algorithm_X.R` file, to its own subdirectory in the `results/` directory. The subdirectory naming convention is `INDEX__algorithmX`. 
 
 That is, an algorthm named `market_weighted.R`, run against the index `JALSH`, will result in a results subdirectory `JALSH__market_weighted`. This subdirectory will contain the original `market_weighted.R` file as well as several reporting and runtime history files. It is therefore possible to take a `results` subdirectory contents, rerun the algorithm, and compare it with the original results.
 
-```{r, fig.width = 4, out.width = "90%", fig.cap="Trading Workflow Diagram"}
+```{r, fig.width = 4, out.width = "90%", fig.cap="Trading workflow diagram"}
 library(png)
 library(grid)
 img <- readPNG("data/trading_workflow.png")
@@ -926,13 +916,13 @@ Relevant parts of the directory tree:
 
 There exist several portfolio performance reporting packages on CRAN; it is beyond the scope of this exercise to replicate the functionality of those packages. The data created by the backtest trading algorithm are designed to support general customisability of the results tear sheet.
 
-The `5_report.R` script has three objectives - 
+The `5_report.R` script has three objectives:
 
 1) Create a matrix of daily returns for piping into a downstream portfolio analysis package.
 2) Generate a minimal performance tear sheet in order to demonstrate that portfolio analysis can, in principle, be conducted on the folder contents.
 3) Collect the daily returns of all of the trials into a single matrix for downstream analysis for overfitting.
 
-To achieve these aims, the script performs the following steps on each result subdirectory - 
+To achieve these aims, the script performs the following steps on each result subdirectory:
 
 1) Load the transaction log, trade history and runtime log.
 2) Determine the start and end date of the backtest from the runtime log.
@@ -946,14 +936,14 @@ To achieve these aims, the script performs the following steps on each result su
 
 As the script works through each subdirectory, it compiles cross-sectional dataframes that contain all the trials' daily and total returns. That is, dataframes with a row for every date, and a column for the daily returns or total returns for each trial result. These dataframes are saved to `results/daily_returns.feather` and `results/total_returns.feather`, where it can be consumed by the `6_cross_validate.R` cross-validation script.
 
-```{r, fig.width = 4, out.width = "100%", fig.cap="Tearsheet Excerpt"}
+```{r, fig.width = 4, out.width = "100%", fig.cap="Tearsheet excerpt"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/tearsheet_excerpt.png")
 grid.raster(img)
 ```
 
-It must be emphasised that the trial-specific `portfolio_stats.feather` tables and the tearsheets are minimal examples, and they should only be used for serious analysis after heavy augmentation. We decided not to flesh out complete statistical summaries because there are other R packages that can do that (see @Peterson2018 as an example). Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
+It must be emphasised that the trial-specific `portfolio_stats.feather` tables and the tearsheets are minimal examples, and they should only be used for serious analysis after heavy augmentation. We decided not to flesh out complete statistical summaries because there are other R packages that can do that [see @Peterson2018 for an example]. Our objective here is to lay a foundation that can be quite easily extended to serve the needs of a researcher.
  
 The parametrised template tearsheet resides at `scripts/reporting/tearsheet.Rmd`. It can be modified in exactly the same manner as any other Rmarkdown script.
 
@@ -978,13 +968,13 @@ Relevant parts of the directory tree:
 
 ```
 
-In order to investigate whether backtest overfitting has occurred, we make use of the `pbo` package, available in CRAN. The `pbo` package expects a matrix or `xts` object of daily returns for a range of trials; it uses this array to compute the various metrics in @LopezdePrado2013. 
+In order to investigate whether backtest overfitting has occurred, we make use of the `pbo` package, available in CRAN. The `pbo` package expects a matrix or `xts` object of daily returns for a range of trials; it uses this array to compute the various metrics in [@LopezdePrado2013]. 
 
 The computations done in this section are the final part of the analysis; the output is intended to be read by humans. `6_cross_validate.R` is just a wrapper that knits an Rmarkdown notebook, `results/cross_validate.Rmd`. The end result is an html report that includes details on the probability of backtest overfitting as it relates to the array. 
 
 The template `Rmd` file can be modified at `scripts/reporting/cross_validate.Rmd`
 
-```{r, fig.width = 4, out.width = "100%", fig.cap="Cross Validation Report Excerpt"}
+```{r, fig.width = 4, out.width = "100%", fig.cap="Cross validation report excerpt"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/cross_validation_excerpt.png")
@@ -994,17 +984,17 @@ grid.raster(img)
 
 \newpage
 
-## Application and Examples\label{Application}
+# Application and examples\label{Application}
 
 This section details the use of the environment to perform a variety of demonstrations and tests. All of these tests were conducted on the `lag-correction` branch of https://github.com/riazarbi between the 1st and 5th February 2019. This branch will be merged into `master` on the 11th February 2019. This code was used largely unmodified for each test; the only differences between each test are those contained in the `parameters.R` file and the specific `trials` files. Unmodified copies of these files can be found at https://github.com/riazarbi/equity_analysis_trials. 
 
-Each test followed the same protocol - 
+Each test followed the same protocol:
 
-1. Create a `parameters.R` file and trial script (or several, if necessary)
-2. Create a `deploy.R` script 
-3. Zip each backtest
+1. Create a `parameters.R` file and trial script (or several, if necessary).
+2. Create a `deploy.R` script.
+3. Zip each backtest.
 4. `docker run ... riazarbi/equity_analysis` a new backtest environment. This environemt already contains the code from the GitHub repository mentioned above.
-5. Navigate to the correct url for the backtest environment
+5. Navigate to the correct url for the backtest environment.
 6. Open the `equity_backtest` R project.
 7. Upload the relevant zip file. It is unzipped automatically by RStudio Server.
 8. Type `source("<unzippedfolder>/deploy.R")` and press `<ENTER>`.
@@ -1013,9 +1003,9 @@ Each test followed the same protocol -
 
 In general, a backtest takes about 90 minutes per algortihm in the trials directory. That is, a 50-trial backtest will take up to 75 hours, if rebalanced daily and traded multiple times per day. These can be run in parallel, however, if one varies parameters to investigate outcomes in a range of trading conditions.
 
-### Querying and assessing real data
+## Querying and assessing real data
 
-The first step in constructing a backtest is data collection. Once the data has been collected, it needs to be assessed for quality. Typical questions to be asked include - 
+The first step in constructing a backtest is data collection. Once the data has been collected, it needs to be assessed for quality. Typical questions to be asked include:
 
 - How likely is a researcher to obtain an accurate or representative result, given the quality of the data? 
 - If an algorithm presumes that all data is available for each metric and for each ticker, what is the impact of a dataset that is missing entire ticker datasets on the accuracy of the result? 
@@ -1023,14 +1013,14 @@ The first step in constructing a backtest is data collection. Once the data has 
 
 These sorts of issues are case-specific, so we provide an automated report that provides the researcher with measures of dataset health. The expectation is that the researcher will reflect on these measures and decide on an appropriate course of action. Appropriate courses of action could be -
 
-- Collect more data
-- Change the backtest window
-- Alter the algorithm to rely on data you have
-- Use a subset of the index
+- Collect more data.
+- Change the backtest window.
+- Alter the algorithm to rely on data you have.
+- Use a subset of the index.
 
 These decisions can impact the final backtest outcome, but since the algorithm, parameters and data processing scripts are all versioned these changes are transparent to a replicator.
 
-The following paragraphs walk through a typical data quality assessment. They assume that the user has an already-initialized environment, as detailed in \ref{Application}. The data source in this example is Bloomberg, and the query method is via the `Rblpapi` package. 
+The following paragraphs walk through a typical data quality assessment. The data source in this example is Bloomberg, and the query method is via the `Rblpapi` package. 
 
 A copy of the `equity_analysis` code package must be loaded on a Bloomberg terminal. If the user does not have rights to install R on the terminal, a portable version of R and RStudio for Windows can be installed on to removable-storage media. The R installation must have the necessary packages (as detailed in `0_all.R`) pre-installed, since installing packages on-the-fly requires administrator rights.
 
@@ -1046,20 +1036,20 @@ Here, we simply open up the `equity_analysis` R project and execute `source("scr
 
 Once the script has passed the data quality report generation step, it can be terminated. One convenient way to terminate the script prematurely is to leave the `trials/` directory empty; this results in speedy conclusion of the script.
 
-The data quality `html` report can be obtained from the `results/` directory. It is accompanied by a sidecar `.Rmd` file, which can be edited and re-run for exploratory analysis. The report contains some datalog summary statistics which validate that all the information in the datalogs are being transferred to the at-rest datasets. It also contains a market data field completeness chart, which provides a visual representation of the proportion of each market metric that contain NA values across the dataset. 
+The data quality `html` report can be obtained from the `results/` directory. It is accompanied by a sidecar `.Rmd` file, which can be edited and re-run for exploratory analysis. The report contains some datalog summary statistics which validate that all the information in the datalogs are being transferred to the at-rest datasets. It also contains a market data field completeness chart, which provides a visual representation of the proportion of each market metric that contain NA values across the dataset. We extract and discuss some of the figures from the report below.
 
-```{r, fig.height = 4, fig.cap="Market Metric Field Completeness, Full Dataset"}
+```{r, fig.height = 4, fig.cap="Data health report excerpt: Market metric field completeness, full dataset"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-metric-completeness.png")
 grid.raster(img)
 ```
 
-This chart shows that some metrics are more complete than others. In particular, total return with gross dividends and market capitalization are largely complete from the year 2004 onwards. These metrics may be good candidates for portfolio performance scoring and the algorithm weighting, respectively. 
+Figure 6.1 shows that some metrics are more complete than others. In particular, total return with gross dividends and market capitalization are largely complete from the year 2004 onwards. These metrics may be good candidates for portfolio performance scoring and the algorithm weighting, respectively. 
 
-The report also shows the overall monthly market data `NA` percentages over time. `NA` values are problematic because they result in constituents being dropped from the dataset. Ideally a user will select the subset of metrics and the date range that minimizes this error while testing useful hypotheses.
+The report also shows the overall monthly market data `NA` percentages over time (Figure 6.2). `NA` values are problematic because they result in constituents being dropped from the dataset. Ideally a user will select the subset of metrics and the date range that minimizes this error while testing useful hypotheses.
 
-```{r, fig.height = 4, fig.cap="Monthly Overall Market NA Over Time"}
+```{r, fig.height = 4, fig.cap="Data health report excerpt: Monthly overall market NA over time"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-overall-market-na-over-time.png")
@@ -1070,27 +1060,31 @@ The report also checks whether there are any tickers which do not have metadata,
 
 Fundamental data cannot be submitted to the same `NA` criterion as above becuse it is slow-moving, and hence has many `NA` values on a daily time scale. The backtester backfills fundamental data into daily values on the assumption that, if a stock has one fundamental data entry, it probably has a complete relevant set. Stocks with no fundamental data for a particular field have that field dropped, and, if they are required for the backtest, the ticker is excluded from the set. These exclusions are recorded in the console output at runtime. However since data is released on different schedules for different stocks, it is difficult to impute the best periodicity and aligment for assessing `NA` values. 
 
-Another issue with fundamental data is lag adjustments. The amount of lag to be applied to fundamental data is specified in the `parameters.R` file. Some fundamental datasets contain a mix of daily and low-frequency data; the former does not need adjustment. To address this, the data loading script will auto-detect the number of clusters in the dataset, and, if there are two or mre, apply the lag to only the least-frequently-updated set of metrics. Our dataset does indeed have two clusters, as shown by the k-means silhouette below. The metrics contained in cluster 2 in the below cluster plot have their dates lag-adjusted by 120 days.
+Another issue with fundamental data is lag adjustments. The amount of lag to be applied to fundamental data is specified in the `parameters.R` file. Some fundamental datasets contain a mix of daily and low-frequency data; the former does not need adjustment. To address this, the data loading script will auto-detect the number of clusters in the dataset, and, if there are two or more, apply the lag to only the least-frequently-updated set of metrics. This detection is done by performing K-Means analysis on the count of occurrences of each metric in the dataset for the `k` sequence 1-10. The average silhouete widths are plotted on a Figure 6.3 below. This figure indicates that our dataset does indeed have two clusters. The metrics contained in cluster 2 in the below cluster plot will have their dates automatically lag-adjusted by 120 days.
 
-```{r, fig.height = 4, fig.cap="K-means Fundamental Metric Counts Silhouette Plot"}
+```{r, fig.height = 4, fig.cap="Data health report excerpt: K-means fundamental metric counts silhouette plot"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/k-means-silhouette.png")
 grid.raster(img)
 ```
 
-The data health report also show histograms of the `NA` proportions per market metric group per ticker. The groups are overall market fields, algorithm-related fields, price-related fields, volume, and last price. This allows the user to discern the distribution of `NA` values across the constituents. One wants as many of the tickers as possible to have as low `NA` counts as possible, because this means less tickers will be dropped from the dataset at runtime.
+Figure 6.4 below plots the cumulative number of occurrences of each metric, with the y-axis ordering the metrics in descending order of number of occurrences. Cluster 1 from the K-means clustering procedure are circled in red, and cluster 2 is circled in blue. Because of the large disparity in number of occurrences, it looks like cluster 2 contains metrics with occurrences equal to zero. This is not the case - it is just that daily metrics in this dataset occur so much more frequently than annual metrics that the x-axis is deceptive. The plot shows that the algorithm has indeed clustered by number of occurrences, and that cluster 1 includes all metrics with a number of occurrences greater than 1000, and cluster 2 including all occurrences less than 1000. 
 
-```{r, fig.height = 4, fig.cap="Fundamental Metric Clusters"}
+Given the obviousness of these results, one may ask why K-means clustering is even necessary. It would be trivial for a human to view Figure 6.4 and sort the metrics into slow-moving or fast-moving metrics. The power of this method is that we have automated the process of lag detection and correction. Human lag detection and correction is time consuming and error prone, but fundamentally requires very little in the way of human judgement - it forms part of the manual drudgery of building high quality backtesting data. The lag correction procedure built here is completely automated, but can handle varying periodicities and consume an arbitrary number of metrics. It therefore represents a very general approach to automated lag detection.
+
+```{r, fig.height = 4, fig.cap="Data health report excerpt: Fundamental metric clusters"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/fundamental-metric-clusters.png")
 grid.raster(img)
 ```
 
-Having reviewed the data health report above, we can filter the dataset to exclude poorly represented metrics. The following market metric completeness chart shows a dataset that excludes all market metrics except price, volume and market cap metrics. 
+The data health report also show histograms of the `NA` proportions per market metric group per ticker (not shown here). The groups are overall market fields, algorithm-related fields, price-related fields, volume, and last price. This allows the user to discern the distribution of `NA` values across the constituents. One wants as many of the tickers as possible to have as low `NA` counts as possible, because this means less tickers will be dropped from the dataset at runtime.
 
-```{r, fig.height = 4, fig.cap="Market Metric Field Completeness, Filtered Dataset"}
+Having reviewed the data health report on the full raw dataset, we can filter the dataset to exclude poorly represented metrics. The following market metric completeness chart shows a dataset that excludes all market metrics except price, volume and market cap metrics. We see that these cherry-picked metrics have a very low proportion of `NA` entries. This increases the likelihood of a backtest result that is a meaningful analogue of reality, because we are less likely to introduce sampling bias. Sampling bias would occur when we use a metric in our dataset that has a high proportion of `NA` entries for particular tickers. If the quality of the data for a particular metric is related to, say, quality of reporting from the underlying company, then the algorithm will silently drop lower-quality companies, resulting in a misleading backtest result.
+
+```{r, fig.height = 4, fig.cap="Data health report on constrained dataset excerpt: Market metric field completeness, filtered dataset"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-metric-completeness-filtered.png")
@@ -1100,7 +1094,7 @@ grid.raster(img)
 
 The corresponding monthly `NA` timeseries plot is shown below. The best-quality period appears to be after 2010, and the base `NA` rate for that period has dropped from over 20% to under 5%.
 
-```{r, fig.height = 4, fig.cap="Monthly Overall Market NA Over Time, Filtered Dataset"}
+```{r, fig.height = 4, fig.cap="Data health report on constrained dataset excerpt: Monthly overall market NA over time, filtered dataset"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/market-overall-market-na-over-time_filtered.png")
@@ -1110,11 +1104,11 @@ grid.raster(img)
 
 This sort of filtering may limit the search space of profitable algorithms, but they also increase the accuracy of the backtest because less stocks are excluded from the exercise.
 
-### Trading engine validation
+## Trading engine validation
 
 After obtaining data from a suitable source and validating its quality, the researcher is ready to conduct a backtest. This section performs a series of backtests on simulated data in order to validate that certain components of the trading engine are working as intended.
 
-There are three necessary conditions for a backtest - 
+There are three necessary conditions for a backtest:
 
 1) There is data in the `datalog`.
 2) The backtest parameters are specified in the `parameters.R` file.
@@ -1122,23 +1116,27 @@ There are three necessary conditions for a backtest -
 
 If these three conditions have been met, the researcher need only `source("scripts/0_all.R")`, complete the prompts, and then wait for the results. 
 
-In order to validate that the backtester is functioning correctly, we run six backtests on identical data, with an identical algorithm. 
-
 In order to ensure that data quality is not an issue, we run these backtests against synthetically-generated data, which can be replicated by running `1_simulated_to_datalog.R` prior to running the catchall `0_all.R` script. 
 
-|Trial ID| Variation                                            | 
-|-----------:|:-----------------------------------------------------|
-|8	         |	4 years, no transaction costs, rebalance daily, trade daily. Weight all tickers by market cap.|
-|9	         |	Same as 8 but rebalance monthly. Expect lower correlation with index than 1.|
-|10	         |	Same as 8 but rebalance quarterly. Expect lower correlation with index than 2. |
-|11	         |	Same as 8 but 0.5% transaction costs. Expect lower performance than 8. |
-|12	         |	Same as 8 but 5% transaction costs. Expect lower performance than 8. |
-|13	         |	Same as 12 but portfolio 10000 and minimum commission of 10. Expect transaction costs to eat portolio. |
-Table: Details of Each backtest Instance for Engine Validation Exercise\label{Table1}
+In order to validate that the backtester is functioning correctly, we run six backtests on identical data, with an identical algorithm. 
+These backtests are not designed to be profitable. They are designed to validate that the following features of the backtesting engine are operating reliably:
 
-The results of the above backtests are available at https://github.com/riazarbi/equity_analysis_trials.
+1) Does the trading engine effectively trade towards a target weighting? For this to be the case, a portfolio with a target portfolio weighted identically to a market-weighted index and no transaction costs should perform almost identically to said index if it is reweighted as frequently as the underlying index is. We would expect portfolios with less frequent reweighting heartbeats to have a lower correlation with the index, since the algorthm would spend at least some of the time targeting a stale target basket weighting.
+2) Do transaction costs impact portfolio in an expected manner? For this to be the case, portfolios that are identical with regards to trading rules, but which have varying transaction costs, should vary in performance strictly in order of their respective trading costs. There are two aspects to trading costs modeled in this engine - commissions as a percentage of trade, and minimum commissions. We test these separately.
 
-The correlation table below confirms the expected result from the table above. Trial 8 has the greatest correlation with the market return, followed by trial 9, then trial 10.
+|Trial ID| Variation                     | Expected Result                      | 
+|-----------:|:--------------------------|:---------------------------|
+|A	         |	4 years, no transaction costs, rebalance daily, trade daily. Weight all tickers by market cap.| Baseline. |
+|B	         |	Same as A but rebalance monthly. | Expect lower correlation with index than A.|
+|C	         |	Same as A but rebalance quarterly. |  Expect lower correlation with index than B. |
+|D	         |	Same as A but 0.5% transaction costs. |  Expect lower performance than A. |
+|E	         |	Same as A but 5% transaction costs. | Expect lower performance than D. |
+|F	         |	Same as E but portfolio 10000 and minimum commission of 10 units. | Expect transaction costs to consume portolio capital until the portfolio value is zero. |
+Table: Description of the characteristics of each trial conducted in the engine validation exercise.\label{Table3}
+
+Each of the above portfolios employ a passive market weighting algorithm, similar to that employed by an index-tracking passive ETF. At each rebalancing heartbeat, the algorithm calculates the optimal weights to allocate to each security in order to mimic the weightings in the underlying index. At each trading heartbeat, the engine compares the portfolio actual portfolio weights weights with the target weights and generates a series of required trades to equalize these two lists. This series of trades is submitted to a trading engine, which matches trades if there is sufficient liquidity at the limit price. The parameters, algorithm code and results of the above backtests are available at https://github.com/riazarbi/equity_analysis_trials. 
+
+The correlation table below (Table 6.2) confirms the expected result from the table above. Trial A has the greatest correlation with the market return, followed by trial B, then trial C. Firstly, we would expect trial A to closely track the market return, since the constituent list is recalculated daily, and there are no transaction costs. Any deviation should be attributed to liquidity constraints slowing the rotating of positions. Secondly, increasing the time window between rebalancing heartbeats results in greater deviation from the performance of the index. This is what one would expect, since constituents are constantly being rotated out of the index, and a slower rebalancing portfolio will track a stale constituent list for longer. The results indicate that the rebalancing parameter is working as intended.
 
 ```{r}
 library(feather)
@@ -1146,18 +1144,20 @@ correl <- readRDS("/home/riaz/projects/equity_analysis/paper/data/correlation.Rd
 knitr::kable(correl, caption = "Identical Portfolios, Varying Rebalancing Periodicity, Return Correlations")
 ```
 
-With regard to the transaction costs test, trial 8 strictly dominates trial 11, which strictly dominates trial 12. As expected, trial 11 is much closer to trial 8 than trial 12.
+With regard to the transaction costs test (see Figure 6.7 below), trial A strictly dominates trial D, which strictly dominates trial E. As expected, trial D is much closer to trial A than trial E. This indicated that increasing transaction costs decreases the return. This is in accordance with a properly functioning trading engine, since higher transaction costs equate to lower net realized gain on each trade.
 
-```{r, fig.height = 4, fig.cap="Identical Portolios, Varying Transaction Costs"}
+```{r, fig.height = 4, fig.cap="Identical portolios, varying transaction costs"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/transaction_costs_validation.png")
 grid.raster(img)
 ```
 
-The low-value, high-minimum-commission portfolio (portfolio 13) also behaves as expected, descending immediately into bankruptcy. The tearsheet for this portfolio indicates that it only completed 442 trades. The portfolio did manage to trade sporadically until the end of the backtest window, whenever a stock it happened to own could be swapped for a desirable stock in the same heartbeat. This suggests that the code would benefit from a `break` in the event of bankruptcy.
+The low-value, high-minimum-commission portfolio (portfolio F, Figure 6.7 below) also behaves as expected, descending into bankruptcy. This can be seen by examining the Indexed Value axis, which descends to a negative number almost immediately. We expected this strategy to descend into bankruptcy because the transaction cost was very high compared to the portfolio capital value; each trade would consume at least 0.1% of the capital of the portfolio. The [tearsheet for this portfolio](https://github.com/riazarbi/equity_analysis_trials/blob/master/backtests/13/results/simulated__RISK_FREE_RANDOMS__all_select_market_weight/) indicates that it completed 442 trades.
 
-```{r, fig.height = 4, fig.cap="Identical Portolios, Smaller Portfolio Size and High Minimum Commission"}
+Even though the portfolio entered negative net worth in the first month of trading, it did manage to trade sporadically until the end of the backtest window, whenever a stock it happened to own could be swapped for a desirable stock in the same heartbeat. In reality, a bankrupt portoflio would probably be liquidated, but no liquidation functionality has been built into this backtester at this time. This result suggests that the code would benefit from better bankruptcy handling. 
+
+```{r, fig.height = 4, fig.cap="Identical portolios, smaller portfolio size and high minimum commission"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/low_value_high_cost_returns.png")
@@ -1166,52 +1166,52 @@ grid.raster(img)
 
 These tests demonstrate how one would go about conducting a backtest from a cold start. They are fully replicable by anybody who downloads the code and the backtest parameters from the relevant code repositories. They also serve to prove the correct execution of certain features of the trading engine.
 
-### Example of Backtest Overfitting Detection
+## Example of backtest overfitting detection
 
-As detailed in \ref{Backtest Overfitting}, running many trials on the same dataset seriously increases the risk of backtest overfitting. This is especially risky for a process that is amenable to parameter tuning (varying rebalancing periods, portfolio sizes and weighting rules and the like). For this reason, we include a backtest overfitting report in the `results/` directory. 
+As detailed in \ref{Backtest Overfitting}, running many trials on the same dataset seriously increases the risk of backtest overfitting. This is especially risky for a process that is amenable to parameter tuning (varying rebalancing periods, portfolio sizes and weighting rules and the like). For this reason, we include a backtest overfitting report in the `results/` directory. In an earnest backtesting exercise one would want to avoid backtest overfitting, since backtests which are overfit do not have much predictive power for the future. The portfolios generated in this exercise have been explicitly designed to result in a failure to pass a PBO test. That is, we expect to confirm that backtest overfitting has occurred. 
 
 The `5_report.R` script packages the portfolio data from all trials into a pair of dataframes that can be fed into the R `PBO` packages to calculate a range of backtest overfitting tests. These tests are run by `6_cross_validate.R`, which computes the necessary statistics and renders the results in an html table.
 
-In order to demonstrate this functionality, we simulate a set of portfolio returns and portfolio values that would have been derived from truly random returns. We do this by creating an R `data frame` with 50 columns and 2000 rows; each of these cells has a random sample taken from the standard normal distribution. Each column represents a portolio and each row a date. We adjust the standard deviation to a reasonable daily rate ($sd = \frac{1}{365^2}$) to make the distribution compatible with a daily compounding rates. We assign a dates column to the `data frame` and then save it do disk, in the location that the cross validation script looks for portfolio array returns. 
+In order to demonstrate this functionality, we simulate a set of portfolio returns and portfolio values that would have been derived from truly random returns. We do this by creating an R `data frame` with 50 columns and 2000 rows; each of these cells has a random sample taken from the standard normal distribution. Each column represents a portfolio and each row a date. This data frame therefore represents a series of random daily returns for 50 portfolios. We adjust the standard deviation of the random returns to a reasonable daily rate ($sd = \frac{1}{365^2}$) to make the distribution comparable to a real-world daily compounding rate. We assign a dates column to the `data frame` and then save it do disk, in the location that the cross validation script looks for portfolio array returns. This data frame can be recreated by executing the code found [here.](https://github.com/riazarbi/equity_analysis_trials/blob/master/backtests/PBO/workings.R)
 
-Next we create a price data frame from the returns data frame by converting each column into a rolling compounding column - 
+Next we create a portfolio value data frame from the returns data frame by converting each column into a rolling compounding column:
 
 \begin{align}
-price_t = (1+return_t)*(price_{t-1})
+\mbox{price}_t = (1+\mbox{return}_t)*(\mbox{price}_{t-1})
 \end{align}
 
-We save this data frame to disk in the expected location as well. Next, we run `6_cross_validate.R` and inspect the html report.The array of returns is plotted below. The portfolio values appear to be truly random.
+We save this data frame to disk in the expected location as well. Next, we run `6_cross_validate.R` and inspect the html report, which can be seen [here.](https://github.com/riazarbi/equity_analysis_trials/tree/master/backtests/PBO) The indexed returns plot from the report is reproduced below. It shows that as a group, these portfolios indexed values range between ~140% and ~70% of their initial values over the time period. However, there is no discernible performance trend. This is expected, as the daily returns were not the result of any algorithm but rather randomly sampled from the normal distribution.
 
-```{r, fig.height = 4, fig.cap="Portfolio Returns Time Series, Random Weighting Algorithms"}
+```{r, fig.height = 4, fig.cap="Excerpt from cross-validation report: Portfolio returns time series, 50 portfolios with random daily returns"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/random_returns.png")
 grid.raster(img)
 ```
 
-Once the cross validation report has been generated we can inspect it to assess the probability of backtest overfitting. The excess return metric we use is the same as the metric used in @LopezdePrado2013 - the Sharpe Ratio. This ratio is defined as 
+Once the cross validation report has been generated we can inspect it to assess the probability of backtest overfitting. The excess return metric we use is the same as the metric used in [@LopezdePrado2013] - the Sharpe Ratio. This ratio is defined as 
 
 \begin{align}
-Sharpe = \frac{\mathbb{E}\ (Excess\ Return)}{\mathrm{Std}(Excess\ Return)}
+\mbox{Sharpe} = \frac{\mathbb{E}\ (\mbox{Excess Return})}{\mathrm{Std}(\mbox{Excess Return})}
 \end{align}
 
-> where the $Excess Return$ is the portfolio return over and above the risk free return.
+where the Excess Return is the portfolio return over and above the risk free return.
 
-The results of the PBO exercise are summarised below.
+The results of the PBO exercise are summarized in Table 6.3 below. One should interpret the table as follows. PBO refers the the probability of backtest overfitting, as detailed in Section \ref{Backtest Overfitting}. A PBO value close to 1 indicates that the cross validation exercise has detected that overfitting has probably taken place. Slope refers to the slope of the regression of IS performance to OOS performance. A negative slope indicates that positive IS performance is related to negative OOS performance. The Adjusted R-squared tells us how well the slope describes that relationship between IS and OOS performance - a high value means we can ascribe a high degree of confidence to the slope coefficient. The Probability of Loss captures the probability of a loss occurring if one were to employ the highest-ranked IS portfolio's strategy on OOS data. The results in Table 6.3 tell us that the probability of backtest overfitting is very high, that IS returns are weakly negatively predictive of OOS returns, and that the probability of loss is high. This is in accordance with our expectations, since the returns that we generated for all portfolios were random. Because they were random, the best-performing portfolio for any period will not necessarily perform better than the median portfolio OOS. Essentially the IS returns contain no information about future performance, except that high IS returns are moderately weakly predictive of poor OOS performance, possibly due to reversion to the mean in the returns matrix.
 
 ```{r}
 results <- c(1,-0.00008,0.98,1)
 names(results) <- c("PBO", "Slope", "Adjusted R-squared", "Probability of Loss")
-colnames_summary <- "Value"
+colnames_summary <- c("Result", "Possible Range", "Desirable Value")
 summary_Range <- c("0->1", "-inf->inf", "0->1", "0->1")
-summary_Desirable  <- c("1", "NA", "1", "0")
-knitr::kable(cbind(results, summary_Range, summary_Desirable), col.nmaes=colnames_summary, caption="PBO Results")
+summary_Desirable  <- c("0", "NA", "1", "0")
+knitr::kable(cbind(results, summary_Range, summary_Desirable), col.names=colnames_summary, caption="PBO Results")
 ```
 
 
 The histogram of logits confirm that the best in-sample trial performed below the median out of sample trial. 
 
-```{r, fig.height = 4, fig.cap="Histogram of Logits, Random Weighting Algorithms"}
+```{r, fig.height = 4, fig.cap="Excerpt from cross-validation report: Histogram of logits, random weighting algorithms"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/histogram_of_logits.png")
@@ -1220,7 +1220,7 @@ grid.raster(img)
 
 The out of sample performance degradation indicates that greater in-sample performance results in worse out-of-sample performance.
 
-```{r, fig.height = 4, fig.cap="Out of Sample Performance Degradation, Random Weighting Algorithms"}
+```{r, fig.height = 4, fig.cap="Excerpt from cross-validation report: Out of sample performance degradation, random weighting algorithms"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/oos_degradation.png")
@@ -1229,7 +1229,7 @@ grid.raster(img)
 
 Finally, the pairs plot shows little relationship between in-sample and out-of-sample performance.
 
-```{r, fig.height = 4, fig.cap="Pairs Pot, Random Weighting Algorithms"}
+```{r, fig.height = 4, fig.cap="Excerpt from cross-validation report: Pairs plot, random weighting algorithms"}
 library(png)
 library(grid)
 img <- readPNG("/home/riaz/projects/equity_analysis/paper/data/pairs_plot.png")
@@ -1241,11 +1241,11 @@ The cross validation report works as expected. Given a sample of truly random re
 
 \newpage
 
-## Limitations and enhancements
+# Limitations and enhancements
 
 In order to keep the scope of this project manageable, we have had to allow the codebase to exist with certain limitations. These limitations are not inherent; their existence is a function of time limitations. 
 
-### Weaknesses
+## Weaknesses
 
 The data processing script (which converts the `datalog` into `datasets`) is highly opinionated, and expects only datalog-like files. In reality, source data comes in a variety of formats. The challenge of transforming these data structures into the strict datalog format is considerable, and the data-processing pipeline would benefit from becoming more versatile in what it can consume. This is a fine balance, however, a major feature of this project is that the results are totally reproducible from source. 
 
@@ -1255,11 +1255,11 @@ The crafting of portfolio-weighting algorithms is challenging. We have included 
 
 Transaction costs and slippage are modelled naively - either as a percentage of the total trade value or a hard minimum. These two factors encompass entire fields of research in their own right. It would be useful to generalise how these factors are incorporated into the backtest so that more complex estimation methods can be dropped in easily.
 
-As present portfolio rebalancing periodicity is a global parameter. However, since the periodicity affects the return (there should be an optimal rebalancing periodicity that balances accuracy with churn), it should be a local parameter to a trial. Modifying the parameter to accept vectors, and modifying `3_trade.R` to run each trial against each periodicity would add significant flexibility to the researcher's toolkit.
+At present portfolio rebalancing periodicity is a global parameter. However, since the periodicity affects the return (there should be an optimal rebalancing periodicity that balances accuracy with churn), it should be a local parameter to a trial. Modifying the parameter to accept vectors, and modifying `3_trade.R` to run each trial against each periodicity would add significant flexibility to the researcher's toolkit.
 
-### Enhancements
+## Enhancements
 
-In line with our goal of enabling high-quality, reproducible research, it would be desirable to expand the data quality reporting to compare multiple data sources and make a 'est guess' synthetic dataset out of muliple fragmented sources.
+In line with our goal of enabling high-quality, reproducible research, it would be desirable to expand the data quality reporting to compare multiple data sources and make a 'est guess' synthetic dataset out of multiple fragmented sources.
 
 On the other end of the pipeline, the tear sheets could be augmented with more summary statistics. Similarly to the data quality reporting, the underlying data is present in the appropriate form. What is needed is the computation of summary statistics and inclusion of those summary statistics in the parametrised report. This would require research into the relevant R packages and the modification of the `tearsheet.Rmd` template file into a more comprehensive report.
 
@@ -1279,7 +1279,7 @@ This collection of scripts make it possible to test an investment algorithm agai
 
 Using this code-base as a starting point should save a researcher a great deal of time in preparing stock data for backtesting, and the open source nature of the project ensures that any researcher can comb the operations for bugs or implement features that are not present. While it is not expected that this code base is necessary or sufficient for end-to-end backtesting, it represents a solid base for ongoing development. 
 
-It is hoped that researchers will treat this project as a reproducible project in and of itself. That is, they will inspect the code, ensure that it is working as intended (or suggest fixes) and thereby verify it as a legitmate base for engaging in the real meat of backtesting - discovering anomalies.
+It is hoped that researchers will treat this project as a reproducible project in and of itself. That is, they will inspect the code, ensure that it is working as intended (or suggest fixes) and thereby verify it as a legitimate base for engaging in the real meat of backtesting - discovering anomalies.
 
 \pagebreak
 
